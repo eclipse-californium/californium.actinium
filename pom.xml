@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<modelVersion>4.0.0</modelVersion>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.javaVersion>1.6</project.build.javaVersion>
+	</properties>
+
+	<groupId>org.eclipse.californium</groupId>
+	<artifactId>actinium</artifactId>
+	<version>2.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>Actinium (Ac)</name>
+	<description>Actinium (Ac) App-server for Californium</description>
+	<url>https://www.eclipse.org/californium/</url>
+	<organization>
+		<name>Eclipse Foundation</name>
+		<url>http://www.eclipse.org/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Eclipse Public License - Version 1.0</name>
+			<url>http://www.eclipse.org/org/documents/epl-v10.php</url>
+		</license>
+		<license>
+			<name>Eclipse Distribution License - Version 1.0</name>
+			<url>http://www.eclipse.org/org/documents/edl-v10.php</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>mkovatsch</id>
+			<name>Matthias Kovatsch</name>
+			<email>kovatsch@inf.ethz.ch</email>
+			<url>http://people.inf.ethz.ch/mkovatsc/</url>
+			<organization>ETH Zurich</organization>
+			<organizationUrl>http://www.vs.inf.ethz.ch/</organizationUrl>
+			<roles>
+				<role>Committer</role>
+				<role>Lead</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>mlanter</id>
+			<name>Martin Lanter</name>
+			<email>martin.lanter@gmx.ch</email>
+			<roles>
+				<role>Committer</role>
+			</roles>
+		</developer>
+	</developers>
+	
+	<distributionManagement>
+		<repository>
+			<id>repo.eclipse.org</id>
+			<name>Californium Repository - Releases</name>
+			<url>https://repo.eclipse.org/content/repositories/californium-releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>repo.eclipse.org</id>
+			<name>Californium Repository - Snapshots</name>
+			<url>https://repo.eclipse.org/content/repositories/californium-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>repo.eclipse.org</id>
+			<name>mkovatsc-github</name>
+			<url>https://github.com/mkovatsc/maven/raw/master/releases/</url>
+		</repository>
+		<repository>
+			<id>mkovatsc-github-thirdparty</id>
+			<name>mkovatsc-github</name>
+			<url>https://github.com/mkovatsc/maven/raw/master/thirdparty/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.ethz.inf.vs</groupId>
+			<artifactId>californium</artifactId>
+			<version>0.8.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mozilla</groupId>
+			<artifactId>rhino</artifactId>
+			<version>1.7R3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.uk</groupId>
+			<artifactId>e4x-utils</artifactId>
+			<version>1.0-2005-02-28</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>${project.build.javaVersion}</source>
+					<target>${project.build.javaVersion}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+			<!-- JAR packaging -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<!-- nothing here -->
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<appendAssemblyId>false</appendAssemblyId>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>org.eclipse.californium.actinium.AcServer</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-installed</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+									<type>${project.packaging}</type>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>./run/</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- execution -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>org.eclipse.californium.actinium.AcServer</mainClass>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
