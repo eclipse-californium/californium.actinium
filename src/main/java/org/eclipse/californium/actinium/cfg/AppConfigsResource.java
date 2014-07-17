@@ -19,14 +19,11 @@ package org.eclipse.californium.actinium.cfg;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.DELETERequest;
-import ch.ethz.inf.vs.californium.coap.GETRequest;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
-import ch.ethz.inf.vs.californium.coap.PUTRequest;
-import ch.ethz.inf.vs.californium.coap.Response;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
-import ch.ethz.inf.vs.californium.endpoint.Resource;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.core.server.resources.Resource;
 
 /**
  * AppConfigResource contains the app's configs' resources. When an app is
@@ -39,7 +36,7 @@ import ch.ethz.inf.vs.californium.endpoint.Resource;
  * On a GET reqeust, it AppConfigResource lists all configs it contains. POST,
  * PUT and DELETE are not allowed.
  */
-public class AppConfigsResource extends LocalResource {
+public class AppConfigsResource extends CoapResource {
 
 	// a list of all resources correspondig to one app's config each
 	private List<AppConfig> appconfigs;
@@ -71,8 +68,8 @@ public class AppConfigsResource extends LocalResource {
 	 * Respond a list of all configs.
 	 */
 	@Override
-	public void performGET(GETRequest request) {
-		Response response = new Response(CodeRegistry.RESP_CONTENT);
+	public void handleGET(CoapExchange request) {
+		Response response = new Response(ResponseCode.CONTENT);
 
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("Apps have the following configurations:\n");
@@ -87,18 +84,18 @@ public class AppConfigsResource extends LocalResource {
 	}
 
 	@Override
-	public void performPUT(PUTRequest request) {
-		request.respond(CodeRegistry.RESP_METHOD_NOT_ALLOWED);
+	public void handlePUT(CoapExchange request) {
+		request.respond(ResponseCode.METHOD_NOT_ALLOWED);
 	}
 
 	@Override
-	public void performPOST(POSTRequest request) {
-		request.respond(CodeRegistry.RESP_METHOD_NOT_ALLOWED);
+	public void handlePOST(CoapExchange request) {
+		request.respond(ResponseCode.METHOD_NOT_ALLOWED);
 	}
 
 	@Override
-	public void performDELETE(DELETERequest request) {
-		request.respond(CodeRegistry.RESP_METHOD_NOT_ALLOWED);
+	public void handleDELETE(CoapExchange request) {
+		request.respond(ResponseCode.METHOD_NOT_ALLOWED);
 	}
 
 }

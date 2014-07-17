@@ -16,16 +16,14 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.eclipse.californium.actinium.jscoap.jserror.NetworkErrorException;
+import org.eclipse.californium.core.coap.MessageObserverAdapter;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.mozilla.javascript.Function;
-
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.coap.Response;
-import ch.ethz.inf.vs.californium.coap.ResponseHandler;
 
 /**
  * AsynchronousSender implements the process to send a request asynchronously.
@@ -62,8 +60,8 @@ public class AsynchronousSender extends AbstractSender {
 	
 	@Override
 	public void send(Request request) {
-		request.registerResponseHandler(new ResponseHandler() {
-			public void handleResponse(Response response) {
+		request.addMessageObserver(new MessageObserverAdapter() {
+			public void onResponse(Response response) {
 				if (!isAcknowledgement(response)) {
 					AsynchronousSender.this.handleAsyncResponse(response);
 				}
@@ -71,8 +69,8 @@ public class AsynchronousSender extends AbstractSender {
 		});
 		
 		try {
-			request.execute();
-		} catch (IOException e) {
+			request.send().waitForResponse(10000);
+		} catch (Exception e) {
 			handleError(onerror);
 			throw new NetworkErrorException(e.toString());
 		}
@@ -105,7 +103,7 @@ public class AsynchronousSender extends AbstractSender {
 		}
 		if (callonready) {
 			synchronized (coapRequest) {
-				coapRequest.setResponse(response);
+//				coapRequest.setResponse(response);
 				coapRequest.setReadyState(CoAPRequest.DONE);
 			}
 			callJavaScriptFunction(onready, coapRequest, response);

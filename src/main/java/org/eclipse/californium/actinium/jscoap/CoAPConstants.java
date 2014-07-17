@@ -53,9 +53,9 @@ import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Valid;
 
 import java.util.HashMap;
 
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.MediaTypeRegistry;
-import ch.ethz.inf.vs.californium.coap.OptionNumberRegistry;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.OptionNumberRegistry;
 
 /**
  * CoAPConstants implements the most important constants from CoAP.
@@ -79,26 +79,26 @@ public interface CoAPConstants {
 	public static final String If_None_Match 	= "If-None-Match";
 	
 	// CodeRegistry constants as JS constants
-	public static final int Created 			= CodeRegistry.RESP_CREATED;
-	public static final int Deleted 			= CodeRegistry.RESP_DELETED;
-	public static final int Valid 				= CodeRegistry.RESP_VALID;
-	public static final int Changed 			= CodeRegistry.RESP_CHANGED;
-	public static final int Content 			= CodeRegistry.RESP_CONTENT;
-	public static final int Bad_Request 		= CodeRegistry.RESP_BAD_REQUEST;
-	public static final int Unauthorized 		= CodeRegistry.RESP_UNAUTHORIZED;
-	public static final int Bad_Option 			= CodeRegistry.RESP_BAD_OPTION;
-	public static final int Forbidden 			= CodeRegistry.RESP_FORBIDDEN;
-	public static final int Not_Found 			= CodeRegistry.RESP_NOT_FOUND;
-	public static final int Method_Not_Allowed	= CodeRegistry.RESP_METHOD_NOT_ALLOWED;
-	public static final int Precondition_Failed = CodeRegistry.RESP_PRECONDITION_FAILED;
-	public static final int Request_Entity_Too_Large = CodeRegistry.RESP_REQUEST_ENTITY_TOO_LARGE;
-	public static final int Unsupported_Media_Type = CodeRegistry.RESP_UNSUPPORTED_MEDIA_TYPE;
-	public static final int Internal_Server_Error = CodeRegistry.RESP_INTERNAL_SERVER_ERROR;
-	public static final int Not_Implemented 	= CodeRegistry.RESP_NOT_IMPLEMENTED;
-	public static final int Bad_Gateway 		= CodeRegistry.RESP_BAD_GATEWAY;
-	public static final int Service_Unavailable = CodeRegistry.RESP_SERVICE_UNAVAILABLE;
-	public static final int Gateway_Timeout 	= CodeRegistry.RESP_GATEWAY_TIMEOUT;
-	public static final int Proxying_Not_Supported = CodeRegistry.RESP_PROXYING_NOT_SUPPORTED;
+	public static final int Created 			= ResponseCode.CREATED.value;
+	public static final int Deleted 			= ResponseCode.DELETED.value;
+	public static final int Valid 				= ResponseCode.VALID.value;
+	public static final int Changed 			= ResponseCode.CHANGED.value;
+	public static final int Content 			= ResponseCode.CONTENT.value;
+	public static final int Bad_Request 		= ResponseCode.BAD_REQUEST.value;
+	public static final int Unauthorized 		= ResponseCode.UNAUTHORIZED.value;
+	public static final int Bad_Option 			= ResponseCode.BAD_OPTION.value;
+	public static final int Forbidden 			= ResponseCode.FORBIDDEN.value;
+	public static final int Not_Found 			= ResponseCode.NOT_FOUND.value;
+	public static final int Method_Not_Allowed	= ResponseCode.METHOD_NOT_ALLOWED.value;
+	public static final int Precondition_Failed = ResponseCode.PRECONDITION_FAILED.value;
+	public static final int Request_Entity_Too_Large = ResponseCode.REQUEST_ENTITY_TOO_LARGE.value;
+	public static final int Unsupported_Media_Type = ResponseCode.UNSUPPORTED_CONTENT_FORMAT.value;
+	public static final int Internal_Server_Error = ResponseCode.INTERNAL_SERVER_ERROR.value;
+	public static final int Not_Implemented 	= ResponseCode.NOT_IMPLEMENTED.value;
+	public static final int Bad_Gateway 		= ResponseCode.BAD_GATEWAY.value;
+	public static final int Service_Unavailable = ResponseCode.SERVICE_UNAVAILABLE.value;
+	public static final int Gateway_Timeout 	= ResponseCode.GATEWAY_TIMEOUT.value;
+	public static final int Proxying_Not_Supported = ResponseCode.PROXY_NOT_SUPPORTED.value;
 }
 
 class CoAPConstantsConverter {
@@ -204,7 +204,7 @@ class CoAPConstantsConverter {
 		else if (Uri_Port.equals(c))	return OptionNumberRegistry.URI_PORT;
 		else if (Location_Query.equals(c))return OptionNumberRegistry.LOCATION_QUERY;
 		else if (Uri_Path.equals(c))	return OptionNumberRegistry.URI_PATH;
-		else if (Token.equals(c))		return OptionNumberRegistry.TOKEN;
+//		else if (Token.equals(c))		return OptionNumberRegistry.TOKEN;
 		else if (Accept.equals(c))		return OptionNumberRegistry.ACCEPT;
 		else if (If_Match.equals(c))	return OptionNumberRegistry.IF_MATCH;
 		else if (Uri_Query.equals(c))	return OptionNumberRegistry.URI_QUERY;
@@ -254,6 +254,6 @@ class CoAPConstantsConverter {
 	}
 	
 	public static String convertCoAPCodeToString(int code) {
-		return CodeRegistry.toString(code);
+		return ResponseCode.valueOf(code).toString();
 	}
 }

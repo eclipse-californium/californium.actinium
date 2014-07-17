@@ -27,14 +27,10 @@ import java.util.Scanner;
 import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.Config;
-
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.DELETERequest;
-import ch.ethz.inf.vs.californium.coap.GETRequest;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
-import ch.ethz.inf.vs.californium.coap.PUTRequest;
-import ch.ethz.inf.vs.californium.coap.Response;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 
 /**
  * InstalledAppResource represents an app's code, whichs is stored to the disk.
@@ -46,7 +42,7 @@ import ch.ethz.inf.vs.californium.endpoint.LocalResource;
  * a PUT request, InstalledAppResource updates the app's content. On a DELETE
  * request, the app's file, all its instances and this resource are removed.
  */
-public class InstalledAppResource extends LocalResource {
+public class InstalledAppResource extends CoapResource {
 	
 	// the name of this app
 	private String name;
@@ -68,7 +64,7 @@ public class InstalledAppResource extends LocalResource {
 		this.name = name;
 		this.manager = manager;
 		
-		isObservable(true);
+		setObservable(true);
 	}
 
 	/**
@@ -88,17 +84,17 @@ public class InstalledAppResource extends LocalResource {
 	 * Responds the content of the app.
 	 */
 	@Override
-	public void performGET(GETRequest request) {
+	public void handleGET(CoapExchange request) {
 		try {
 			File file = new File(getInstalledPath());
 			Scanner scanner = new Scanner(file).useDelimiter("\\Z");
 		    String content = scanner.next();  
 		    scanner.close();
-			request.respond(CodeRegistry.RESP_CONTENT, content);
+			request.respond(ResponseCode.CONTENT, content);
 			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			request.respond(CodeRegistry.RESP_INTERNAL_SERVER_ERROR);
+			request.respond(ResponseCode.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -107,22 +103,22 @@ public class InstalledAppResource extends LocalResource {
 	 * restarted.
 	 */
 	@Override
-	public void performPUT(PUTRequest request) {
+	public void handlePUT(CoapExchange request) {
 		try {
 			
 			// update
-			String code = request.getPayloadString();
+			String code = request.getRequestText();
 			storeApp(code);
 			
 			// restart all instances
 			manager.restartApps(name);
 			
 			changed();
-			request.respond(CodeRegistry.RESP_CHANGED);
+			request.respond(ResponseCode.CHANGED);
 			
 		} catch (Exception e) { // should not happen
 			e.printStackTrace();
-			request.respond(CodeRegistry.RESP_INTERNAL_SERVER_ERROR, e.getMessage());
+			request.respond(ResponseCode.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
 
@@ -148,9 +144,9 @@ public class InstalledAppResource extends LocalResource {
 	 * response has code RESP_BAD_REQUEST.
 	 */
 	@Override
-	public void performPOST(POSTRequest request) {
+	public void handlePOST(CoapExchange request) {
 		try {
-			String payload = request.getPayloadString();
+			String payload = request.getRequestText();
 			
 			// create a new AppConfig
 			AppConfig appcfg = convertToAppConfig(payload);
@@ -159,24 +155,24 @@ public class InstalledAppResource extends LocalResource {
 			String newpath = manager.instantiateApp(appcfg);
 
 			// inform client about the location of the new resource
-			Response response = new Response(CodeRegistry.RESP_CREATED);
+			Response response = new Response(ResponseCode.CREATED);
 			response.setPayload("Application "+name+" successfully installed to "+newpath);
-			response.setLocationPath(newpath);
+			response.getOptions().setLocationPath(newpath);
 			
 			request.respond(response);
 			
 		} catch (IllegalArgumentException e) { // given query invalid
 			System.err.println(e.getMessage());
-			request.respond(CodeRegistry.RESP_BAD_REQUEST, e.getMessage()); // RESP_PRECONDITION_FAILED?
+			request.respond(ResponseCode.BAD_REQUEST, e.getMessage()); // RESP_PRECONDITION_FAILED?
 		
 		} catch (RuntimeException e) { // some error while processing (e.g. IO)
 			e.printStackTrace();
 			System.err.println(e.getMessage());
-			request.respond(CodeRegistry.RESP_BAD_REQUEST, e.getMessage()); // RESP_PRECONDITION_FAILED?
+			request.respond(ResponseCode.BAD_REQUEST, e.getMessage()); // RESP_PRECONDITION_FAILED?
 			
 		} catch (Exception e) { // should not happen
 			e.printStackTrace();
-			request.respond(CodeRegistry.RESP_INTERNAL_SERVER_ERROR, e.getMessage());
+			request.respond(ResponseCode.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
 
@@ -186,15 +182,15 @@ public class InstalledAppResource extends LocalResource {
 	 * files from their parent resources and from the disk.
 	 */
 	@Override
-	public void performDELETE(DELETERequest request) {
+	public void handleDELETE(CoapExchange request) {
 		try {
 			manager.deleteApps(name); // throws IOException if not successful (e.g. no write-access to config file)
 			deleteApp(); // throws IOException if not successful (e.g. no write-access to javascript file)
-			remove();
-			request.respond(CodeRegistry.RESP_DELETED);
+			delete();
+			request.respond(ResponseCode.DELETED);
 		} catch (IOException e) {
 			e.printStackTrace();
-			request.respond(CodeRegistry.RESP_INTERNAL_SERVER_ERROR, e.getMessage());
+			request.respond(ResponseCode.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
 

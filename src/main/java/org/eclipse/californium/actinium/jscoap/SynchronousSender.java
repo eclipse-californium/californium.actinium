@@ -16,17 +16,13 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import java.io.IOException;
-
 import org.eclipse.californium.actinium.jscoap.jserror.AbortErrorException;
-import org.eclipse.californium.actinium.jscoap.jserror.NetworkErrorException;
 import org.eclipse.californium.actinium.jscoap.jserror.RequestErrorException;
 import org.eclipse.californium.actinium.jscoap.jserror.TimeoutErrorException;
+import org.eclipse.californium.core.coap.MessageObserverAdapter;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.mozilla.javascript.Function;
-
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.coap.Response;
-import ch.ethz.inf.vs.californium.coap.ResponseHandler;
 
 /**
  * SynchronousSender implements the process to send a request synchronously.
@@ -59,8 +55,9 @@ public class SynchronousSender extends AbstractSender {
 	// by app's execution thread (must not be app's receiver thread)
 	@Override
 	public void send(Request request) {
-		request.registerResponseHandler(new ResponseHandler() {
-			public void handleResponse(Response response) {
+		request.addMessageObserver(new MessageObserverAdapter() {
+			@Override
+			public void onResponse(Response response) {
 				if (!isAcknowledgement(response)) {
 					SynchronousSender.this.handleSyncResponse(response);
 				}
@@ -72,7 +69,7 @@ public class SynchronousSender extends AbstractSender {
 				if (!lock.aborted) { // if not already aborted
 					timestamp = System.currentTimeMillis();
 					
-					request.execute();
+					request.send();
 					
 					if (timeout<=0) {
 						waitForResponse();
@@ -83,9 +80,9 @@ public class SynchronousSender extends AbstractSender {
 			}
 		} catch (InterruptedException e) {
 			throw new RequestErrorException(e.getMessage());
-		} catch (IOException e) {
-			handleError(onerror);
-			throw new NetworkErrorException(e.getMessage());
+//		} catch (IOException e) {
+//			handleError(onerror);
+//			throw new NetworkErrorException(e.getMessage());
 		}
 	}
 				

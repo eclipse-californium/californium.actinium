@@ -60,7 +60,7 @@ app.root.onget = function(request) {
 }
 
 app.root.onpost = function(request) {
-	uri = request.getPayloadString();
+	uri = request.CoapExchangeText();
 	app.dump('RTT URI: ' + uri);
 	request.respond(68);
 }

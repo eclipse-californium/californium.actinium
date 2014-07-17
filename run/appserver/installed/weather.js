@@ -26,7 +26,7 @@ function Property(resid, dflt) {
 		request.respond(2.05, THIS.value);
 	};
 	this.res.onput = function(request) {
-		THIS.set(request.getPayloadString());
+		THIS.set(request.CoapExchangeText());
 		request.respond(2.05, THIS.value);
 	};
 }

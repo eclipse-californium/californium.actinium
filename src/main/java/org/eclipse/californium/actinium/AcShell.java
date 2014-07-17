@@ -24,9 +24,7 @@ import java.util.Scanner;
 
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.plugnplay.JavaScriptApp;
-
-
-import ch.ethz.inf.vs.californium.endpoint.LocalEndpoint;
+import org.eclipse.californium.core.CoapServer;
 
 /**
  * A console based application that simulates an app server and runs a
@@ -37,7 +35,7 @@ import ch.ethz.inf.vs.californium.endpoint.LocalEndpoint;
  * java -cp bin/;lib/js-14.jar;lib/Californium.jar;lib/E4XUtils.jar ch.ethz.inf.vs.actinium.AcShell appserver/installed/storage.js -name ABC
  * </pre>
  */
-public class AcShell extends LocalEndpoint {
+public class AcShell extends CoapServer {
 
 	private static final int IDX_FILE = 0;
 
@@ -73,7 +71,7 @@ public class AcShell extends LocalEndpoint {
 		    AppConfig appcfg = new AppConfig();
 		    appcfg.setProperty(AppConfig.NAME, name);
 		    OneTimeJavaScriptApp app = new OneTimeJavaScriptApp(appcfg);
-		    addResource(app);
+		    add(app);
 		    
 		    app.execute(code);
 		    
@@ -135,7 +133,7 @@ public class AcShell extends LocalEndpoint {
 			if (port==-1) server = new AcShell(file, name);
 			else server = new AcShell(file, name, port);
 			
-			System.out.println("Actinium (Ac) App-server listening on port "+server.port());
+			System.out.println("Actinium (Ac) App-server listening on port " + server.getEndpoints().get(0).getAddress().getPort());
 			server.execute();
 			
 		} catch (Exception e) {

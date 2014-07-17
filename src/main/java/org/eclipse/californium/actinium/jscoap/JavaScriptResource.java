@@ -16,23 +16,19 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-import ch.ethz.inf.vs.californium.coap.DELETERequest;
-import ch.ethz.inf.vs.californium.coap.GETRequest;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
-import ch.ethz.inf.vs.californium.coap.PUTRequest;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
-
 /**
  * It is not possible to add further methods or fields to this class within
  * JavaScript (Rhino). If this is necessary, use AbstractJavaScriptResource.
  */
-public class JavaScriptResource extends LocalResource implements CoAPConstants {
-	// Cannot extend ScriptableObject, because has to extend LocalResource
+public class JavaScriptResource extends CoapResource implements CoAPConstants {
+	// Cannot extend ScriptableObject, because has to extend CoapResource
 	// Cannot (reasonably) implement Scriptable, because we then have to implement all 16 methods like ScriptableObject
 
 	public Function onget = null;
@@ -78,42 +74,42 @@ public class JavaScriptResource extends LocalResource implements CoAPConstants {
 	}
 	
 	@Override
-	public void performGET(GETRequest request) {
+	public void handleGET(CoapExchange request) {
 		Function onget = getOnget();
 		if (onget!=null) {
 			performFunction(onget, new JavaScriptCoAPRequest(request));
 		} else {
-			super.performGET(request);
+			super.handleGET(request);
 		}
 	}
 
 	@Override
-	public void performPOST(POSTRequest request) {
+	public void handlePOST(CoapExchange request) {
 		Function onpost = getOnpost();
 		if (onpost!=null) {
 			performFunction(onpost, new JavaScriptCoAPRequest(request));
 		} else {
-			super.performPOST(request);
+			super.handlePOST(request);
 		}
 	}
 
 	@Override
-	public void performPUT(PUTRequest request) {
+	public void handlePUT(CoapExchange request) {
 		Function onput = getOnput();
 		if (onput!=null) {
 			performFunction(onput, new JavaScriptCoAPRequest(request));
 		} else {
-			super.performPUT(request);
+			super.handlePUT(request);
 		}
 	}
 
 	@Override
-	public void performDELETE(DELETERequest request) {
+	public void handleDELETE(CoapExchange request) {
 		Function ondelete = getOndelete();
 		if (ondelete!=null) {
 			performFunction(ondelete, new JavaScriptCoAPRequest(request));
 		} else {
-			super.performDELETE(request);
+			super.handleDELETE(request);
 		}
 	}
 	

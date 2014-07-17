@@ -83,13 +83,13 @@ app.root.ondelete = function(request) {
 function performRequest(type, request) {
 	app.dump("----");
 	app.dump("Received "+type+"Request");
-	app.dump("Payload: "+request.getPayloadString());
+	app.dump("Payload: "+request.CoapExchangeText());
 	app.dump("LocationPath: "+request.getLocationPath());
 	
 	// compute result
 	app.sleep(100);
 	
-	request.respond(CodeRegistry.RESP_CONTENT, app.root.getName()+" received your message \""+request.getPayloadString()+"\"");
+	request.respond(ResponseCode.CONTENT, app.root.getName()+" received your message \""+request.CoapExchangeText()+"\"");
 }
 
 function Property(resid, dflt) {
@@ -97,11 +97,11 @@ function Property(resid, dflt) {
 	this.content = dflt;
 	this.res = new JavaScriptResource(resid);
 	this.res.onget = function(request) {
-		request.respond(CodeRegistry.RESP_CONTENT, THIS.content);
+		request.respond(ResponseCode.CONTENT, THIS.content);
 	};
 	this.res.onput = function(request) {
-		THIS.content = request.getPayloadString();
-		request.respond(CodeRegistry.RESP_CONTENT, THIS.content);
+		THIS.content = request.CoapExchangeText();
+		request.respond(ResponseCode.CONTENT, THIS.content);
 	};
 }
 
@@ -130,7 +130,7 @@ function dosendAsync(request) {
 	try {
 		app.dump("\nsend assynchronous request to "+uri.content);
 		request.accept(); // accept request and respond later
-		var payload = request.getPayloadString();
+		var payload = request.CoapExchangeText();
 
 		// create new coaprequest to call uri
 		var coapreq = new CoAPRequest();
@@ -154,12 +154,12 @@ function dosendAsync(request) {
 			app.dump("Headers:\n"+coapreq.getAllResponseHeaders());
 
 			// respond the request
-			request.respond(CodeRegistry.RESP_CONTENT, "request sent asyncronously: response = "+this.responseText);
+			request.respond(ResponseCode.CONTENT, "request sent asyncronously: response = "+this.responseText);
 		}
 				
 		coapreq.ontimeout = function() {
 			app.dump("timeout while sending asynchronously");
-			request.respond(CodeRegistry.RESP_CONTENT, "timeout while sending asynchronously");
+			request.respond(ResponseCode.CONTENT, "timeout while sending asynchronously");
 		}
 		
 		coapreq.setRequestHeader("Max-Age",77);
@@ -167,7 +167,7 @@ function dosendAsync(request) {
 
 	} catch (e if e.javaException instanceof Exception) {
 		e.javaException.printStackTrace();
-		request.respond(CodeRegistry.RESP_BAD_REQUEST, e.javaException.toString());
+		request.respond(ResponseCode.BAD_REQUEST, e.javaException.toString());
 	}
 }
 
@@ -175,7 +175,7 @@ function dosendSync(request) {
 	try {
 		app.dump("\nsend synchronous request to "+uri.content);
 		request.accept(); // accept request and respond later
-		var payload = request.getPayloadString();
+		var payload = request.CoapExchangeText();
 
 		var coapreq = new CoAPRequest();
 		coapreq.ontimeout = ontimeoutSync;

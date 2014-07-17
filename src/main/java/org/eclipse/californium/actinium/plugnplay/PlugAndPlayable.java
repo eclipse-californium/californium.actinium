@@ -16,13 +16,12 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.plugnplay;
 
-import ch.ethz.inf.vs.californium.coap.RequestHandler;
 
 /**
  * PlugAndPlayable is the interface for all apps. Apps must be able to start,
  * shutdown, restart and have a name.
  */
-public interface PlugAndPlayable extends RequestHandler, Runnable {
+public interface PlugAndPlayable extends /* TODO: RequestHandler,*/ Runnable {
 
 	// start the application in a new thread
 	public void start();

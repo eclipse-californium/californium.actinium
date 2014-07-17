@@ -24,20 +24,17 @@ import java.util.HashMap;
 
 import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.plugnplay.AbstractApp;
-
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.DELETERequest;
-import ch.ethz.inf.vs.californium.coap.GETRequest;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
-import ch.ethz.inf.vs.californium.coap.PUTRequest;
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
-import ch.ethz.inf.vs.californium.endpoint.Resource;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP.Code;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.core.server.resources.Resource;
 
 /**
  * Statsresource holds the stats of all app instances and their subresources.
  */
-public class StatsResource extends LocalResource {
+public class StatsResource extends CoapResource {
 
 	// the app server's config
 	private Config config;
@@ -108,19 +105,19 @@ public class StatsResource extends LocalResource {
 		appinfo.payloadsum += payloadSize;
 		resinfo.payloadsum += payloadSize;
 		
-		if (request instanceof GETRequest) {
+		if (request.getCode() == Code.GET) {
 			allinfo.getreqcount++;
 			appinfo.getreqcount++;
 			resinfo.getreqcount++;
-		} else if (request instanceof POSTRequest) {
+		} else if (request.getCode() == Code.POST) {
 			allinfo.postreqcount++;
 			appinfo.postreqcount++;
 			resinfo.postreqcount++;
-		} else if (request instanceof PUTRequest) {
+		} else if (request.getCode() == Code.PUT) {
 			allinfo.putreqcount++;
 			appinfo.putreqcount++;
 			resinfo.putreqcount++;
-		} else if (request instanceof DELETERequest) {
+		} else if (request.getCode() == Code.DELETE) {
 			allinfo.deletereqcount++;
 			appinfo.deletereqcount++;
 			resinfo.deletereqcount++;
@@ -158,7 +155,7 @@ public class StatsResource extends LocalResource {
 	 * their subresources.
 	 */
 	@Override
-	public void performGET(GETRequest request) {
+	public void handleGET(CoapExchange request) {
 		StringBuffer buffer = new StringBuffer();
 
 		AbstractApp[] apps = manager.getAllApps();
@@ -185,7 +182,7 @@ public class StatsResource extends LocalResource {
 			
 			addRequestCounter(app, buffer);
 		}
-		request.respond(CodeRegistry.RESP_CONTENT, buffer.toString());
+		request.respond(ResponseCode.CONTENT, buffer.toString());
 	}
 
 	/**
@@ -249,7 +246,7 @@ public class StatsResource extends LocalResource {
 			buffer.append("\n\t\tDELETE request: "+resinfo.deletereqcount);
 			buffer.append("\n\t\tPayload: "+resinfo.payloadsum+" bytes");
 		}
-		for (Resource r:res.getSubResources()) {
+		for (Resource r:res.getChildren()) {
 			addRequestCounter(r,buffer);
 		}
 	}

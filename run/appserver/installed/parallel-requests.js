@@ -67,7 +67,7 @@ app.root.onget = function(request) {
 }
 
 app.root.onput = function(request) {
-	delay = request.getPayloadString();
+	delay = request.CoapExchangeText();
 	app.dump('NEW DELAY: '+delay);
 	request.respond(68, 'NEW DELAY: '+delay);
 }

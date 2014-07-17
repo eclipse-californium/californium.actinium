@@ -17,20 +17,11 @@
 package org.eclipse.californium.actinium;
 
 import java.net.SocketException;
-import java.util.logging.Level;
 
 import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.install.InstallResource;
-import org.eclipse.californium.actinium.jscoap.JavaScriptResource;
-import org.eclipse.californium.actinium.plugnplay.AbstractApp;
-import org.eclipse.californium.actinium.plugnplay.JavaScriptApp;
-
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.endpoint.LocalEndpoint;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
-import ch.ethz.inf.vs.californium.endpoint.Resource;
-import ch.ethz.inf.vs.californium.util.Log;
+import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.server.resources.Resource;
 
 /**
  * Actinium (Ac) App-server for Californium
@@ -44,7 +35,7 @@ import ch.ethz.inf.vs.californium.util.Log;
  * has an app or a subresource of an app as target the server passes the request
  * to this app, whose receiver thread then will handle the request.
  */
-public class AcServer extends LocalEndpoint {
+public class AcServer extends CoapServer {
 
 	// appserver's configuration
 	private Config config;
@@ -63,8 +54,6 @@ public class AcServer extends LocalEndpoint {
 	public AcServer(Config config) throws SocketException {
 		
 		//Log.setLevel(Level.ALL);
-		Log.init();
-		
 		this.config = config;
 		
 		this.manager = new AppManager(config);
@@ -72,100 +61,100 @@ public class AcServer extends LocalEndpoint {
 		AppResource appres = new AppResource(manager);
 		InstallResource insres = new InstallResource(manager);
 
-		this.addResource(appres);
-		this.addResource(insres);
+		this.add(appres);
+		this.add(insres);
 
-		this.addResource(
+		this.add(
 				config.createConfigResource(config.getProperty(Config.CONFIG_RESOURCE_ID)));
 		
 		this.stats = new StatsResource(config, manager);
-		this.addResource(stats);
+		this.add(stats);
 		appres.startApps();
 		
 		//this.addResource(new TODOResource());
 	}
 
-	/**
-	 * Catch any exceptions throws inside handleRequest. Otherwise an exception
-	 * will halt the ReiceiverThread and stop Californium.
-	 */
-	@Override
-	public void handleRequest(Request request) {
-		try {
-			// record message
-			Resource resource = getResource( request.getUriPath() );
-			if (resource!=null)
-				stats.record(request, resource);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			// deliver message to receiver
-			deliverRequest(request);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	// from super.handleRequest with special treat for subresources of apps
-	private void deliverRequest(Request request) {
-		if (request != null) {
-
-			// lookup resource
-			LocalResource resource = getResource( request.getUriPath() );
-
-			// check if resource available
-			if (resource != null) {
-				
-				request.setResource(resource);
-				
-				if (resource instanceof JavaScriptApp) {
-					
-					JavaScriptApp appRes = (JavaScriptApp) resource;
-					
-					String appname = appRes.getName();
-					if (appname!=null) { // request for a subresource of an app
-						// invoke request handler of the app the resource belongs to
-						/*
-						 * An app or its subresources must not block the receiver
-						 * thread. Therefore every app has its own thread for
-						 * handling requests.
-						 */
-						AbstractApp app = manager.getApp(appname);
-						app.deliverRequestToSubResource(request, resource);
-					}
-					
-
-				} else if (resource instanceof JavaScriptResource) {
-					
-					String appname = getAppName(resource);
-					
-					if (appname!=null) { // request for a subresource of an app
-						// invoke request handler of the app the resource belongs to
-						/*
-						 * An app or its subresources must not block the receiver
-						 * thread. Therefore every app has its own thread for
-						 * handling requests.
-						 */
-						AbstractApp app = manager.getApp(appname);
-						app.deliverRequestToSubResource(request, resource);
-					}
-					
-				} else {
-					// invoke request handler of the resource
-					request.dispatch(resource);
-				}
-
-			} else {
-				// resource does not exist
-				System.out.printf("[%s] Resource not found: '%s'\n", getClass().getName(), request.getUriPath());
-
-				request.respond(CodeRegistry.RESP_NOT_FOUND);
-			}
-		}
-	}
+//	/**
+//	 * Catch any exceptions throws inside handleRequest. Otherwise an exception
+//	 * will halt the ReiceiverThread and stop Californium.
+//	 */
+//	@Override
+//	public void handleRequest(CoapExchange request) {
+//		try {
+//			// record message
+//			Resource resource = getResource( request.getOptions().getURIPathString() );
+//			if (resource!=null)
+//				stats.record(request, resource);
+//			
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		
+//		try {
+//			// deliver message to receiver
+//			deliverRequest(request);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+//	
+//	// from super.handleRequest with special treat for subresources of apps
+//	private void deliverRequest(Request request) {
+//		if (request != null) {
+//
+//			// lookup resource
+//			CoapResource resource = getResource( request.getUriPath() );
+//
+//			// check if resource available
+//			if (resource != null) {
+//				
+//				request.setResource(resource);
+//				
+//				if (resource instanceof JavaScriptApp) {
+//					
+//					JavaScriptApp appRes = (JavaScriptApp) resource;
+//					
+//					String appname = appRes.getName();
+//					if (appname!=null) { // request for a subresource of an app
+//						// invoke request handler of the app the resource belongs to
+//						/*
+//						 * An app or its subresources must not block the receiver
+//						 * thread. Therefore every app has its own thread for
+//						 * handling requests.
+//						 */
+//						AbstractApp app = manager.getApp(appname);
+//						app.deliverRequestToSubResource(request, resource);
+//					}
+//					
+//
+//				} else if (resource instanceof JavaScriptResource) {
+//					
+//					String appname = getAppName(resource);
+//					
+//					if (appname!=null) { // request for a subresource of an app
+//						// invoke request handler of the app the resource belongs to
+//						/*
+//						 * An app or its subresources must not block the receiver
+//						 * thread. Therefore every app has its own thread for
+//						 * handling requests.
+//						 */
+//						AbstractApp app = manager.getApp(appname);
+//						app.deliverRequestToSubResource(request, resource);
+//					}
+//					
+//				} else {
+//					// invoke request handler of the resource
+//					request.dispatch(resource);
+//				}
+//
+//			} else {
+//				// resource does not exist
+//				System.out.printf("[%s] Resource not found: '%s'\n", getClass().getName(), request.getUriPath());
+//
+//				request.respond(CodeRegistry.RESP_NOT_FOUND);
+//			}
+//		}
+//	}
 	
 	/**
 	 * Returns the name of the app instance to which the specified resource
@@ -195,14 +184,15 @@ public class AcServer extends LocalEndpoint {
 	 */
 	public static void main(String[] args) {
 		try {
-
-			Log.setLevel(Level.WARNING);
-			Log.init();
+			
+//			Log.setLevel(Level.WARNING);
+//			Log.init();
 			
 			Config config = new Config();
 			AcServer server = new AcServer(config);
+			server.start();
 			
-			System.out.println("Actinium (Ac) App-server listening on port "+server.port());
+			System.out.println("Actinium (Ac) App-server listening on port "+server.getEndpoints().get(0).getAddress().getPort());
 			
 		} catch (SocketException e) {
 			e.printStackTrace();

@@ -27,7 +27,7 @@ var paths = new Array();
 var content = ""; //java.lang.reflect.Array.newInstance(java.lang.Character.TYPE, 0);
 
 app.root.onpost = function(request) {
-	var name = request.getPayloadString();
+	var name = request.CoapExchangeText();
 	
 	if (contains(subress,name)) {
 		var path = findPathForName(subress, paths, name);
@@ -46,9 +46,9 @@ app.root.onpost = function(request) {
 }
 
 app.root.onput = function(request) {
-	content = request.getPayloadString();
+	content = request.CoapExchangeText();
 	app.root.changed();
-	request.respond(CodeRegistry.RESP_CHANGED);
+	request.respond(ResponseCode.CHANGED);
 }
 
 app.root.onget = function(request) {
@@ -67,15 +67,15 @@ function Storage(name) {
 	var mythis = this;
 	
 	this.res.onget = function(request) {
-		request.respond(CodeRegistry.RESP_CONTENT, mythis.content);
+		request.respond(ResponseCode.CONTENT, mythis.content);
 	}
 	
 	this.res.onpost = function(request) {
-		var name = request.getPayloadString();
+		var name = request.CoapExchangeText();
 
 		if (contains(mythis.subress, name)) {
 			request.setLocationPath(findPathForName(mythis.subress, mythis.paths, name));
-			request.respond(CodeRegistry.RESP_BAD_REQUEST, "Storage "+name+" is already created");
+			request.respond(ResponseCode.BAD_REQUEST, "Storage "+name+" is already created");
 		} else {
 			var storage = new Storage(name);
 			mythis.res.add(storage.res);
@@ -89,9 +89,9 @@ function Storage(name) {
 	}
 	
 	this.res.onput = function(request) {
-		mythis.content = request.getPayloadString();
+		mythis.content = request.CoapExchangeText();
 		mythis.res.changed();
-		request.respond(CodeRegistry.RESP_CHANGED);
+		request.respond(ResponseCode.CHANGED);
 	}
 	
 	this.res.ondelete = function(request) {

@@ -27,14 +27,11 @@ import java.util.HashSet;
 import java.util.Observable;
 import java.util.Properties;
 
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.DELETERequest;
-import ch.ethz.inf.vs.californium.coap.GETRequest;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
-import ch.ethz.inf.vs.californium.coap.PUTRequest;
-import ch.ethz.inf.vs.californium.coap.Response;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
-import ch.ethz.inf.vs.californium.endpoint.Resource;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.core.server.resources.Resource;
 
 /**
  * AbstractConfig is a Properties which also has tha capabilities of a CoAP
@@ -66,7 +63,7 @@ public abstract class AbstractConfig extends Properties {
 	private static final long serialVersionUID = 1533763543185322735L;
 
 	// Resource for this config must be created with an identifier
-	private LocalResource cfgres = null;
+	private CoapResource cfgres = null;
 	
 	// The path, where this config shall be stored to if not mentioned otherwise
 	private String configPath;
@@ -84,7 +81,7 @@ public abstract class AbstractConfig extends Properties {
 		this.configPath = configPath;
 	}
 	
-	public LocalResource createConfigResource(String identifier) {
+	public CoapResource createConfigResource(String identifier) {
 		this.cfgres = new ConfigResource(identifier.toLowerCase());
 		return cfgres;
 	}
@@ -179,7 +176,7 @@ public abstract class AbstractConfig extends Properties {
 		if (!success)
 			throw new IOException("The config file "+configPath+" couldn't be deleted. Make sure, no other process is accessing it");
 		
-		cfgres.remove();
+		cfgres.delete();
 	
 	}
 	
@@ -218,8 +215,8 @@ public abstract class AbstractConfig extends Properties {
 		return true;
 	}
 	
-	public void performGET(GETRequest request) {
-		Response response = new Response(CodeRegistry.RESP_CONTENT);
+	public void handleGET(CoapExchange request) {
+		Response response = new Response(ResponseCode.CONTENT);
 
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("App Server Configuration\n");
@@ -232,9 +229,9 @@ public abstract class AbstractConfig extends Properties {
 		request.respond(response);
 	}
 
-	public void performPUT(PUTRequest request) {Properties p = new Properties();
+	public void handlePUT(CoapExchange request) {Properties p = new Properties();
 		try {
-			StringReader reader = new StringReader(request.getPayloadString());
+			StringReader reader = new StringReader(request.getRequestText());
 			p.load(reader);
 			
 			System.out.println("update config:");
@@ -256,19 +253,19 @@ public abstract class AbstractConfig extends Properties {
 			store();
 			fireNotification(changes);
 			
-			request.respond(CodeRegistry.RESP_CHANGED, "successfully changed keys: "+changes);
+			request.respond(ResponseCode.CHANGED, "successfully changed keys: "+changes);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Configuration was not able to be parsed");
-			request.respond(CodeRegistry.RESP_BAD_REQUEST, "Configuration was not able to be parsed");
+			request.respond(ResponseCode.BAD_REQUEST, "Configuration was not able to be parsed");
 		}
 	}
 
-	public void performPOST(POSTRequest request) {
+	public void handlePOST(CoapExchange request) {
 		Properties p = new Properties();
 		try {
-			StringReader reader = new StringReader(request.getPayloadString());
+			StringReader reader = new StringReader(request.getRequestText());
 			p.load(reader);
 			
 			System.out.println("update config:");
@@ -285,44 +282,44 @@ public abstract class AbstractConfig extends Properties {
 			store();
 			fireNotification(changes);
 			
-			request.respond(CodeRegistry.RESP_CHANGED, "successfully changed keys: "+changes);
+			request.respond(ResponseCode.CHANGED, "successfully changed keys: "+changes);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Configuration was not able to be parsed");
-			request.respond(CodeRegistry.RESP_BAD_REQUEST, "Configuration was not able to be parsed");
+			request.respond(ResponseCode.BAD_REQUEST, "Configuration was not able to be parsed");
 		}
 	}
 	
 	// must be here, for that subclasses can override it.
-	public void performDELETE(DELETERequest request) {
-		request.respond(CodeRegistry.RESP_METHOD_NOT_ALLOWED);
+	public void handleDELETE(CoapExchange request) {
+		request.respond(ResponseCode.METHOD_NOT_ALLOWED);
 	}
 
-	private class ConfigResource extends LocalResource {
+	private class ConfigResource extends CoapResource {
 
 		public ConfigResource(String identifier) {
 			super(identifier);
 		}
 		
 		@Override
-		public void performGET(GETRequest request) {
-			AbstractConfig.this.performGET(request);
+		public void handleGET(CoapExchange request) {
+			AbstractConfig.this.handleGET(request);
 		}
 
 		@Override
-		public void performPUT(PUTRequest request) {
-			AbstractConfig.this.performPUT(request);
+		public void handlePUT(CoapExchange request) {
+			AbstractConfig.this.handlePUT(request);
 		}
 
 		@Override
-		public void performPOST(POSTRequest request) {
-			AbstractConfig.this.performPOST(request);
+		public void handlePOST(CoapExchange request) {
+			AbstractConfig.this.handlePOST(request);
 		}
 
 		@Override
-		public void performDELETE(DELETERequest request) {
-			AbstractConfig.this.performDELETE(request);
+		public void handleDELETE(CoapExchange request) {
+			AbstractConfig.this.handleDELETE(request);
 		}
 	}
 	

@@ -16,12 +16,12 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
+import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
-
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.coap.Response;
 
 /**
  * AbstractSender provides methods for calling JavaScript functions (listeners).
@@ -62,6 +62,6 @@ public abstract class AbstractSender implements Sender {
 	 * @return true, if the specified response only is an empty acknowledgement
 	 */
 	protected boolean isAcknowledgement(Response response) {
-		return response.isEmptyACK();
+		return response.getType() == Type.ACK && response.getPayloadSize() == 0;
 	}
 }

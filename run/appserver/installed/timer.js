@@ -34,14 +34,14 @@ function Timer(millis, name) {
 	var mythis = this;
 	this.timerres = new JavaScriptResource();
 	this.timerres.onget = function(request) {
-		request.respond(CodeRegistry.RESP_CONTENT, "timer periode: "+periode);
+		request.respond(ResponseCode.CONTENT, "timer periode: "+periode);
 	};
 	this.timerres.onpost = function(request) {
 		try {
-			periode = parseInt(request.getPayloadString());
-			request.respond(CodeRegistry.RESP_CHANGED,"changed timer periode to "+periode);
+			periode = parseInt(request.CoapExchangeText());
+			request.respond(ResponseCode.CHANGED,"changed timer periode to "+periode);
 		} catch (e if e.javaException instanceof java.lang.NumberFormatException) {
-			request.respond(CodeRegistry.RESP_BAD_REQUEST, e.javaException.getMessage());
+			request.respond(ResponseCode.BAD_REQUEST, e.javaException.getMessage());
 		}
 	};
 	/**
@@ -70,7 +70,7 @@ app.root.onget = function(request) {
 	for (var i=0;i<timers.length;i++) {
 		buffer.append(timers[i]+"\n");
 	}
-	request.respond(CodeRegistry.RESP_CONTENT, buffer.toString());
+	request.respond(ResponseCode.CONTENT, buffer.toString());
 }
 
 app.root.onpost = function(request) {
@@ -87,7 +87,7 @@ app.root.onpost = function(request) {
 		request.respond(response);
 		
 	} else {
-		var response = new Response(CodeRegistry.RESP_BAD_REQUEST);
+		var response = new Response(ResponseCode.BAD_REQUEST);
 		response.setPayload("Timer name "+name +" is already in use");
 		response.setLocationPath(findPathForName(name));
 		request.respond(response);

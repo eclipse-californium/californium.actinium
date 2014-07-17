@@ -18,23 +18,25 @@ package org.eclipse.californium.actinium.jscoap;
 
 import java.util.List;
 
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.core.coap.Option;
+import org.eclipse.californium.core.coap.OptionNumberRegistry;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
-
-import ch.ethz.inf.vs.californium.coap.Message.messageType;
-import ch.ethz.inf.vs.californium.coap.Option;
-import ch.ethz.inf.vs.californium.coap.OptionNumberRegistry;
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.coap.Response;
 
 public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConstants {
 
 	private static final long serialVersionUID = 2269672652051004591L;
 
+	private CoapExchange exchange;
 	private Request request;
 	
-	private Response response = new Response();;
+	private Response response /* = new Response()*/;
 	
 	/*
 	 * Rhino: Needs an empty constructor for ScriptableObjects
@@ -43,8 +45,9 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 		// do nothing
 	}
 	
-	public JavaScriptCoAPRequest(Request request) {
-		this.request = request;
+	public JavaScriptCoAPRequest(CoapExchange exchange) {
+		this.exchange = exchange;
+		this.request = exchange.advanced().getRequest();
 	}
 	
 	@Override
@@ -64,9 +67,9 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 		return request.getPayloadString();
 	}
 	
-	public long jsGet_startTime() {
-		return request.startTime;
-	}
+//	public long jsGet_startTime() {
+//		return request.startTime;
+//	}
 	
 	// Functions for JavaScript //
 
@@ -75,7 +78,7 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	}
 	
 	public void jsFunction_accept() {
-		request.accept();
+		exchange.accept();
 	}
 	
 	/*
@@ -95,12 +98,12 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	}
 	
 	public int jsFunction_payloadSize() {
-		return request.payloadSize();
+		return request.getPayloadSize();
 	}
 	
-	public int jsFunction_getVersion() {
-		return request.getVersion();
-	}
+//	public int jsFunction_getVersion() {
+//		return request.getVersion();
+//	}
 	
 	public int jsFunction_getMID() {
 		return request.getMID();
@@ -111,15 +114,15 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	}
 	
 	public String jsFunction_getUriPath() {
-		return request.getUriPath();
+		return request.getOptions().getURIPathString();
 	}
 	
 	public String jsFunction_getQuery() {
-		return request.getQuery();
+		return request.getOptions().getURIQueryString();
 	}
 	
 	public int jsFunction_getContentType() {
-		return request.getContentType();
+		return request.getOptions().getContentFormat();
 	}
 	
 	public String jsFunction_getTokenString() {
@@ -127,30 +130,30 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	}
 	
 	public int jsFunction_getMaxAge() {
-		return request.getMaxAge();
+		return request.getOptions().getMaxAge().intValue();
 	}
 	
 	public String jsFunction_getLocationPath() {
-		return request.getLocationPath();
+		return request.getOptions().getLocationPathString();
 	}
 	
 	public void jsFunction_setLocationPath(String locationPath) {
-		response.setLocationPath(locationPath);
+		response.getOptions().setLocationPath(locationPath);
 	}
 
-	public String jsFunction_key() {
-		return request.key();
-	}
+//	public String jsFunction_key() {
+//		return request.key();
+//	}
+//	
+//	public String jsFunction_transactionKey() {
+//		return request.transactionKey();
+//	}
+//	
+//	public String jsFunction_sequenceKey() {
+//		return request.sequenceKey();
+//	}
 	
-	public String jsFunction_transactionKey() {
-		return request.transactionKey();
-	}
-	
-	public String jsFunction_sequenceKey() {
-		return request.sequenceKey();
-	}
-	
-	public messageType jsFunction_getType() {
+	public Type jsFunction_getType() {
 		return request.getType();
 	}
 	
@@ -163,36 +166,36 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	}
 	
 	public boolean jsFunction_isNonConfirmable() {
-		return request.isNonConfirmable();
+		return request.getType() == Type.NON;
 	}
 	
 	public boolean jsFunction_isAcknowledgement() {
-		return request.isAcknowledgement();
+		return request.getType() == Type.ACK;
 	}
 
 	public boolean jsFunction_isReset() {
-		return request.isReset();
+		return request.getType() == Type.RST;
 	}
 	
-	public boolean jsFunction_isReply() {
-		return request.isReply();
-	}
+//	public boolean jsFunction_isReply() {
+//		return request.isReply();
+//	}
 	
 	public boolean jsFunction_isEmptyACK() {
-		return request.isEmptyACK();
+		return request.getType() == Type.ACK && request.getPayloadSize() == 0;
 	}
 	
-	public boolean jsFunction_requiresToken() {
-		return request.requiresToken();
-	}
+//	public boolean jsFunction_requiresToken() {
+//		return request.requiresToken();
+//	}
 	
 	public String jsFunction_toString() {
 		return request.toString();
 	}
 	
-	public String jsFunction_typeString() {
-		return request.typeString();
-	}
+//	public String jsFunction_typeString() {
+//		return request.typeString();
+//	}
 	
 	// options
 	public void jsFunction_setResponseHeader(String header, Object value)  {
@@ -208,36 +211,36 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 		return getAllRequestHeaders();
 	}
 	
-	public String jsFunction_getRequestHeader(String header) {
-		return getRequestHeader(header);
-	}
+//	public String jsFunction_CoapExchangeHeader(String header) {
+//		return CoapExchangeHeader(header);
+//	}
 		
-	private void setResponseHeader(String header, String value)  {
+	private void setResponseHeader(String header, String value)  { // TODO: test if this works
 		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
 		if (nr==OptionNumberRegistry.CONTENT_TYPE) {
 			// we also have to parse the value to get it as integer
 			int contentType = CoAPConstantsConverter.convertStringToContentType(value);
-			response.addOption(new Option(contentType,nr));
+			response.getOptions().addOption(new Option(nr, contentType));
 		} else if (nr==OptionNumberRegistry.ACCEPT) {
 			// we also have to parse the value to get it as integer
 			int contentType = CoAPConstantsConverter.convertStringToContentType(value);
-			response.addOption(new Option(contentType,nr));
+			response.getOptions().addOption(new Option(nr, contentType));
 		} else {
-			response.addOption(new Option(value, nr));
+			response.getOptions().addOption(new Option(nr, value));
 		}
 	}
 	
 	private void setResponseHeader(String header, int value)  {
 		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-		response.addOption(new Option(value, nr));
+		response.getOptions().addOption(new Option(nr, value));
 	}
 	
 	private String getAllRequestHeaders() {
 		final String nl = "\r\n";
 		final String col = ": ";
 		StringBuffer buffer = new StringBuffer();
-		for (Option opt : request.getOptions()) {
-			buffer.append(OptionNumberRegistry.toString(opt.getOptionNumber()));
+		for (Option opt : request.getOptions().asSortedList()) {
+			buffer.append(OptionNumberRegistry.toString(opt.getNumber()));
 			buffer.append(col);
 			buffer.append(opt.toString());
 			buffer.append(nl);
@@ -245,16 +248,16 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 		return buffer.toString();
 	}
 	
-	private String getRequestHeader(String header) {
-		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-		return getRequestHeader(nr);
-	}
-	
-	private String getRequestHeader(int nr) {
-		String col = ": ";
-		List<Option> opts = request.getOptions(nr);
-		return OptionNumberRegistry.toString(nr)+col+deflat(opts);
-	}
+//	private String CoapExchangeHeader(String header) {
+//		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
+//		return CoapExchangeHeader(nr);
+//	}
+//	
+//	private String CoapExchangeHeader(int nr) {
+//		String col = ": ";
+//		List<Option> opts = request.getOptions(nr);
+//		return OptionNumberRegistry.toString(nr)+col+deflat(opts);
+//	}
 	
 	private String deflat(List<Option> opts) {
 		String sep = ", ";
@@ -305,12 +308,12 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 			contentType = null;
 
 		// Respond to the request
-		response.setCode(code);
+		response = new Response(ResponseCode.valueOf(code));
 		if (message != null)
 			response.setPayload(message);
 		if (contentType != null)
-			response.setContentType(contentType);
-		request.respond(response);
+			response.getOptions().setContentFormat(contentType);
+		exchange.respond(response);
 	}
 	
 }

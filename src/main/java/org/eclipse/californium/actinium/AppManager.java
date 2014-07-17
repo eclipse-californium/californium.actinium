@@ -127,15 +127,17 @@ public class AppManager {
 		File[] cfgs = dir.listFiles(new ConfigFilenameFilter());
 
 		List<AbstractApp> list = new LinkedList<AbstractApp>();
-		for (File cfg:cfgs) {
-			try {
-				AppConfig appcfg = new AppConfig(cfg);
-				AbstractApp app = createApp(appcfg);
-				list.add(app);
-				
-				System.out.println("	loaded "+cfg.getName()+" for app "+app.getName());
-			} catch (IOException e) {
-				System.err.println("AppManagar can't read app config from file "+cfg+": "+e.getMessage());
+		if (cfgs != null) {
+			for (File cfg:cfgs) {
+				try {
+					AppConfig appcfg = new AppConfig(cfg);
+					AbstractApp app = createApp(appcfg);
+					list.add(app);
+					
+					System.out.println("	loaded "+cfg.getName()+" for app "+app.getName());
+				} catch (IOException e) {
+					System.err.println("AppManagar can't read app config from file "+cfg+": "+e.getMessage());
+				}
 			}
 		}
 		

@@ -28,6 +28,8 @@ import org.eclipse.californium.actinium.cfg.AppType;
 import org.eclipse.californium.actinium.jscoap.CoAPConstants;
 import org.eclipse.californium.actinium.jscoap.JavaScriptCoAPRequest;
 import org.eclipse.californium.actinium.jscoap.JavaScriptResource;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.ImporterTopLevel;
@@ -36,13 +38,6 @@ import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrappedException;
 
 import xmlhttp.XMLHttpRequest;
-
-
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.DELETERequest;
-import ch.ethz.inf.vs.californium.coap.GETRequest;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
-import ch.ethz.inf.vs.californium.coap.PUTRequest;
 
 /**
  * JavaScriptApp executes apps written in JavaScript using Rhino.
@@ -217,46 +212,46 @@ public class JavaScriptApp extends AbstractApp implements CoAPConstants {
 	}
 	
 	@Override
-	public void performGET(GETRequest request) {
+	public void handleGET(CoapExchange request) {
 		if (this.onget==null) {
-			request.respond(CodeRegistry.RESP_METHOD_NOT_ALLOWED, "GET handler not implemented");
+			request.respond(ResponseCode.METHOD_NOT_ALLOWED, "GET handler not implemented");
 		} else if (!appcfg.getBool(AppConfig.ENABLE_REQUEST_DELIVERY)) {
-			request.respond(CodeRegistry.RESP_FORBIDDEN, "Request delivery has been disabled for this app");
+			request.respond(ResponseCode.FORBIDDEN, "Request delivery has been disabled for this app");
 		} else {
-			requestHandler.performGET(request);
+			requestHandler.handleGET(request);
 		}
 	}
 
 	@Override
-	public void performPUT(PUTRequest request) {
+	public void handlePUT(CoapExchange request) {
 		if (this.onput==null) {
-			request.respond(CodeRegistry.RESP_METHOD_NOT_ALLOWED, "PUT handler not implemented");
+			request.respond(ResponseCode.METHOD_NOT_ALLOWED, "PUT handler not implemented");
 		} else if (!appcfg.getBool(AppConfig.ENABLE_REQUEST_DELIVERY)) {
-			request.respond(CodeRegistry.RESP_FORBIDDEN, "Request delivery has been disabled for this app");
+			request.respond(ResponseCode.FORBIDDEN, "Request delivery has been disabled for this app");
 		} else {
-			requestHandler.performPUT(request);
+			requestHandler.handlePUT(request);
 		}
 	}
 
 	@Override
-	public void performPOST(POSTRequest request) {
+	public void handlePOST(CoapExchange request) {
 		if (this.onpost==null) {
-			request.respond(CodeRegistry.RESP_METHOD_NOT_ALLOWED, "POST handler not implemented");
+			request.respond(ResponseCode.METHOD_NOT_ALLOWED, "POST handler not implemented");
 		} else if (!appcfg.getBool(AppConfig.ENABLE_REQUEST_DELIVERY)) {
-			request.respond(CodeRegistry.RESP_FORBIDDEN, "Request delivery has been disabled for this app");
+			request.respond(ResponseCode.FORBIDDEN, "Request delivery has been disabled for this app");
 		} else {
-			requestHandler.performPOST(request);
+			requestHandler.handlePOST(request);
 		}
 	}
 
 	@Override
-	public void performDELETE(DELETERequest request) {
+	public void handleDELETE(CoapExchange request) {
 		if (this.ondelete==null) {
-			request.respond(CodeRegistry.RESP_METHOD_NOT_ALLOWED, "DELETE handler not implemented");
+			request.respond(ResponseCode.METHOD_NOT_ALLOWED, "DELETE handler not implemented");
 		} else if (!appcfg.getBool(AppConfig.ENABLE_REQUEST_DELIVERY)) {
-			request.respond(CodeRegistry.RESP_FORBIDDEN, "Request delivery has been disabled for this app");
+			request.respond(ResponseCode.FORBIDDEN, "Request delivery has been disabled for this app");
 		} else {
-			requestHandler.performDELETE(request);
+			requestHandler.handleDELETE(request);
 		}
 	}
 

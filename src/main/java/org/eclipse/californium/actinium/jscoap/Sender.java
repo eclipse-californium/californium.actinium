@@ -16,7 +16,8 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import ch.ethz.inf.vs.californium.coap.Request;
+import org.eclipse.californium.core.coap.Request;
+
 
 /**
  * A Sender is able to send a request and abort it again.
