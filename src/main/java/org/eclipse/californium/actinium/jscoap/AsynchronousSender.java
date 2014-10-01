@@ -38,7 +38,7 @@ public class AsynchronousSender extends AbstractSender {
 
 	private Timer timer = new Timer();
 	
-	private CoAPRequest coapRequest;
+	private CoapRequest coapRequest;
 	
 	private Function onready; // onreadystatechange
 	private Function ontimeout; // timeout error
@@ -49,7 +49,7 @@ public class AsynchronousSender extends AbstractSender {
 	
 	private final Lock lock = new Lock();
 	
-	public AsynchronousSender(CoAPRequest coapRequest, Function onready, Function ontimeout, Function onload, Function onerror, long timeout) {
+	public AsynchronousSender(CoapRequest coapRequest, Function onready, Function ontimeout, Function onload, Function onerror, long timeout) {
 		this.coapRequest = coapRequest;
 		this.onready = onready;
 		this.ontimeout = ontimeout;
@@ -104,7 +104,7 @@ public class AsynchronousSender extends AbstractSender {
 		if (callonready) {
 			synchronized (coapRequest) {
 //				coapRequest.setResponse(response);
-				coapRequest.setReadyState(CoAPRequest.DONE);
+				coapRequest.setReadyState(CoapRequest.DONE);
 			}
 			callJavaScriptFunction(onready, coapRequest, response);
 			callJavaScriptFunction(onload, coapRequest, response);
@@ -123,11 +123,11 @@ public class AsynchronousSender extends AbstractSender {
 		if (isabort) {
 			synchronized (coapRequest) {
 				coapRequest.setError(true);
-				coapRequest.setReadyState(CoAPRequest.DONE);
+				coapRequest.setReadyState(CoapRequest.DONE);
 				coapRequest.setSend(false);
 			}
 			callJavaScriptFunction(onready, coapRequest);
-			coapRequest.setReadyState(CoAPRequest.UNSENT);
+			coapRequest.setReadyState(CoapRequest.UNSENT);
 			// no onreadystatechange event is dispatched
 		}
 	}
@@ -135,7 +135,7 @@ public class AsynchronousSender extends AbstractSender {
 	private void handleError(Function function) {
 		synchronized (coapRequest) {
 			coapRequest.setError(true);
-			coapRequest.setReadyState(CoAPRequest.DONE);
+			coapRequest.setReadyState(CoapRequest.DONE);
 		}
 		callJavaScriptFunction(onready, coapRequest);
 		callJavaScriptFunction(function, coapRequest);

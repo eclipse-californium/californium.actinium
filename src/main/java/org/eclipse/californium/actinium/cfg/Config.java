@@ -62,20 +62,18 @@ public class Config extends AbstractConfig {
 	}
 	
 	private void init() {
-		setProperty(APP_CONFIG_PREFIX, "config_");
-		setProperty(APP_CONFIG_SUFFIX, ".cfg");
-		
-//		setProperty(APPS_COUNTER, 0);
-		setProperty(START_ON_INSTALL, false);
 		setProperty(APP_PATH, "appserver/installed/");
 		setProperty(APP_CONFIG_PATH, "appserver/apps/");
 		setProperty(JAVASCRIPT_SUFFIX, ".js");
+		setProperty(APP_CONFIG_SUFFIX, ".cfg");
+		setProperty(APP_CONFIG_PREFIX, "config_");
 		
-		setProperty(APPS_RESOURCE_ID, "apps");
+		setProperty(START_ON_INSTALL, false);
+
 		setProperty(CONFIG_RESOURCE_ID, "config");
-		setProperty(APP_CONFIG_RESOURSES, "appconfigs");
-		
 		setProperty(INSTALL_RESOURCE_ID, "install");
+		setProperty(APPS_RESOURCE_ID, "apps");
+		setProperty(APP_CONFIG_RESOURSES, "instances");
 		setProperty(RUNNING_RESOURCE_ID, "running");
 		setProperty(STATS_RESOURCE_ID, "stats");
 	}

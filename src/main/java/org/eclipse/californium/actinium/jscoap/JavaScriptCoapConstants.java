@@ -16,40 +16,40 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Accept;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Bad_Gateway;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Bad_Option;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Bad_Request;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Changed;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Content;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Content_Type;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Created;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Deleted;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.ETag;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Forbidden;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Gateway_Timeout;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.If_Match;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.If_None_Match;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Internal_Server_Error;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Location_Path;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Location_Query;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Max_Age;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Method_Not_Allowed;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Not_Found;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Not_Implemented;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Precondition_Failed;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Proxy_Uri;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Proxying_Not_Supported;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Request_Entity_Too_Large;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Service_Unavailable;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Token;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Unauthorized;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Unsupported_Media_Type;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Uri_Host;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Uri_Path;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Uri_Port;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Uri_Query;
-import static org.eclipse.californium.actinium.jscoap.CoAPConstants.Valid;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Accept;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Bad_Gateway;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Bad_Option;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Bad_Request;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Changed;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Content;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Content_Type;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Created;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Deleted;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.ETag;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Forbidden;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Gateway_Timeout;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.If_Match;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.If_None_Match;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Internal_Server_Error;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Location_Path;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Location_Query;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Max_Age;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Method_Not_Allowed;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Not_Found;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Not_Implemented;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Precondition_Failed;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Proxy_Uri;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Proxying_Not_Supported;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Request_Entity_Too_Large;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Service_Unavailable;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Token;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Unauthorized;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Unsupported_Media_Type;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Uri_Host;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Uri_Path;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Uri_Port;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Uri_Query;
+import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Valid;
 
 import java.util.HashMap;
 
@@ -60,7 +60,7 @@ import org.eclipse.californium.core.coap.OptionNumberRegistry;
 /**
  * CoAPConstants implements the most important constants from CoAP.
  */
-public interface CoAPConstants {
+public interface JavaScriptCoapConstants {
 
 	// Option Number Registry from draft-ietf-core-coap-18, chapter 12.2
 	public static final String Content_Type 	= "Content-Type";

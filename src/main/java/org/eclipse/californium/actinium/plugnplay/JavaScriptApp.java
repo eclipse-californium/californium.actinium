@@ -25,8 +25,8 @@ import java.util.TimerTask;
 
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
-import org.eclipse.californium.actinium.jscoap.CoAPConstants;
-import org.eclipse.californium.actinium.jscoap.JavaScriptCoAPRequest;
+import org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants;
+import org.eclipse.californium.actinium.jscoap.JavaScriptCoapRequest;
 import org.eclipse.californium.actinium.jscoap.JavaScriptResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -42,7 +42,7 @@ import xmlhttp.XMLHttpRequest;
 /**
  * JavaScriptApp executes apps written in JavaScript using Rhino.
  */
-public class JavaScriptApp extends AbstractApp implements CoAPConstants {
+public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstants {
 
 	// The app's configuration
 	private AppConfig appcfg; // Note: appcfg can be null if has ben started SimpleAppServer
@@ -171,7 +171,7 @@ public class JavaScriptApp extends AbstractApp implements CoAPConstants {
             try {
             	// Add AJAX' XMLHttpRequest to JavaScript
             	ScriptableObject.defineClass(scope,	XMLHttpRequest.class);
-            	ScriptableObject.defineClass(scope,	JavaScriptCoAPRequest.class);
+            	ScriptableObject.defineClass(scope,	JavaScriptCoapRequest.class);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			} catch (InstantiationException e) {
@@ -293,7 +293,7 @@ public class JavaScriptApp extends AbstractApp implements CoAPConstants {
 	 * "app.dump" and "app.error" for printing to the standart output streams
 	 * and further functions.
 	 */
-	public class JavaScriptAccess implements CoAPConstants {
+	public class JavaScriptAccess implements JavaScriptCoapConstants {
 		
 		public JavaScriptApp root = JavaScriptApp.this; // "app.root"
 		

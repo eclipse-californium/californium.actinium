@@ -69,11 +69,11 @@
 	</distributionManagement>
 	
 	<repositories>
-	   <repository>
-	      <id>repo.eclipse.org</id>
-	      <name>Californium Repository - Releases</name>
-	      <url>https://github.com/eclipse/californium</url>
-	    </repository>
+		<repository>
+			<id>repo.eclipse.org</id>
+			<name>Californium Repository</name>
+			<url>https://repo.eclipse.org/content/repositories/californium/</url>
+		</repository>
 		<repository>
 			<id>mkovatsc-github-thirdparty</id>
 			<name>mkovatsc-github</name>

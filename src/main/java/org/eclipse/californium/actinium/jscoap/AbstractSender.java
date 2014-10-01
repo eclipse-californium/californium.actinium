@@ -42,7 +42,7 @@ public abstract class AbstractSender implements Sender {
 	 * @param thisobj the this object
 	 * @param args the parameters
 	 */
-	protected static void callJavaScriptFunction(Function function, CoAPRequest thisobj, Object... args) {
+	protected static void callJavaScriptFunction(Function function, CoapRequest thisobj, Object... args) {
 		if (function!=null) {
 			try {
 				Context cx = Context.enter();

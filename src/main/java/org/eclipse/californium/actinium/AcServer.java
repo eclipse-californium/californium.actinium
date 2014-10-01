@@ -70,112 +70,6 @@ public class AcServer extends CoapServer {
 		this.stats = new StatsResource(config, manager);
 		this.add(stats);
 		appres.startApps();
-		
-		//this.addResource(new TODOResource());
-	}
-
-//	/**
-//	 * Catch any exceptions throws inside handleRequest. Otherwise an exception
-//	 * will halt the ReiceiverThread and stop Californium.
-//	 */
-//	@Override
-//	public void handleRequest(CoapExchange request) {
-//		try {
-//			// record message
-//			Resource resource = getResource( request.getOptions().getURIPathString() );
-//			if (resource!=null)
-//				stats.record(request, resource);
-//			
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		
-//		try {
-//			// deliver message to receiver
-//			deliverRequest(request);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-//	
-//	// from super.handleRequest with special treat for subresources of apps
-//	private void deliverRequest(Request request) {
-//		if (request != null) {
-//
-//			// lookup resource
-//			CoapResource resource = getResource( request.getUriPath() );
-//
-//			// check if resource available
-//			if (resource != null) {
-//				
-//				request.setResource(resource);
-//				
-//				if (resource instanceof JavaScriptApp) {
-//					
-//					JavaScriptApp appRes = (JavaScriptApp) resource;
-//					
-//					String appname = appRes.getName();
-//					if (appname!=null) { // request for a subresource of an app
-//						// invoke request handler of the app the resource belongs to
-//						/*
-//						 * An app or its subresources must not block the receiver
-//						 * thread. Therefore every app has its own thread for
-//						 * handling requests.
-//						 */
-//						AbstractApp app = manager.getApp(appname);
-//						app.deliverRequestToSubResource(request, resource);
-//					}
-//					
-//
-//				} else if (resource instanceof JavaScriptResource) {
-//					
-//					String appname = getAppName(resource);
-//					
-//					if (appname!=null) { // request for a subresource of an app
-//						// invoke request handler of the app the resource belongs to
-//						/*
-//						 * An app or its subresources must not block the receiver
-//						 * thread. Therefore every app has its own thread for
-//						 * handling requests.
-//						 */
-//						AbstractApp app = manager.getApp(appname);
-//						app.deliverRequestToSubResource(request, resource);
-//					}
-//					
-//				} else {
-//					// invoke request handler of the resource
-//					request.dispatch(resource);
-//				}
-//
-//			} else {
-//				// resource does not exist
-//				System.out.printf("[%s] Resource not found: '%s'\n", getClass().getName(), request.getUriPath());
-//
-//				request.respond(CodeRegistry.RESP_NOT_FOUND);
-//			}
-//		}
-//	}
-	
-	/**
-	 * Returns the name of the app instance to which the specified resource
-	 * belongs to or null if it corresponds to no app instance.
-	 * 
-	 * @param res the resource.
-	 * @return the app instance it belongs to or null.
-	 */
-	private String getAppName(Resource res) {
-		// path in this form: /apps/running/appname/...
-		String path = res.getPath();
-		String[] parts = path.split("/"); // parts[0] is ""
-		
-		String idapps = config.getProperty(Config.APPS_RESOURCE_ID);
-		String idrun = config.getProperty(Config.RUNNING_RESOURCE_ID);
-		
-		if (parts.length>3 && parts[1].equals(idapps) && parts[2].equals(idrun)) {
-			return parts[3];
-		} else {
-			return null;
-		}
 	}
 	
 	/**
@@ -184,9 +78,6 @@ public class AcServer extends CoapServer {
 	 */
 	public static void main(String[] args) {
 		try {
-			
-//			Log.setLevel(Level.WARNING);
-//			Log.init();
 			
 			Config config = new Config();
 			AcServer server = new AcServer(config);

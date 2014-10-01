@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import java.util.List;
-
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Option;
@@ -29,7 +27,7 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 
-public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConstants {
+public class JavaScriptCoapRequest extends ScriptableObject implements JavaScriptCoapConstants {
 
 	private static final long serialVersionUID = 2269672652051004591L;
 
@@ -41,18 +39,18 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	/*
 	 * Rhino: Needs an empty constructor for ScriptableObjects
 	 */
-	public JavaScriptCoAPRequest() {
+	public JavaScriptCoapRequest() {
 		// do nothing
 	}
 	
-	public JavaScriptCoAPRequest(CoapExchange exchange) {
+	public JavaScriptCoapRequest(CoapExchange exchange) {
 		this.exchange = exchange;
 		this.request = exchange.advanced().getRequest();
 	}
 	
 	@Override
 	public String getClassName() {
-		return "JavaScriptCoAPRequest";
+		return "JavaScriptCoapRequest";
 	}
 	
 	/*
@@ -66,10 +64,6 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
     public String jsGet_payloadText() {
 		return request.getPayloadString();
 	}
-	
-//	public long jsGet_startTime() {
-//		return request.startTime;
-//	}
 	
 	// Functions for JavaScript //
 
@@ -100,10 +94,6 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	public int jsFunction_payloadSize() {
 		return request.getPayloadSize();
 	}
-	
-//	public int jsFunction_getVersion() {
-//		return request.getVersion();
-//	}
 	
 	public int jsFunction_getMID() {
 		return request.getMID();
@@ -140,18 +130,6 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	public void jsFunction_setLocationPath(String locationPath) {
 		response.getOptions().setLocationPath(locationPath);
 	}
-
-//	public String jsFunction_key() {
-//		return request.key();
-//	}
-//	
-//	public String jsFunction_transactionKey() {
-//		return request.transactionKey();
-//	}
-//	
-//	public String jsFunction_sequenceKey() {
-//		return request.sequenceKey();
-//	}
 	
 	public Type jsFunction_getType() {
 		return request.getType();
@@ -177,25 +155,13 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 		return request.getType() == Type.RST;
 	}
 	
-//	public boolean jsFunction_isReply() {
-//		return request.isReply();
-//	}
-	
 	public boolean jsFunction_isEmptyACK() {
 		return request.getType() == Type.ACK && request.getPayloadSize() == 0;
 	}
 	
-//	public boolean jsFunction_requiresToken() {
-//		return request.requiresToken();
-//	}
-	
 	public String jsFunction_toString() {
 		return request.toString();
 	}
-	
-//	public String jsFunction_typeString() {
-//		return request.typeString();
-//	}
 	
 	// options
 	public void jsFunction_setResponseHeader(String header, Object value)  {
@@ -210,10 +176,6 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 	public String jsFunction_getAllRequestHeaders() {
 		return getAllRequestHeaders();
 	}
-	
-//	public String jsFunction_CoapExchangeHeader(String header) {
-//		return CoapExchangeHeader(header);
-//	}
 		
 	private void setResponseHeader(String header, String value)  { // TODO: test if this works
 		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
@@ -248,32 +210,7 @@ public class JavaScriptCoAPRequest extends ScriptableObject implements CoAPConst
 		return buffer.toString();
 	}
 	
-//	private String CoapExchangeHeader(String header) {
-//		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-//		return CoapExchangeHeader(nr);
-//	}
-//	
-//	private String CoapExchangeHeader(int nr) {
-//		String col = ": ";
-//		List<Option> opts = request.getOptions(nr);
-//		return OptionNumberRegistry.toString(nr)+col+deflat(opts);
-//	}
-	
-	private String deflat(List<Option> opts) {
-		String sep = ", ";
-		StringBuffer buffer = new StringBuffer();
-		for (int i=0;i<opts.size();i++) {
-			buffer.append(opts.get(i).toString());
-			if (i<opts.size()-1)
-				buffer.append(sep);
-		}
-		return buffer.toString();
-	}
-	
 	private void respond(Object jscode, Object jsmessage, Object jscontentType) {
-//		System.out.println("respond with jscode "+jscode+" ("+jscode.getClass()+"), " +
-//		"jsmsg "+jscode+" ("+(jsmessage!=null?jscode.getClass():"-")+"), " +
-//		"jsct "+jscontentType+" ("+(jscontentType!=null?jscontentType.getClass():"-")+")");
 
 		Integer code;
 		String message;

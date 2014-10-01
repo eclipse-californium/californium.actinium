@@ -200,18 +200,6 @@ public class AppResource extends CoapResource {
 	private void addApp(final AbstractApp app) {
 		String tempid = app.getName();
 		
-//		identifier must be equal to name for stats
-//		// make sure, the new app has a valid identifier
-//		for (AbstractApp a:apps) {
-//			if (a.getName().equals(tempid)) {
-//				System.out.println("Resource identifier "+tempid+" is already reserved.");
-//				tempid = createUniqueResourceId(tempid);
-//				System.out.println("Identify ressource with new identifier "+tempid);
-//				app.setName(tempid);
-//				break;
-//			}
-//		}
-		
 		// add app
 		apps.add(app);
 		
@@ -236,8 +224,7 @@ public class AppResource extends CoapResource {
 				if (set.contains(AppConfig.RUNNING)) {
 					String running = appconfig.getProperty(AppConfig.RUNNING);
 					if (running.equals(AppConfig.START)) {
-//						if (runningRes.subResource(resid, false)==null)
-							runningRes.addApp(app);
+						runningRes.addApp(app);
 					} else if (running.equals(AppConfig.STOP)) {
 						runningRes.remove(resid);
 					}

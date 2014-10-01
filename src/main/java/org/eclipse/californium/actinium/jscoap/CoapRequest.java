@@ -53,7 +53,7 @@ import org.mozilla.javascript.Function;
  * }
  * </pre>
  */
-public class CoAPRequest implements CoAPConstants {
+public class CoapRequest implements JavaScriptCoapConstants {
 
 	public static int UNSENT = 0;
 	public static int OPENED = 1;
@@ -358,63 +358,12 @@ public class CoAPRequest implements CoAPConstants {
 		final String nl = "\r\n";
 		final String col = ": ";
 		StringBuffer buffer = new StringBuffer();
-		/*
-		Map<Integer, List<Option>> map = response.getOptionMap();
-		Set<Integer> set = map.keySet();
-		Integer[] keys = set.toArray(new Integer[set.size()]);
-		for (int j=0;j<keys.length;j++) {
-			Integer nr = keys[j];
-			buffer.append(getResponseHeader(nr));
-			if (j<keys.length-1)
-				buffer.append(nl);
-		}
-		*/
+		
 		for (Option opt : response.getOptions().asSortedList()) {
 			buffer.append(OptionNumberRegistry.toString(opt.getNumber()));
 			buffer.append(col);
 			buffer.append(opt.toString());
 			buffer.append(nl);
-		}
-		return buffer.toString();
-	}
-	
-//	/**
-//	 * Returns the specified header.
-//	 * @param header the header name.
-//	 * @return the header values
-//	 */
-//	public String getResponseHeader(String header) {
-//		if (readyState==UNSENT || readyState==OPENED)
-//			return "";
-//		if (error) return "";
-//		if (response==null) return "";
-//		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-//		return getResponseHeader(nr);
-//	}
-//	
-//	/**
-//	 * Returns the header for the specified header nr.
-//	 * @param nr the nr.
-//	 * @return the corresponding header.
-//	 */
-//	private String getResponseHeader(int nr) {
-//		String col = ": ";
-//		List<Option> opts = response.getOptions(nr);
-//		return OptionNumberRegistry.toString(nr)+col+deflat(opts);
-//	}
-	
-	/**
-	 * Converts the specified list of options into a string.
-	 * @param opts the list of options
-	 * @return the string.
-	 */
-	private String deflat(List<Option> opts) {
-		String sep = ", ";
-		StringBuffer buffer = new StringBuffer();
-		for (int i=0;i<opts.size();i++) {
-			buffer.append(opts.get(i).toString());
-			if (i<opts.size()-1)
-				buffer.append(sep);
 		}
 		return buffer.toString();
 	}
@@ -492,16 +441,16 @@ public class CoAPRequest implements CoAPConstants {
 	private Request createNewRequest(String data) {
 		Request request;
 		
-		if (CoAPMethod.GET.equals(method)) {
+		if (JavaScriptCoapMethod.GET.equals(method)) {
 			request = Request.newGet();
 		
-		} else if (CoAPMethod.POST.equals(method)) {
+		} else if (JavaScriptCoapMethod.POST.equals(method)) {
 			request = Request.newPost();
 		
-		} else if (CoAPMethod.PUT.equals(method)) {
+		} else if (JavaScriptCoapMethod.PUT.equals(method)) {
 			request = Request.newPut();
 		
-		} else if (CoAPMethod.DELETE.equals(method)) {
+		} else if (JavaScriptCoapMethod.DELETE.equals(method)) {
 			request = Request.newDelete();
 		
 		} else {

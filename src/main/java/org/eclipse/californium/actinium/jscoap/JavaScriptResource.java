@@ -27,7 +27,7 @@ import org.mozilla.javascript.ScriptableObject;
  * It is not possible to add further methods or fields to this class within
  * JavaScript (Rhino). If this is necessary, use AbstractJavaScriptResource.
  */
-public class JavaScriptResource extends CoapResource implements CoAPConstants {
+public class JavaScriptResource extends CoapResource implements JavaScriptCoapConstants {
 	// Cannot extend ScriptableObject, because has to extend CoapResource
 	// Cannot (reasonably) implement Scriptable, because we then have to implement all 16 methods like ScriptableObject
 
@@ -77,7 +77,7 @@ public class JavaScriptResource extends CoapResource implements CoAPConstants {
 	public void handleGET(CoapExchange request) {
 		Function onget = getOnget();
 		if (onget!=null) {
-			performFunction(onget, new JavaScriptCoAPRequest(request));
+			performFunction(onget, new JavaScriptCoapRequest(request));
 		} else {
 			super.handleGET(request);
 		}
@@ -87,7 +87,7 @@ public class JavaScriptResource extends CoapResource implements CoAPConstants {
 	public void handlePOST(CoapExchange request) {
 		Function onpost = getOnpost();
 		if (onpost!=null) {
-			performFunction(onpost, new JavaScriptCoAPRequest(request));
+			performFunction(onpost, new JavaScriptCoapRequest(request));
 		} else {
 			super.handlePOST(request);
 		}
@@ -97,7 +97,7 @@ public class JavaScriptResource extends CoapResource implements CoAPConstants {
 	public void handlePUT(CoapExchange request) {
 		Function onput = getOnput();
 		if (onput!=null) {
-			performFunction(onput, new JavaScriptCoAPRequest(request));
+			performFunction(onput, new JavaScriptCoapRequest(request));
 		} else {
 			super.handlePUT(request);
 		}
@@ -107,13 +107,13 @@ public class JavaScriptResource extends CoapResource implements CoAPConstants {
 	public void handleDELETE(CoapExchange request) {
 		Function ondelete = getOndelete();
 		if (ondelete!=null) {
-			performFunction(ondelete, new JavaScriptCoAPRequest(request));
+			performFunction(ondelete, new JavaScriptCoapRequest(request));
 		} else {
 			super.handleDELETE(request);
 		}
 	}
 	
-	private void performFunction(Function fun, JavaScriptCoAPRequest request) {
+	private void performFunction(Function fun, JavaScriptCoapRequest request) {
 //		NativeFunction fun = (NativeFunction) object;
 		try {
 			Context cx = Context.enter();
