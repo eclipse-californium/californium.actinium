@@ -64,11 +64,11 @@ app.root.onget = function(request) {
 	for (var i=0;i<values.length;i++) {
 		buffer.append(values[i]+"\n");
 	}
-	request.respond(CodeRegistry.RESP_CONTENT, buffer.toString());
+	request.respond(ResponseCode.CONTENT, buffer.toString());
 }
 
 app.root.onpost = function(request) {
-	var payload = request.getPayloadString();
+	var payload = request.CoapExchangeText();
 	if (payload=="stop") {
 		app.shutdown();
 		request.respond(CodeRegistry.RESP_VALID);
@@ -76,7 +76,7 @@ app.root.onpost = function(request) {
 		app.restart();
 		request.respond(CodeRegistry.RESP_VALID);
 	} else {		
-		request.respond(CodeRegistry.RESP_BAD_REQUEST);
+		request.respond(ResponseCode.BAD_REQUEST);
 	}
 }
 

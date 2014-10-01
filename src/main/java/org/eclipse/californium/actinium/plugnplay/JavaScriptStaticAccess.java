@@ -16,11 +16,10 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.plugnplay;
 
+import org.eclipse.californium.core.server.resources.Resource;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
-
-import ch.ethz.inf.vs.californium.endpoint.Resource;
 
 /**
  * JavaScriptStatisAccess defines global functions for JavaScript.

@@ -18,8 +18,8 @@ package org.eclipse.californium.actinium.plugnplay;
 
 import java.util.LinkedList;
 
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 
 /**
  * Inspired by
@@ -43,7 +43,7 @@ public class WorkQueue {
 		//thread.start();
 	}
 
-	public void deliver(Request request, LocalResource resource) {
+	public void deliver(CoapExchange request, CoapResource resource) {
 		synchronized (queue) {
 			queue.addLast(new RequestDelivery(request, resource));
 			queue.notify(); // notifyAll not required
@@ -107,10 +107,10 @@ public class WorkQueue {
 	
 	private class RequestDelivery implements Runnable {
 		
-		private Request request;
-		private LocalResource resource;
+		private CoapExchange request;
+		private CoapResource resource;
 		
-		private RequestDelivery(Request request, LocalResource resource) {
+		private RequestDelivery(CoapExchange request, CoapResource resource) {
 			this.request = request;
 			this.resource = resource;
 		}
@@ -121,7 +121,7 @@ public class WorkQueue {
 			 * caught, to ensure, the thread doesn't stop.
 			 */
 			try {
-				request.dispatch(resource);
+				resource.handleRequest(request.advanced());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

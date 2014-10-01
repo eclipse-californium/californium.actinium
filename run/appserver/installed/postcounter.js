@@ -15,7 +15,7 @@
  ******************************************************************************/
 /*
  * This app counts the POST Request it gets. On a PUT Request the counter is
- * resetted to 0. This app is to test whether performGET/POST/PUT/DELETE are
+ * resetted to 0. This app is to test whether handleGET/POST/PUT/DELETE are
  * overridable and what happens if they aren't.
  */
 

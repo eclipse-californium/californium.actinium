@@ -23,14 +23,13 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.eclipse.californium.actinium.cfg.AbstractConfig.ConfigChangeSet;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppConfigsResource;
 import org.eclipse.californium.actinium.cfg.Config;
-import org.eclipse.californium.actinium.cfg.AbstractConfig.ConfigChangeSet;
 import org.eclipse.californium.actinium.plugnplay.AbstractApp;
-
-import ch.ethz.inf.vs.californium.coap.GETRequest;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 
 /**
  * AppResource is the root of all resources around instances of apps. It
@@ -49,7 +48,7 @@ import ch.ethz.inf.vs.californium.endpoint.LocalResource;
  * On a GET request, AppResource returns a list of all running apps. POST, PUT
  * and DELETE requests are not allowed.
  */
-public class AppResource extends LocalResource {
+public class AppResource extends CoapResource {
 
 	private AppManager manager;
 	
@@ -107,8 +106,8 @@ public class AppResource extends LocalResource {
 	 * Return a list of all running apps.
 	 */
 	@Override
-	public void performGET(GETRequest request) {
-		runningRes.performGET(request);
+	public void handleGET(CoapExchange request) {
+		runningRes.handleGET(request);
 	}
 	
 	/**
@@ -201,18 +200,6 @@ public class AppResource extends LocalResource {
 	private void addApp(final AbstractApp app) {
 		String tempid = app.getName();
 		
-//		identifier must be equal to name for stats
-//		// make sure, the new app has a valid identifier
-//		for (AbstractApp a:apps) {
-//			if (a.getName().equals(tempid)) {
-//				System.out.println("Resource identifier "+tempid+" is already reserved.");
-//				tempid = createUniqueResourceId(tempid);
-//				System.out.println("Identify ressource with new identifier "+tempid);
-//				app.setName(tempid);
-//				break;
-//			}
-//		}
-		
 		// add app
 		apps.add(app);
 		
@@ -237,10 +224,9 @@ public class AppResource extends LocalResource {
 				if (set.contains(AppConfig.RUNNING)) {
 					String running = appconfig.getProperty(AppConfig.RUNNING);
 					if (running.equals(AppConfig.START)) {
-//						if (runningRes.subResource(resid, false)==null)
-							runningRes.addApp(app);
+						runningRes.addApp(app);
 					} else if (running.equals(AppConfig.STOP)) {
-						runningRes.removeSubResource(resid);
+						runningRes.remove(resid);
 					}
 				}
 				if (set.contains(AppConfig.AVAILABILITY)) {

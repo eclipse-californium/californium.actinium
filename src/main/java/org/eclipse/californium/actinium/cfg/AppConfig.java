@@ -23,9 +23,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.DELETERequest;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 
 /**
  * An AppConfig contains the properties for an instance of an app. It contains
@@ -137,27 +136,27 @@ public class AppConfig extends AbstractConfig {
 	}
 	
 	@Override
-	public void performPOST(POSTRequest request) {
-		String payload = request.getPayloadString().trim();
+	public void handlePOST(CoapExchange request) {
+		String payload = request.getRequestText().trim();
 		if (payload.equalsIgnoreCase(START) ||
 				payload.equalsIgnoreCase(STOP) ||
 				payload.equalsIgnoreCase(RESTART)) {
 			put(RUNNING, payload);
 			fireNotification(RUNNING);
-			request.respond(CodeRegistry.RESP_CHANGED, "put running = "+payload);
+			request.respond(ResponseCode.CHANGED, "put running = "+payload);
 		} else {
-			super.performPOST(request);
+			super.handlePOST(request);
 		}
 	}
 	
 	@Override
-	public void performDELETE(DELETERequest request) {
+	public void handleDELETE(CoapExchange request) {
 		try {
 			deleteConfig();
-			request.respond(CodeRegistry.RESP_DELETED, "app "+getName()+" has been deleted");
+			request.respond(ResponseCode.DELETED, "app "+getName()+" has been deleted");
 		} catch (IOException e) {
 			e.printStackTrace();
-			request.respond(CodeRegistry.RESP_INTERNAL_SERVER_ERROR, e.getMessage());
+			request.respond(ResponseCode.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
 

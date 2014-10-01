@@ -16,17 +16,13 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import java.io.IOException;
-
 import org.eclipse.californium.actinium.jscoap.jserror.AbortErrorException;
-import org.eclipse.californium.actinium.jscoap.jserror.NetworkErrorException;
 import org.eclipse.californium.actinium.jscoap.jserror.RequestErrorException;
 import org.eclipse.californium.actinium.jscoap.jserror.TimeoutErrorException;
+import org.eclipse.californium.core.coap.MessageObserverAdapter;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.mozilla.javascript.Function;
-
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.coap.Response;
-import ch.ethz.inf.vs.californium.coap.ResponseHandler;
 
 /**
  * SynchronousSender implements the process to send a request synchronously.
@@ -35,7 +31,7 @@ import ch.ethz.inf.vs.californium.coap.ResponseHandler;
  */
 public class SynchronousSender extends AbstractSender {
 
-	private CoAPRequest coapRequest;
+	private CoapRequest coapRequest;
 	
 	private Function onready; // onreadystatechange
 	private Function ontimeout;
@@ -47,7 +43,7 @@ public class SynchronousSender extends AbstractSender {
 	
 	private final Lock lock = new Lock(); // never sync(coapreq) within sync(lock)
 	
-	public SynchronousSender(CoAPRequest coapRequest, Function onready, Function ontimeout, Function onload, Function onerror, long timeout) {
+	public SynchronousSender(CoapRequest coapRequest, Function onready, Function ontimeout, Function onload, Function onerror, long timeout) {
 		this.coapRequest = coapRequest;
 		this.onready = onready;
 		this.ontimeout = ontimeout;
@@ -59,8 +55,9 @@ public class SynchronousSender extends AbstractSender {
 	// by app's execution thread (must not be app's receiver thread)
 	@Override
 	public void send(Request request) {
-		request.registerResponseHandler(new ResponseHandler() {
-			public void handleResponse(Response response) {
+		request.addMessageObserver(new MessageObserverAdapter() {
+			@Override
+			public void onResponse(Response response) {
 				if (!isAcknowledgement(response)) {
 					SynchronousSender.this.handleSyncResponse(response);
 				}
@@ -72,7 +69,7 @@ public class SynchronousSender extends AbstractSender {
 				if (!lock.aborted) { // if not already aborted
 					timestamp = System.currentTimeMillis();
 					
-					request.execute();
+					request.send();
 					
 					if (timeout<=0) {
 						waitForResponse();
@@ -83,9 +80,9 @@ public class SynchronousSender extends AbstractSender {
 			}
 		} catch (InterruptedException e) {
 			throw new RequestErrorException(e.getMessage());
-		} catch (IOException e) {
+		} catch (Exception e) {
+			// TODO set error code
 			handleError(onerror);
-			throw new NetworkErrorException(e.getMessage());
 		}
 	}
 				
@@ -116,7 +113,7 @@ public class SynchronousSender extends AbstractSender {
 			
 			if (!lock.aborted && !lock.timeouted) {
 				coapRequest.setResponse(response);
-				coapRequest.setReadyState(CoAPRequest.DONE);
+				coapRequest.setReadyState(CoapRequest.DONE);
 				
 				/*
 				 * While the app's receiver thread executes this function, the
@@ -177,11 +174,11 @@ public class SynchronousSender extends AbstractSender {
 		if (lock.aborted && !lock.receivedresponse && !lock.timeouted) {
 			synchronized (coapRequest) {
 				coapRequest.setError(true);
-				coapRequest.setReadyState(CoAPRequest.DONE);
+				coapRequest.setReadyState(CoapRequest.DONE);
 				coapRequest.setSend(false);
 			}
 			callJavaScriptFunction(onready, coapRequest);
-			coapRequest.setReadyState(CoAPRequest.UNSENT);
+			coapRequest.setReadyState(CoapRequest.UNSENT);
 			throw new AbortErrorException("Connection has been aborted");
 		}
 	}
@@ -189,7 +186,7 @@ public class SynchronousSender extends AbstractSender {
 	private void handleError(Function function) {
 		synchronized (coapRequest) {
 			coapRequest.setError(true);
-			coapRequest.setReadyState(CoAPRequest.DONE);
+			coapRequest.setReadyState(CoapRequest.DONE);
 		}
 		callJavaScriptFunction(onready, coapRequest);
 		callJavaScriptFunction(function, coapRequest);

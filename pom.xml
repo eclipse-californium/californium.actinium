@@ -54,7 +54,7 @@
 			</roles>
 		</developer>
 	</developers>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>repo.eclipse.org</id>
@@ -67,19 +67,19 @@
 			<url>https://repo.eclipse.org/content/repositories/californium-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
-
+	
 	<repositories>
 		<repository>
 			<id>repo.eclipse.org</id>
-			<name>mkovatsc-github</name>
-			<url>https://github.com/mkovatsc/maven/raw/master/releases/</url>
+			<name>Californium Repository</name>
+			<url>https://repo.eclipse.org/content/repositories/californium/</url>
 		</repository>
 		<repository>
 			<id>mkovatsc-github-thirdparty</id>
 			<name>mkovatsc-github</name>
 			<url>https://github.com/mkovatsc/maven/raw/master/thirdparty/</url>
 		</repository>
-	</repositories>
+  	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -88,11 +88,11 @@
 			<version>4.8.1</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>ch.ethz.inf.vs</groupId>
-			<artifactId>californium</artifactId>
-			<version>0.8.5</version>
-		</dependency>
+    	<dependency>
+            <groupId>org.eclipse.californium</groupId>
+            <artifactId>californium-core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+    	</dependency>
 		<dependency>
 			<groupId>org.mozilla</groupId>
 			<artifactId>rhino</artifactId>

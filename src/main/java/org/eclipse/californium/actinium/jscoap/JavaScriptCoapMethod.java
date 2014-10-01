@@ -20,10 +20,10 @@ package org.eclipse.californium.actinium.jscoap;
  * This class is not an enum, for that scripts can use strings like "GET",
  * instead of an enum.
  */
-public final class CoAPMethod {
+public final class JavaScriptCoapMethod {
 
 	// prevent initialization
-	private CoAPMethod() {}
+	private JavaScriptCoapMethod() {}
 	
 	public static final String GET = "GET";
 	public static final String POST = "POST";

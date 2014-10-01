@@ -16,11 +16,12 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium;
 
-import ch.ethz.inf.vs.californium.coap.CodeRegistry;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 
-public class SlowResource extends LocalResource {
+
+public class SlowResource extends CoapResource {
 
 	private int counter = 0;
 	
@@ -29,13 +30,13 @@ public class SlowResource extends LocalResource {
 	}
 	
 	@Override
-	public void performPOST(POSTRequest request) {
+	public void handlePOST(CoapExchange request) {
 		
 		try {
-			System.out.println("Bearbeite request "+request.getMID());
+			System.out.println("Bearbeite request "+request.advanced().getRequest().getMID());
 			Thread.sleep(5000);
 			
-			request.respond(CodeRegistry.RESP_CONTENT, "counter = "+counter);
+			request.respond(ResponseCode.CONTENT, "counter = "+counter);
 			counter++;
 		} catch (Exception e) {
 			e.printStackTrace();

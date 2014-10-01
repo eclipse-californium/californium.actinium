@@ -48,7 +48,7 @@ var n_newton = 1000000;
 app.root.onget = function(request) {
 	request.accept();
 	
-	var what = request.getPayloadString();
+	var what = request.CoapExchangeText();
 	var text = '';
 	
 	app.dump('Fibonacci');
@@ -125,7 +125,7 @@ function run(what) {
 		func = newton_sqareroot;
 		arg = n_newton;
 	} else {
-		request.respond(CodeRegistry.RESP_BAD_REQUEST, "unknown function");
+		request.respond(ResponseCode.BAD_REQUEST, "unknown function");
 		return;
 	}
 	

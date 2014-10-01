@@ -39,11 +39,11 @@ app.root.onput = respond;
 app.root.ondelete = respond;
 
 app.root.onget = function(request) {
-	request.respond(CodeRegistry.RESP_CONTENT, howto);
+	request.respond(ResponseCode.CONTENT, howto);
 }
 
 function respond(request) {
-	var payload = request.getPayloadString();
+	var payload = request.CoapExchangeText();
 	var timestr;
 	
 	if (payload.startsWith("accept")) {
@@ -60,13 +60,13 @@ function respond(request) {
 		
 		if (time<0) {
 			app.dump("Invalid time in request "+request.getMID());
-			request.respond(CodeRegistry.RESP_CONTENT, "Invalid time "+timestr+" at ("+counter+")");
+			request.respond(ResponseCode.CONTENT, "Invalid time "+timestr+" at ("+counter+")");
 		} else {
 			app.dump("Wait for "+time+" ms to respond to reqeust "+request.getMID());
 			app.sleep(time);
 			app.dump("Respond ("+counter+") to reqeust "+request.getMID());
 			//app.dump("This request's type is "+request.getType());
-			request.respond(CodeRegistry.RESP_CONTENT, "Response ("+counter+") after "+time+" ms");
+			request.respond(ResponseCode.CONTENT, "Response ("+counter+") after "+time+" ms");
 		}
 	} else {
 		app.dump("No response ("+counter+") to request"+request.getMID());

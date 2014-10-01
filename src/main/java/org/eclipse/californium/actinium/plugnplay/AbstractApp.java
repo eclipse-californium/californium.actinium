@@ -20,13 +20,11 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Logger;
 
-import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AbstractConfig.ConfigChangeSet;
-
-
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.endpoint.LocalResource;
-import ch.ethz.inf.vs.californium.endpoint.Resource;
+import org.eclipse.californium.actinium.cfg.AppConfig;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.core.server.resources.Resource;
 
 /**
  * AbstractApp is the parent class for all sorts of apps and a CoAP resource. So
@@ -41,7 +39,7 @@ import ch.ethz.inf.vs.californium.endpoint.Resource;
  * changes. E.g. the property "running" might change, triggering AbstractApp to
  * start, stop or restart itself.
  */
-public abstract class AbstractApp extends LocalResource implements PlugAndPlayable, Observer {
+public abstract class AbstractApp extends CoapResource implements PlugAndPlayable, Observer {
 
 	// Logging /////////////////////////////////////////////////////////////////////
 		
@@ -76,11 +74,11 @@ public abstract class AbstractApp extends LocalResource implements PlugAndPlayab
 		
 		String resourceTitle = appcfg.getProperty(AppConfig.RESOURCE_TITLE);
 		if (resourceTitle!=null)
-			setTitle(resourceTitle);
+			getAttributes().setTitle(resourceTitle);
 		
 		String resourceType = appcfg.getProperty(AppConfig.RESOURCE_TYPE);
 		if (resourceType!=null)
-			setResourceType(resourceType);
+			getAttributes().addResourceType(resourceType);
 
 		this.requestReceiver = new WorkQueue(appcfg.getName()+"-ReceiverThread");
 	}
@@ -132,10 +130,10 @@ public abstract class AbstractApp extends LocalResource implements PlugAndPlayab
 			}
 		}
 		if (set.contains(AppConfig.RESOURCE_TITLE)) {
-			setTitle(appcfg.getProperty(AppConfig.RESOURCE_TITLE));
+			getAttributes().setTitle(appcfg.getProperty(AppConfig.RESOURCE_TITLE));
 		}
 		if (set.contains(AppConfig.RESOURCE_TYPE)) {
-			setResourceType(appcfg.getProperty(AppConfig.RESOURCE_TYPE));
+			getAttributes().addResourceType(appcfg.getProperty(AppConfig.RESOURCE_TYPE));
 		}
 		if (set.contains(AppConfig.ALLOW_OUTPUT)) {
 			allowOutput = appcfg.getBool(AppConfig.ALLOW_OUTPUT);
@@ -206,8 +204,8 @@ public abstract class AbstractApp extends LocalResource implements PlugAndPlayab
 	 * Removes all subresources
 	 */
 	private void removeSubresources() {
-		for (Resource res:getSubResources())
-			removeSubResource(res);
+		for (Resource res:getChildren())
+			remove(res);
 	}
 	
 	/**
@@ -215,7 +213,7 @@ public abstract class AbstractApp extends LocalResource implements PlugAndPlayab
 	 * @param request the request
 	 * @param resource the target resource
 	 */
-	public void deliverRequestToSubResource(Request request, LocalResource resource) {
+	public void deliverRequestToSubResource(CoapExchange request, CoapResource resource) {
 		requestReceiver.deliver(request, resource);
 	}
 	

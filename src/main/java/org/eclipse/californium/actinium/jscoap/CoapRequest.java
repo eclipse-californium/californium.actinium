@@ -23,18 +23,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Option;
+import org.eclipse.californium.core.coap.OptionNumberRegistry;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.mozilla.javascript.Function;
-
-import ch.ethz.inf.vs.californium.coap.DELETERequest;
-import ch.ethz.inf.vs.californium.coap.GETRequest;
-import ch.ethz.inf.vs.californium.coap.MediaTypeRegistry;
-import ch.ethz.inf.vs.californium.coap.Option;
-import ch.ethz.inf.vs.californium.coap.OptionNumberRegistry;
-import ch.ethz.inf.vs.californium.coap.POSTRequest;
-import ch.ethz.inf.vs.californium.coap.PUTRequest;
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.coap.Response;
-import ch.ethz.inf.vs.californium.coap.Message.messageType;
 
 /**
  * CoAPRequest implements the CoAPRequest API
@@ -58,7 +53,7 @@ import ch.ethz.inf.vs.californium.coap.Message.messageType;
  * }
  * </pre>
  */
-public class CoAPRequest implements CoAPConstants {
+public class CoapRequest implements JavaScriptCoapConstants {
 
 	public static int UNSENT = 0;
 	public static int OPENED = 1;
@@ -261,7 +256,7 @@ public class CoAPRequest implements CoAPConstants {
 	 */
 	public void addOption(String str, int nr) {
 		List<Option> list = findOptionList(nr);
-		list.add(new Option(str, nr));
+		list.add(new Option(nr, str));
 	}
 	
 	/**
@@ -363,63 +358,12 @@ public class CoAPRequest implements CoAPConstants {
 		final String nl = "\r\n";
 		final String col = ": ";
 		StringBuffer buffer = new StringBuffer();
-		/*
-		Map<Integer, List<Option>> map = response.getOptionMap();
-		Set<Integer> set = map.keySet();
-		Integer[] keys = set.toArray(new Integer[set.size()]);
-		for (int j=0;j<keys.length;j++) {
-			Integer nr = keys[j];
-			buffer.append(getResponseHeader(nr));
-			if (j<keys.length-1)
-				buffer.append(nl);
-		}
-		*/
-		for (Option opt : response.getOptions()) {
-			buffer.append(OptionNumberRegistry.toString(opt.getOptionNumber()));
+		
+		for (Option opt : response.getOptions().asSortedList()) {
+			buffer.append(OptionNumberRegistry.toString(opt.getNumber()));
 			buffer.append(col);
 			buffer.append(opt.toString());
 			buffer.append(nl);
-		}
-		return buffer.toString();
-	}
-	
-	/**
-	 * Returns the specified header.
-	 * @param header the header name.
-	 * @return the header values
-	 */
-	public String getResponseHeader(String header) {
-		if (readyState==UNSENT || readyState==OPENED)
-			return "";
-		if (error) return "";
-		if (response==null) return "";
-		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-		return getResponseHeader(nr);
-	}
-	
-	/**
-	 * Returns the header for the specified header nr.
-	 * @param nr the nr.
-	 * @return the corresponding header.
-	 */
-	private String getResponseHeader(int nr) {
-		String col = ": ";
-		List<Option> opts = response.getOptions(nr);
-		return OptionNumberRegistry.toString(nr)+col+deflat(opts);
-	}
-	
-	/**
-	 * Converts the specified list of options into a string.
-	 * @param opts the list of options
-	 * @return the string.
-	 */
-	private String deflat(List<Option> opts) {
-		String sep = ", ";
-		StringBuffer buffer = new StringBuffer();
-		for (int i=0;i<opts.size();i++) {
-			buffer.append(opts.get(i).toString());
-			if (i<opts.size()-1)
-				buffer.append(sep);
 		}
 		return buffer.toString();
 	}
@@ -448,9 +392,9 @@ public class CoAPRequest implements CoAPConstants {
 		if (response!=null) {
 			this.response = response;
 			this.responseText = response.getPayloadString();
-			this.responseType = MediaTypeRegistry.toString(response.getContentType());
-			this.responseLocationPath = response.getLocationPath();
-			this.status = response.getCode();
+			this.responseType = MediaTypeRegistry.toString(response.getOptions().getContentFormat());
+			this.responseLocationPath = response.getOptions().getLocationPathString();
+			this.status = response.getCode().value;
 			this.statusText = CoAPConstantsConverter.convertCoAPCodeToString(this.status);
 			this.httpstatus = CoAPConstantsConverter.convertCoAPCodeToHttp(status);
 			
@@ -497,23 +441,23 @@ public class CoAPRequest implements CoAPConstants {
 	private Request createNewRequest(String data) {
 		Request request;
 		
-		if (CoAPMethod.GET.equals(method)) {
-			request = new GETRequest();
+		if (JavaScriptCoapMethod.GET.equals(method)) {
+			request = Request.newGet();
 		
-		} else if (CoAPMethod.POST.equals(method)) {
-			request = new POSTRequest();
+		} else if (JavaScriptCoapMethod.POST.equals(method)) {
+			request = Request.newPost();
 		
-		} else if (CoAPMethod.PUT.equals(method)) {
-			request = new PUTRequest();
+		} else if (JavaScriptCoapMethod.PUT.equals(method)) {
+			request = Request.newPut();
 		
-		} else if (CoAPMethod.DELETE.equals(method)) {
-			request = new DELETERequest();
+		} else if (JavaScriptCoapMethod.DELETE.equals(method)) {
+			request = Request.newDelete();
 		
 		} else {
 			throw new IllegalArgumentException("Unknown CoAP method: "+method+". Only \"GET\", \"POST\", \"PUT\" and \"DELETE\" are allowed");
 		}
 		
-		request.setType(confirmable ? messageType.CON : messageType.NON);
+		request.setType(confirmable ? Type.CON : Type.NON);
 		request.setURI(uri);
 		request.setPayload(data);
 		
@@ -523,14 +467,14 @@ public class CoAPRequest implements CoAPConstants {
 		 */
 		for (Integer i:options.keySet()) {
 			List<Option> list = options.get(i);
-			request.setOptions(new LinkedList<Option>(list));
+			for (Option o:list) request.getOptions().addOption(o);
 		}
 		
 		if (locationPath!=null)
-			request.setLocationPath(locationPath);
+			request.getOptions().setLocationPath(locationPath);
 		
 		if (contenttype!=null)
-			request.setContentType(contenttype.intValue());
+			request.getOptions().setContentFormat(contenttype.intValue());
 		
 		return request;
 	}

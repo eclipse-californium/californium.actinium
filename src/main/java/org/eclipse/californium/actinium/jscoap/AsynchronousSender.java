@@ -16,16 +16,14 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.eclipse.californium.actinium.jscoap.jserror.NetworkErrorException;
+import org.eclipse.californium.core.coap.MessageObserverAdapter;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.mozilla.javascript.Function;
-
-import ch.ethz.inf.vs.californium.coap.Request;
-import ch.ethz.inf.vs.californium.coap.Response;
-import ch.ethz.inf.vs.californium.coap.ResponseHandler;
 
 /**
  * AsynchronousSender implements the process to send a request asynchronously.
@@ -40,7 +38,7 @@ public class AsynchronousSender extends AbstractSender {
 
 	private Timer timer = new Timer();
 	
-	private CoAPRequest coapRequest;
+	private CoapRequest coapRequest;
 	
 	private Function onready; // onreadystatechange
 	private Function ontimeout; // timeout error
@@ -51,7 +49,7 @@ public class AsynchronousSender extends AbstractSender {
 	
 	private final Lock lock = new Lock();
 	
-	public AsynchronousSender(CoAPRequest coapRequest, Function onready, Function ontimeout, Function onload, Function onerror, long timeout) {
+	public AsynchronousSender(CoapRequest coapRequest, Function onready, Function ontimeout, Function onload, Function onerror, long timeout) {
 		this.coapRequest = coapRequest;
 		this.onready = onready;
 		this.ontimeout = ontimeout;
@@ -62,8 +60,8 @@ public class AsynchronousSender extends AbstractSender {
 	
 	@Override
 	public void send(Request request) {
-		request.registerResponseHandler(new ResponseHandler() {
-			public void handleResponse(Response response) {
+		request.addMessageObserver(new MessageObserverAdapter() {
+			public void onResponse(Response response) {
 				if (!isAcknowledgement(response)) {
 					AsynchronousSender.this.handleAsyncResponse(response);
 				}
@@ -71,8 +69,8 @@ public class AsynchronousSender extends AbstractSender {
 		});
 		
 		try {
-			request.execute();
-		} catch (IOException e) {
+			request.send().waitForResponse(10000);
+		} catch (Exception e) {
 			handleError(onerror);
 			throw new NetworkErrorException(e.toString());
 		}
@@ -105,8 +103,8 @@ public class AsynchronousSender extends AbstractSender {
 		}
 		if (callonready) {
 			synchronized (coapRequest) {
-				coapRequest.setResponse(response);
-				coapRequest.setReadyState(CoAPRequest.DONE);
+//				coapRequest.setResponse(response);
+				coapRequest.setReadyState(CoapRequest.DONE);
 			}
 			callJavaScriptFunction(onready, coapRequest, response);
 			callJavaScriptFunction(onload, coapRequest, response);
@@ -125,11 +123,11 @@ public class AsynchronousSender extends AbstractSender {
 		if (isabort) {
 			synchronized (coapRequest) {
 				coapRequest.setError(true);
-				coapRequest.setReadyState(CoAPRequest.DONE);
+				coapRequest.setReadyState(CoapRequest.DONE);
 				coapRequest.setSend(false);
 			}
 			callJavaScriptFunction(onready, coapRequest);
-			coapRequest.setReadyState(CoAPRequest.UNSENT);
+			coapRequest.setReadyState(CoapRequest.UNSENT);
 			// no onreadystatechange event is dispatched
 		}
 	}
@@ -137,7 +135,7 @@ public class AsynchronousSender extends AbstractSender {
 	private void handleError(Function function) {
 		synchronized (coapRequest) {
 			coapRequest.setError(true);
-			coapRequest.setReadyState(CoAPRequest.DONE);
+			coapRequest.setReadyState(CoapRequest.DONE);
 		}
 		callJavaScriptFunction(onready, coapRequest);
 		callJavaScriptFunction(function, coapRequest);
