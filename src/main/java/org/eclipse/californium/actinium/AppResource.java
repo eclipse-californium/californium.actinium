@@ -68,7 +68,6 @@ public class AppResource extends CoapResource {
 	 * apps from the disk and adds them to the RunningResource and their configs
 	 * to the AppCOnfigResource.
 	 * 
-	 * @param config the app server's config
 	 * @param manager the AppManager
 	 */
 	public AppResource(AppManager manager) {

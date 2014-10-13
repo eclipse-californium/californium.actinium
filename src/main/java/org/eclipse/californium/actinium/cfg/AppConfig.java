@@ -82,7 +82,6 @@ public class AppConfig extends AbstractConfig {
 	 * Constructs a new AppConfig with default properties. properties. This is
 	 * used, for apps running on the SimpleAppServer.
 	 * 
-	 * @param probs the pre defined properties
 	 */
 	public AppConfig() {
 		init();

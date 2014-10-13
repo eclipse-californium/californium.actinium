@@ -158,7 +158,6 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	/**
 	 * Send the specified data.
 	 * @param data data to send
-	 * @throws InterruptedException 
 	 */
 	public void send(String data) {
 		

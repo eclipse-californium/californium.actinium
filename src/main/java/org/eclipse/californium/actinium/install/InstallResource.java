@@ -50,7 +50,6 @@ public class InstallResource extends CoapResource {
 	 * Constructs a new InstallResource with the specified config and the
 	 * specified AppManager.
 	 * 
-	 * @param config the config of the app server
 	 * @param manager the manager for all apps
 	 */
 	public InstallResource(AppManager manager) {

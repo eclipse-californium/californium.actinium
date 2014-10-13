@@ -56,7 +56,6 @@ public class InstalledAppResource extends CoapResource {
 	 * disk. InstallResource calls this constructur during startup to gather the
 	 * installed resources.
 	 * 
-	 * @param config - The config of the server
 	 * @param name - The name of the installed app and this resource
 	 */
 	public InstalledAppResource(String name, AppManager manager) {
@@ -71,7 +70,6 @@ public class InstalledAppResource extends CoapResource {
 	 * Constructs a new InstalledAppResource with the given config, name and
 	 * code. The code will be stored to the disk.
 	 * 
-	 * @param config - The config of the server
 	 * @param name - The name of the installed app and this resource
 	 * @param code - The code of the installed app
 	 */
