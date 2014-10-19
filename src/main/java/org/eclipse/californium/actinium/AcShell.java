@@ -29,11 +29,6 @@ import org.eclipse.californium.core.CoapServer;
 /**
  * A console based application that simulates an app server and runs a
  * JavaScriptApp specified in the arguments given in the main method.
- * <p>
- * Start the ACtinium shell with
- * <pre>
- * java -cp bin/;lib/js-14.jar;lib/Californium.jar;lib/E4XUtils.jar ch.ethz.inf.vs.actinium.AcShell appserver/installed/storage.js -name ABC
- * </pre>
  */
 public class AcShell extends CoapServer {
 
@@ -61,6 +56,7 @@ public class AcShell extends CoapServer {
 	private void execute() {
 		try {
 			File file = new File(path);
+			@SuppressWarnings("resource")
 			Scanner scanner = new Scanner(file).useDelimiter("\\Z");
 		    String code = scanner.next();  
 		    scanner.close();
@@ -133,6 +129,7 @@ public class AcShell extends CoapServer {
 			if (port==-1) server = new AcShell(file, name);
 			else server = new AcShell(file, name, port);
 			
+			server.start();
 			System.out.println("Actinium (Ac) App-server listening on port " + server.getEndpoints().get(0).getAddress().getPort());
 			server.execute();
 			

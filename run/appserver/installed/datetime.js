@@ -54,17 +54,17 @@ function MyDate(ts) {
 
 	var mythis = this;
 	this.resDate.onget = function(request) {
-		request.respond(ResponseCode.CONTENT,mythis.getDate());
+		request.respond(2.05,mythis.getDate());
 	};
 	
 	this.resDate.onput = function(request) {
 		try {
 			var str_date = request.CoapExchangeText();
 			mythis.setDate(str_date);
-			request.respond(ResponseCode.CONTENT,mythis.getDate());
+			request.respond(2.05, mythis.getDate());
 
 		} catch (e if e.javaException instanceof ParseException) {				
-			request.respond(ResponseCode.BAD_REQUEST,mythis.getDate());
+			request.respond(4.00, mythis.getDate());
 		}
 	};
 }
@@ -104,17 +104,17 @@ function MyTime(ts) {
 	app.setInterval(function() { mythis.resTime.changed(); }, 5000);
 	
 	this.resTime.onget = function(request) {
-			request.respond(ResponseCode.CONTENT,mythis.getTime());
+			request.respond(2.05,mythis.getTime());
 	};
 	
 	this.resTime.onput = function(request) {
 		try {
 			var str_time = request.CoapExchangeText();
 			mythis.setTime(str_time);
-			request.respond(ResponseCode.CONTENT,mythis.getTime());
+			request.respond(2.05,mythis.getTime());
 
 		} catch (e if e.javaException instanceof ParseException) {
-			request.respond(ResponseCode.BAD_REQUEST,mythis.getTime());
+			request.respond(4.00, mythis.getTime());
 		}
 	};
 }
@@ -127,7 +127,7 @@ function DateTime(ts,id) {
 	
 	var mythis = this;
 	this.resource.onget = function(request) {
-		request.respond(ResponseCode.CONTENT,mythis.date.getDate()+" - "+mythis.time.getTime());
+		request.respond(2.05, mythis.date.getDate()+" - "+mythis.time.getTime());
 	};
 	
 	this.resource.add(this.date.resDate);

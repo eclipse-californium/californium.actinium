@@ -41,7 +41,7 @@ function pollNodes() {
 	var clients = new Array();
 
 	for (var addr in addresses) {
-		clients[addr] = new CoAPRequest();
+		clients[addr] = new CoapRequest();
 		clients[addr].open("GET", 'coap://['+addresses[addr]+']/hello', true);
 		clients[addr].onload = function() {
 			app.dump(this.statusText + '\tdelay='+delay+'\ttime='+(app.getNanoTime()-t0)/1000000);

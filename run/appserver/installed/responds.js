@@ -39,7 +39,7 @@ app.root.onput = respond;
 app.root.ondelete = respond;
 
 app.root.onget = function(request) {
-	request.respond(ResponseCode.CONTENT, howto);
+	request.respond(2.05, howto);
 }
 
 function respond(request) {
@@ -60,13 +60,13 @@ function respond(request) {
 		
 		if (time<0) {
 			app.dump("Invalid time in request "+request.getMID());
-			request.respond(ResponseCode.CONTENT, "Invalid time "+timestr+" at ("+counter+")");
+			request.respond(2.05, "Invalid time "+timestr+" at ("+counter+")");
 		} else {
 			app.dump("Wait for "+time+" ms to respond to reqeust "+request.getMID());
 			app.sleep(time);
 			app.dump("Respond ("+counter+") to reqeust "+request.getMID());
 			//app.dump("This request's type is "+request.getType());
-			request.respond(ResponseCode.CONTENT, "Response ("+counter+") after "+time+" ms");
+			request.respond(2.05, "Response ("+counter+") after "+time+" ms");
 		}
 	} else {
 		app.dump("No response ("+counter+") to request"+request.getMID());

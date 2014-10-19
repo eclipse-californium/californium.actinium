@@ -125,7 +125,7 @@ function run(what) {
 		func = newton_sqareroot;
 		arg = n_newton;
 	} else {
-		request.respond(ResponseCode.BAD_REQUEST, "unknown function");
+		request.respond(4.00, "unknown function");
 		return;
 	}
 	

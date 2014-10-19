@@ -39,7 +39,7 @@ var values = new Array();
 java.lang.Thread.sleep(100);
 
 // create new timer resource
-var request = new CoAPRequest();
+var request = new CoapRequest();
 
 request.open('POST', HOST+TIMER_RES, false); // new sync Request
 request.send("curobstimer"); // new timer's name
@@ -47,7 +47,7 @@ app.dump(request.responseText);
 
 // set timer's periode to 2000 ms
 var timerpath = request.responseLocationPath;
-request = new CoAPRequest();
+request = new CoapRequest();
 request.open("POST", HOST+timerpath, true); // new async Request
 request.send(FREQUENCY); // timer's new periode
 
@@ -64,19 +64,19 @@ app.root.onget = function(request) {
 	for (var i=0;i<values.length;i++) {
 		buffer.append(values[i]+"\n");
 	}
-	request.respond(ResponseCode.CONTENT, buffer.toString());
+	request.respond(2.05, buffer.toString());
 }
 
 app.root.onpost = function(request) {
 	var payload = request.CoapExchangeText();
 	if (payload=="stop") {
 		app.shutdown();
-		request.respond(CodeRegistry.RESP_VALID);
+		request.respond(2.03);
 	} else if (payload=="restart") {
 		app.restart();
-		request.respond(CodeRegistry.RESP_VALID);
+		request.respond("Valid");
 	} else {		
-		request.respond(ResponseCode.BAD_REQUEST);
+		request.respond("Bad Request");
 	}
 }
 

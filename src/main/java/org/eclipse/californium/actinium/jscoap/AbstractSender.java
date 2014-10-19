@@ -33,7 +33,7 @@ public abstract class AbstractSender implements Sender {
 	
 	@Override
 	public abstract void abort();
-
+	
 	/**
 	 * Calls the specified JavaScript function on the specified this object with
 	 * the specified arguments

@@ -26,7 +26,7 @@ import org.mozilla.javascript.Function;
 
 /**
  * SynchronousSender implements the process to send a request synchronously.
- * Conforms to the CoAPRequest API
+ * Conforms to the CoapRequest API
  * (http://lantersoft.ch/download/bachelorthesis/CoAPRequest_API.pdf)
  */
 public class SynchronousSender extends AbstractSender {

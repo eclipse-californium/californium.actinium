@@ -34,14 +34,14 @@ function Timer(millis, name) {
 	var mythis = this;
 	this.timerres = new JavaScriptResource();
 	this.timerres.onget = function(request) {
-		request.respond(ResponseCode.CONTENT, "timer periode: "+periode);
+		request.respond(2.05, "timer periode: "+periode);
 	};
 	this.timerres.onpost = function(request) {
 		try {
 			periode = parseInt(request.CoapExchangeText());
-			request.respond(ResponseCode.CHANGED,"changed timer periode to "+periode);
+			request.respond(2.04, "changed timer periode to "+periode);
 		} catch (e if e.javaException instanceof java.lang.NumberFormatException) {
-			request.respond(ResponseCode.BAD_REQUEST, e.javaException.getMessage());
+			request.respond(4.00, e.javaException.getMessage());
 		}
 	};
 	/**
@@ -70,7 +70,7 @@ app.root.onget = function(request) {
 	for (var i=0;i<timers.length;i++) {
 		buffer.append(timers[i]+"\n");
 	}
-	request.respond(ResponseCode.CONTENT, buffer.toString());
+	request.respond(2.05, buffer.toString());
 }
 
 app.root.onpost = function(request) {
@@ -81,13 +81,13 @@ app.root.onpost = function(request) {
 		timers[timers.length] = name;
 		paths[paths.length] = path;
 		
-		var response = new Response(CodeRegistry.RESP_CREATED);
+		var response = new Response(2.01);
 		response.setPayload("Timer "+name+" created at location "+path);
 		response.setLocationPath(path);
 		request.respond(response);
 		
 	} else {
-		var response = new Response(ResponseCode.BAD_REQUEST);
+		var response = new Response(4.00);
 		response.setPayload("Timer name "+name +" is already in use");
 		response.setLocationPath(findPathForName(name));
 		request.respond(response);

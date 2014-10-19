@@ -20,6 +20,7 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
+import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -74,47 +75,46 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	}
 	
 	@Override
-	public void handleGET(CoapExchange request) {
+	public void handleGET(CoapExchange exchange) {
 		Function onget = getOnget();
 		if (onget!=null) {
-			performFunction(onget, new JavaScriptCoapRequest(request));
+			performFunction(onget, new JavaScriptCoapExchange(exchange));
 		} else {
-			super.handleGET(request);
+			super.handleGET(exchange);
 		}
 	}
 
 	@Override
-	public void handlePOST(CoapExchange request) {
+	public void handlePOST(CoapExchange exchange) {
 		Function onpost = getOnpost();
 		if (onpost!=null) {
-			performFunction(onpost, new JavaScriptCoapRequest(request));
+			performFunction(onpost, new JavaScriptCoapExchange(exchange));
 		} else {
-			super.handlePOST(request);
+			super.handlePOST(exchange);
 		}
 	}
 
 	@Override
-	public void handlePUT(CoapExchange request) {
+	public void handlePUT(CoapExchange exchange) {
 		Function onput = getOnput();
 		if (onput!=null) {
-			performFunction(onput, new JavaScriptCoapRequest(request));
+			performFunction(onput, new JavaScriptCoapExchange(exchange));
 		} else {
-			super.handlePUT(request);
+			super.handlePUT(exchange);
 		}
 	}
 
 	@Override
-	public void handleDELETE(CoapExchange request) {
+	public void handleDELETE(CoapExchange exchange) {
 		Function ondelete = getOndelete();
 		if (ondelete!=null) {
-			performFunction(ondelete, new JavaScriptCoapRequest(request));
+			performFunction(ondelete, new JavaScriptCoapExchange(exchange));
 		} else {
-			super.handleDELETE(request);
+			super.handleDELETE(exchange);
 		}
 	}
 	
-	private void performFunction(Function fun, JavaScriptCoapRequest request) {
-//		NativeFunction fun = (NativeFunction) object;
+	private void performFunction(Function fun, JavaScriptCoapExchange request) {
 		try {
 			Context cx = Context.enter();
 			Scriptable prototype = ScriptableObject.getClassPrototype(fun, request.getClassName());
@@ -122,6 +122,9 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 			Scriptable scope = fun.getParentScope();
 			Object thisObj = getThis();
 			fun.call(cx, fun, Context.toObject(thisObj, scope), new Object[] {request});
+		} catch (RhinoException e) {
+        	System.err.println("JavaScript error in ["+e.sourceName()+"#"+e.lineNumber()+"]: "+e.getCause().getMessage());
+        	e.printStackTrace();
 		} finally {
 			Context.exit();
 		}

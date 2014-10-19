@@ -48,7 +48,7 @@ app.root.onpost = function(request) {
 app.root.onput = function(request) {
 	content = request.CoapExchangeText();
 	app.root.changed();
-	request.respond(ResponseCode.CHANGED);
+	request.respond(2.04);
 }
 
 app.root.onget = function(request) {
@@ -56,7 +56,7 @@ app.root.onget = function(request) {
 }
 
 app.root.ondelete = function(request) {
-	request.respond(CodeRegistry.RESP_FORBIDDEN, "Storage root cannot be deleted");
+	request.respond(4.03, "Storage root cannot be deleted");
 }
 
 function Storage(name) {
@@ -67,7 +67,7 @@ function Storage(name) {
 	var mythis = this;
 	
 	this.res.onget = function(request) {
-		request.respond(ResponseCode.CONTENT, mythis.content);
+		request.respond(2.05, mythis.content);
 	}
 	
 	this.res.onpost = function(request) {
@@ -75,7 +75,7 @@ function Storage(name) {
 
 		if (contains(mythis.subress, name)) {
 			request.setLocationPath(findPathForName(mythis.subress, mythis.paths, name));
-			request.respond(ResponseCode.BAD_REQUEST, "Storage "+name+" is already created");
+			request.respond(4.00, "Storage "+name+" is already created");
 		} else {
 			var storage = new Storage(name);
 			mythis.res.add(storage.res);
@@ -84,14 +84,14 @@ function Storage(name) {
 			mythis.paths[mythis.paths.length] = path;
 
 			request.setLocationPath(path);
-			request.respond(CodeRegistry.RESP_CREATED, "Storage "+name+" created at location "+path);
+			request.respond(2.01, "Storage "+name+" created at location "+path);
 		}
 	}
 	
 	this.res.onput = function(request) {
 		mythis.content = request.CoapExchangeText();
 		mythis.res.changed();
-		request.respond(ResponseCode.CHANGED);
+		request.respond(2.04);
 	}
 	
 	this.res.ondelete = function(request) {

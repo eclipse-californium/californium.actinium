@@ -85,6 +85,7 @@ public class InstalledAppResource extends CoapResource {
 	public void handleGET(CoapExchange request) {
 		try {
 			File file = new File(getInstalledPath());
+			@SuppressWarnings("resource")
 			Scanner scanner = new Scanner(file).useDelimiter("\\Z");
 		    String content = scanner.next();  
 		    scanner.close();

@@ -21,7 +21,6 @@ import java.net.SocketException;
 import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.install.InstallResource;
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.server.resources.Resource;
 
 /**
  * Actinium (Ac) App-server for Californium
@@ -37,9 +36,6 @@ import org.eclipse.californium.core.server.resources.Resource;
  */
 public class AcServer extends CoapServer {
 
-	// appserver's configuration
-	private Config config;
-
 	// AppManager to figure out to which apps a request belongs
 	private AppManager manager;
 	
@@ -54,7 +50,6 @@ public class AcServer extends CoapServer {
 	public AcServer(Config config) throws SocketException {
 		
 		//Log.setLevel(Level.ALL);
-		this.config = config;
 		
 		this.manager = new AppManager(config);
 		

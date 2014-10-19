@@ -18,8 +18,10 @@ package org.eclipse.californium.actinium.jscoap;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.OptionNumberRegistry;
+import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -27,30 +29,30 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 
-public class JavaScriptCoapRequest extends ScriptableObject implements JavaScriptCoapConstants {
+public class JavaScriptCoapExchange extends ScriptableObject implements JavaScriptCoapConstants {
 
 	private static final long serialVersionUID = 2269672652051004591L;
 
 	private CoapExchange exchange;
 	private Request request;
 	
-	private Response response /* = new Response()*/;
+	private OptionSet responseOptions = new OptionSet();
 	
 	/*
 	 * Rhino: Needs an empty constructor for ScriptableObjects
 	 */
-	public JavaScriptCoapRequest() {
+	public JavaScriptCoapExchange() {
 		// do nothing
 	}
 	
-	public JavaScriptCoapRequest(CoapExchange exchange) {
+	public JavaScriptCoapExchange(CoapExchange exchange) {
 		this.exchange = exchange;
 		this.request = exchange.advanced().getRequest();
 	}
 	
 	@Override
 	public String getClassName() {
-		return "JavaScriptCoapRequest";
+		return "JavaScriptCoapExchange";
 	}
 	
 	/*
@@ -59,16 +61,28 @@ public class JavaScriptCoapRequest extends ScriptableObject implements JavaScrip
     public void jsConstructor() {
     }
 	
-    // Fields for JavaScript //
-	
-    public String jsGet_payloadText() {
-		return request.getPayloadString();
+    // Fields for JavaScript
+
+    public String jsGet_requestType() {
+    	return MediaTypeRegistry.toString(request.getOptions().getContentFormat());
 	}
 	
-	// Functions for JavaScript //
-
-	public String jsFunction_getPayloadString() {
+    public String jsGet_requestText() {
 		return request.getPayloadString();
+	}
+
+    public byte[] jsGet_request() {
+		return request.getPayload();
+	}
+	
+	// Functions for JavaScript
+	
+	public byte[] jsFunction_getPayload() {
+		return request.getPayload();
+	}
+	
+	public int jsFunction_payloadSize() {
+		return request.getPayloadSize();
 	}
 	
 	public void jsFunction_accept() {
@@ -82,25 +96,9 @@ public class JavaScriptCoapRequest extends ScriptableObject implements JavaScrip
 		respond(jscode, Context.toString(jsmessage), jscontentType);
 	}
 	
-	public void jsFunction_sendResponse() {
-		//request.sendResponse();
-	}
-	
-	
-	public String jsFunction_getPayload() {
-		return request.getPayloadString();
-	}
-	
-	public int jsFunction_payloadSize() {
-		return request.getPayloadSize();
-	}
 	
 	public int jsFunction_getMID() {
 		return request.getMID();
-	}
-	
-	public void jsFunction_setMID(int mid) {
-		response.setMID(mid);
 	}
 	
 	public String jsFunction_getUriPath() {
@@ -128,7 +126,7 @@ public class JavaScriptCoapRequest extends ScriptableObject implements JavaScrip
 	}
 	
 	public void jsFunction_setLocationPath(String locationPath) {
-		response.getOptions().setLocationPath(locationPath);
+		responseOptions.setLocationPath(locationPath);
 	}
 	
 	public Type jsFunction_getType() {
@@ -164,92 +162,71 @@ public class JavaScriptCoapRequest extends ScriptableObject implements JavaScrip
 	}
 	
 	// options
-	public void jsFunction_setResponseHeader(String header, Object value)  {
-		if (value instanceof Integer)
-			setResponseHeader(header, (Integer) value);
-		else if (value instanceof String)
-			setResponseHeader(header, (String) value);
-		else
-			setResponseHeader(header, value.toString());
+	public void jsFunction_setResponseHeader(String option, Object value)  {
+		
+		// convenience hack
+		if ("Content-Type".equals(option)) option = "Content-Format";
+		
+		int nr = OptionNumberRegistry.toNumber(option);
+		
+		if (value instanceof Integer) {
+			setResponseHeader(nr, (Integer) value);
+		} else if (value instanceof String) {
+			setResponseHeader(nr, (String) value);
+		} else {
+			setResponseHeader(nr, value.toString());
+		}
 	}
 	
 	public String jsFunction_getAllRequestHeaders() {
 		return getAllRequestHeaders();
 	}
 		
-	private void setResponseHeader(String header, String value)  { // TODO: test if this works
-		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-		if (nr==OptionNumberRegistry.CONTENT_TYPE) {
+	private void setResponseHeader(int nr, String value)  {
+		if (nr==OptionNumberRegistry.CONTENT_FORMAT || nr==OptionNumberRegistry.ACCEPT) {
 			// we also have to parse the value to get it as integer
-			int contentType = CoAPConstantsConverter.convertStringToContentType(value);
-			response.getOptions().addOption(new Option(nr, contentType));
-		} else if (nr==OptionNumberRegistry.ACCEPT) {
-			// we also have to parse the value to get it as integer
-			int contentType = CoAPConstantsConverter.convertStringToContentType(value);
-			response.getOptions().addOption(new Option(nr, contentType));
+			int contentFormat = MediaTypeRegistry.parse(value);
+			if (contentFormat > MediaTypeRegistry.UNDEFINED) responseOptions.addOption(new Option(nr, contentFormat));
 		} else {
-			response.getOptions().addOption(new Option(nr, value));
+			responseOptions.addOption(new Option(nr, value));
 		}
 	}
 	
-	private void setResponseHeader(String header, int value)  {
-		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-		response.getOptions().addOption(new Option(nr, value));
+	private void setResponseHeader(int nr, int value)  {
+		responseOptions.addOption(new Option(nr, value));
 	}
 	
 	private String getAllRequestHeaders() {
-		final String nl = "\r\n";
-		final String col = ": ";
-		StringBuffer buffer = new StringBuffer();
-		for (Option opt : request.getOptions().asSortedList()) {
-			buffer.append(OptionNumberRegistry.toString(opt.getNumber()));
-			buffer.append(col);
-			buffer.append(opt.toString());
-			buffer.append(nl);
-		}
-		return buffer.toString();
+		return request.getOptions().toString();
 	}
 	
-	private void respond(Object jscode, Object jsmessage, Object jscontentType) {
+	private void respond(Object jsCode, Object jsMessage, Object jsContentFormat) {
 
 		Integer code;
-		String message;
-		Integer contentType;
 
 		// Parse code (e.g. 69, 2.05 or "Content")
-		if (jscode instanceof Integer)
-			code = (Integer) jscode;
-		else if (jscode instanceof String)
-			code = CoAPConstantsConverter.convertStringToCode((String) jscode);
-		else if (jscode instanceof Double)
-			code = CoAPConstantsConverter.convertNumCodeToCode((Double) jscode);
-		else if (jscode instanceof Float)
-			code = CoAPConstantsConverter.convertNumCodeToCode(((Float) jscode).doubleValue());
+		if (jsCode instanceof Integer)
+			code = (Integer) jsCode;
+		else if (jsCode instanceof String)
+			code = CoAPConstantsConverter.convertStringToCode((String) jsCode);
+		else if (jsCode instanceof Double)
+			code = CoAPConstantsConverter.convertNumCodeToCode((Double) jsCode);
+		else if (jsCode instanceof Float)
+			code = CoAPConstantsConverter.convertNumCodeToCode(((Float) jsCode).doubleValue());
 		else
-			throw new IllegalArgumentException( "JavaScriptCoAPRequest.respond expects a String, Integer or Double as first argument but got "+jscode);
+			throw new IllegalArgumentException( "JavaScriptCoapExchange.respond expects a String, Integer or Double as first argument but got "+jsCode);
 
-		// Parse message
-		if (jsmessage == null)
-			message = "null";
-		else if (jsmessage instanceof Undefined)
-			message = null; // Either, no jsmessage has been provided or it was an undefined variable
-		else
-			message = jsmessage.toString();
-
-		// Parse content type (e.g. "text/plain", 0 or nothing)
-		if (jscontentType instanceof Integer)
-			contentType = (Integer) jscontentType;
-		else if (jscontentType instanceof String)
-			contentType = CoAPConstantsConverter .convertStringToContentType((String) jscontentType);
-		else
-			contentType = null;
+		// Parse content format (e.g. "text/plain", 0 or nothing)
+		if (jsContentFormat instanceof Integer)
+			responseOptions.setContentFormat((Integer) jsContentFormat);
+		else if (jsContentFormat instanceof String)
+			responseOptions.setContentFormat(MediaTypeRegistry.parse((String) jsContentFormat));
 
 		// Respond to the request
-		response = new Response(ResponseCode.valueOf(code));
-		if (message != null)
-			response.setPayload(message);
-		if (contentType != null)
-			response.getOptions().setContentFormat(contentType);
+		Response response = new Response(ResponseCode.valueOf(code));
+		response.setOptions(responseOptions);
+		if (jsMessage != null && !(jsMessage instanceof Undefined)) response.setPayload(jsMessage.toString());
+		
 		exchange.respond(response);
 	}
 	

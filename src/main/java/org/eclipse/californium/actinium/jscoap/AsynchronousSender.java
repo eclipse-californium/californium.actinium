@@ -27,7 +27,7 @@ import org.mozilla.javascript.Function;
 
 /**
  * AsynchronousSender implements the process to send a request asynchronously.
- * Conforms to the CoAPRequest API
+ * Conforms to the CoapRequest API
  * (http://lantersoft.ch/download/bachelorthesis/CoAPRequest_API.pdf)
  * <p>
  * Only one of the functions onload, ontimeout, onerror gets called (according
@@ -103,7 +103,7 @@ public class AsynchronousSender extends AbstractSender {
 		}
 		if (callonready) {
 			synchronized (coapRequest) {
-//				coapRequest.setResponse(response);
+				coapRequest.setResponse(response);
 				coapRequest.setReadyState(CoapRequest.DONE);
 			}
 			callJavaScriptFunction(onready, coapRequest, response);

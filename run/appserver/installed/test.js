@@ -14,17 +14,17 @@
  *    Martin Lanter
  ******************************************************************************/
 /*
- * Communicator tests the CoAPRequest API.
+ * Communicator tests the CoapRequest API.
  *
- * Communicator contains 6 subresources to adjust the CoAPRequest
+ * Communicator contains 6 subresources to adjust the CoapRequest
  *   async: true, if reqeust should be sent asynchronously.
  *          false, if request should be sent synchronously.
  *   contentType: "null" for undefined
  *                An integer, e.g. application/xml==41
  *   locationPath: A location path of the request
  *   method: GET, POST, PUT or DELETE
- *   timeout: 0, if no timeout (for CoAPRequest) should be used
- *            An integer, to define a timeout (for (CoAPRequest)
+ *   timeout: 0, if no timeout (for CoapRequest) should be used
+ *            An integer, to define a timeout (for (CoapRequest)
  *   uri: A URI as target for the request
  *
  * Send a PUT request with the desired value as payload to change
@@ -35,8 +35,8 @@
  * to send the specified payload to the target URI, using the
  * values from the 6 subresources above.
  *
- * In short: Specify the values of a CoAPRequest with subresources
- * from above and then send a POST to send to send the CoAPRequest.
+ * In short: Specify the values of a CoapRequest with subresources
+ * from above and then send a POST to send to send the CoapRequest.
  */
  
  
@@ -89,7 +89,7 @@ function performRequest(type, request) {
 	// compute result
 	app.sleep(100);
 	
-	request.respond(ResponseCode.CONTENT, app.root.getName()+" received your message \""+request.CoapExchangeText()+"\"");
+	request.respond(2.05, app.root.getName()+" received your message \""+request.CoapExchangeText()+"\"");
 }
 
 function Property(resid, dflt) {
@@ -97,17 +97,17 @@ function Property(resid, dflt) {
 	this.content = dflt;
 	this.res = new JavaScriptResource(resid);
 	this.res.onget = function(request) {
-		request.respond(ResponseCode.CONTENT, THIS.content);
+		request.respond(2.05, THIS.content);
 	};
 	this.res.onput = function(request) {
 		THIS.content = request.CoapExchangeText();
-		request.respond(ResponseCode.CONTENT, THIS.content);
+		request.respond(2.05, THIS.content);
 	};
 }
 
 /*
  * The send subresource sends a synchronous or asynchronous 
- * request to the specified uri. It uses a CoAPRequest object 
+ * request to the specified uri. It uses a CoapRequest object 
  * with the specified values from the other subresources
  */
 function Send() {
@@ -133,7 +133,7 @@ function dosendAsync(request) {
 		var payload = request.CoapExchangeText();
 
 		// create new coaprequest to call uri
-		var coapreq = new CoAPRequest();
+		var coapreq = new CoapRequest();
 		coapreq.onreadystatechange = function() {
 			app.dump("onreadystatechange called while sending asynchronously, readyState: "+this.readyState+", error="+this.error);
 		};
@@ -154,12 +154,12 @@ function dosendAsync(request) {
 			app.dump("Headers:\n"+coapreq.getAllResponseHeaders());
 
 			// respond the request
-			request.respond(ResponseCode.CONTENT, "request sent asyncronously: response = "+this.responseText);
+			request.respond(2.05, "request sent asyncronously: response = "+this.responseText);
 		}
 				
 		coapreq.ontimeout = function() {
 			app.dump("timeout while sending asynchronously");
-			request.respond(ResponseCode.CONTENT, "timeout while sending asynchronously");
+			request.respond(2.05, "timeout while sending asynchronously");
 		}
 		
 		coapreq.setRequestHeader("Max-Age",77);
@@ -167,7 +167,7 @@ function dosendAsync(request) {
 
 	} catch (e if e.javaException instanceof Exception) {
 		e.javaException.printStackTrace();
-		request.respond(ResponseCode.BAD_REQUEST, e.javaException.toString());
+		request.respond(4.00, e.javaException.toString());
 	}
 }
 
@@ -177,7 +177,7 @@ function dosendSync(request) {
 		request.accept(); // accept request and respond later
 		var payload = request.CoapExchangeText();
 
-		var coapreq = new CoAPRequest();
+		var coapreq = new CoapRequest();
 		coapreq.ontimeout = ontimeoutSync;
 		coapreq.onreadystatechange = function() {
 			app.dump("onreadystatechange called while sending synchronously, readyState: "+this.readyState+", error="+this.error);

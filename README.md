@@ -1,8 +1,6 @@
 Actinium (Ac) App-server for Californium
 ========================================
 
-CAUTION: This project is still based on [draft-ietf-core-coap-08](http://tools.ietf.org/html/draft-ietf-core-coap-08)!
-
 Our novel runtime container Actinium (Ac) exposes scripts, their configuration,
 and their lifecycle management through a fully RESTful programming interface
 using the Constrained Application Protocol (CoAP). We endow the JavaScript
@@ -21,12 +19,12 @@ A standalone JAR will be created in the ./run/ directory.
 
 Rhino is available from the default Maven repositories.
 The Maven repositories for the other dependencies
-(*californium-0.8.5* and *e4x-utils*) are:
+(*californium* and *e4x-utils*) are:
 
-* [https://github.com/mkovatsc/maven/raw/master/releases/](https://github.com/mkovatsc/maven/raw/master/releases/)
+* [https://repo.eclipse.org/content/repositories/californium/](https://repo.eclipse.org/content/repositories/californium/)
 * [https://github.com/mkovatsc/maven/raw/master/thirdparty/](https://github.com/mkovatsc/maven/raw/master/thirdparty/)
 
-Run with `java -jar actinium-2.0.0-SNAPSHOT.jar`.
+Run with `java -jar actinium-*.jar`.
 
 Eclipse
 -------
@@ -64,7 +62,7 @@ Example:
 
 		Request:  POST coap://localhost:5683/install?helloWorld
 		Payload:  app.root.onget = function(request) {
-	                  request.respond(69,"Hello World");
+	                  request.respond(2.05, "Hello World");
 		          }
 		Response: Application appname successfully installed to /install/helloWorld
 
@@ -108,7 +106,7 @@ There are also three special commands to control the running instance via POST:
 Example:
 
 		a) Request:  GET coap://localhost:5683/apps/appconfigs/hello-1
-		   Response: Alle Eigenschaften der App
+		   Response: All app properties
 		   
 		b) Request:  POST coap://localhost:5683/apps/appconfigs/hello-1
 		   Payload:  enable_request_delivery = false
@@ -135,10 +133,10 @@ Example:
 		app.root.ondelete = fnc;
 		
 		fnc = function(request) { 
-			request.respond(69,"Hello World"); 
+			request.respond(2.05, "Hello World"); 
 		}
 
-Sub-resources can be added to the root resouce as shown below:
+Sub-resources can be added to the root resource as shown below:
 
 		res = new JavaScriptResource('mySubResource');
 		app.root.add(res);
@@ -154,7 +152,7 @@ The `AcShell` can be used to run a single app from the command line.
 Start with:
 
 	Windows:
-		java -cp "target/classes;lib/*" org.eclipse.californium.actinium.AcShell file.js
+		java -cp target/actinium-*.jar org.eclipse.californium.actinium.AcShell file.js
 	
 	Linux:
-		java -cp "target/classes:lib/*" org.eclipse.californium.actinium.AcShell file.js
+		java -cp target/actinium-*.jar org.eclipse.californium.actinium.AcShell file.js

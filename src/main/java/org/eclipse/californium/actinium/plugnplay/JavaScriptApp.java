@@ -26,13 +26,14 @@ import java.util.TimerTask;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
 import org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants;
-import org.eclipse.californium.actinium.jscoap.JavaScriptCoapRequest;
+import org.eclipse.californium.actinium.jscoap.JavaScriptCoapExchange;
 import org.eclipse.californium.actinium.jscoap.JavaScriptResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.ImporterTopLevel;
+import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrappedException;
@@ -72,9 +73,9 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		"java.io",
 		"java.net",
 		"java.text",
-		"ch.ethz.inf.vs.californium.coap", // Response, CodeRegistry
-		"ch.ethz.inf.vs.actinium.jscoap", // CoAPRequest
-		"ch.ethz.inf.vs.actinium.jscoap.jserror" // CoAPRequest RequestErrorException
+		"org.eclipse.californium.core.coap", // Response
+		"org.eclipse.californium.actinium.jscoap", // CoapRequest
+		"org.eclipse.californium.actinium.jscoap.jserror" // CoAPRequest RequestErrorException
 	};
 
 	/**
@@ -129,6 +130,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			String path = appcfg.getProperty(AppConfig.DIR_PATH) + appcfg.getProperty(AppConfig.APP) + "." + AppType.getAppSuffix(appcfg.getProperty(AppConfig.TYPE));
 		
 			File file = new File(path);
+			@SuppressWarnings("resource")
 			Scanner scanner = new Scanner(file).useDelimiter("\\Z");
 			String code = "";
 			if (scanner.hasNext())
@@ -142,7 +144,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		    super.receiveMessages();
 		    
         } catch (Exception e) {
-        	System.err.println("Exception while executing "+getName());
+        	System.err.println("Exception while executing '"+getName()+"'");
         	e.printStackTrace();
         }
 	}
@@ -171,7 +173,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
             try {
             	// Add AJAX' XMLHttpRequest to JavaScript
             	ScriptableObject.defineClass(scope,	XMLHttpRequest.class);
-            	ScriptableObject.defineClass(scope,	JavaScriptCoapRequest.class);
+            	ScriptableObject.defineClass(scope,	JavaScriptCoapExchange.class);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			} catch (InstantiationException e) {
@@ -188,15 +190,13 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			// Execute code
 			cx.evaluateString(scope, code, name, 1, null);
 
-        } catch (WrappedException e) {
+        } catch (RhinoException e) {
         	Throwable cause = e.getCause();
         	if (cause!=null && cause instanceof InterruptedException) {
         		// this was a controlled shutdown, e.g. with app.stop()
         		System.out.println("JavaScript app "+getName()+" has been interrupted");
         	} else {
-        		// Don't catch this exception but throw it again
-        		System.err.println("Exception in JavaScript app "+getName()+": "+e.getMessage());
-        		throw e;
+        		System.err.println("JavaScript error in ["+e.sourceName()+"#"+e.lineNumber()+"]: "+cause.getMessage());
         	}
         
         } finally {

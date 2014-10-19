@@ -32,17 +32,17 @@ import org.eclipse.californium.core.coap.Response;
 import org.mozilla.javascript.Function;
 
 /**
- * CoAPRequest implements the CoAPRequest API
+ * CoapRequest implements the CoapRequest API
  * (http://lantersoft.ch/download/bachelorthesis/CoAPRequest_API.pdf).
  * <p>
- * The CoAPRequest specification defines an API that provides scripted client
+ * The CoapRequest specification defines an API that provides scripted client
  * functionality for transferring data between a CoAP client and a CoAP server.
  * <p>
  * A simple code demonstration to fetch data from a CoAP resource over the network
  * <pre>
- * var client = new CoAPRequest();
+ * var client = new CoapRequest();
  * client.onreadystatechange = handler
- * client.open("GET", "coap://mydomain.myresource");
+ * client.open("GET", "coap://example.com/my-resource");
  * client.send();
  * function handler() {
  *   if (client.readyState==4) {
@@ -219,7 +219,7 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	 * @param str string for option
 	 */
 	public void setObserverOption(String str) {
-		addOption(str, OptionNumberRegistry.OBSERVE);
+		addOption(OptionNumberRegistry.OBSERVE, str);
 	}
 	
 	/**
@@ -240,20 +240,20 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	
 	/**
 	 * Adds the specified option.
-	 * @param val the option's value.
 	 * @param nr the option nr.
+	 * @param val the option's value.
 	 */
-	public void addOption(int val, int nr) {
+	public void addOption(int nr, int val) {
 		List<Option> list = findOptionList(nr);
-		list.add(new Option(val, nr));
+		list.add(new Option(nr, val));
 	}
 	
 	/**
 	 * Adds the specified option.
-	 * @param str the option's text.
 	 * @param nr the option nr.
+	 * @param str the option's text.
 	 */
-	public void addOption(String str, int nr) {
+	public void addOption(int nr, String str) {
 		List<Option> list = findOptionList(nr);
 		list.add(new Option(nr, str));
 	}
@@ -302,23 +302,20 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	
 	/**
 	 * Adds the specified request header.
-	 * @param header the header.
+	 * @param option the header.
 	 * @param value the text.
 	 */
-	public void setRequestHeader(String header, String value)  {
+	public void setRequestHeader(String option, String value)  {
 		checkOpenUnsentState();
 		
-		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-		if (nr==OptionNumberRegistry.CONTENT_TYPE) {
+		int nr = OptionNumberRegistry.toNumber(option);
+
+		if (nr==OptionNumberRegistry.CONTENT_FORMAT || nr==OptionNumberRegistry.ACCEPT) {
 			// we also have to parse the value to get it as integer
-			int contentType = CoAPConstantsConverter.convertStringToContentType(value);
-			addOption(contentType,nr);
-		} else if (nr==OptionNumberRegistry.ACCEPT) {
-			// we also have to parse the value to get it as integer
-			int contentType = CoAPConstantsConverter.convertStringToContentType(value);
-			addOption(contentType,nr);
+			int contentFormat = MediaTypeRegistry.parse(value);
+			if (contentFormat > MediaTypeRegistry.UNDEFINED) addOption(nr, contentFormat);
 		} else {
-			addOption(value, nr);
+			addOption(nr, value);
 		}
 	}
 	
@@ -327,11 +324,11 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	 * @param header the header.
 	 * @param value the value.
 	 */
-	public void setRequestHeader(String header, int value)  {
+	public void setRequestHeader(String option, int value)  {
 		checkOpenUnsentState();
-		
-		int nr = CoAPConstantsConverter.convertHeaderToInt(header);
-		addOption(value, nr);
+
+		int nr = OptionNumberRegistry.toNumber(option);
+		addOption(nr, value);
 	}
 
 	/**
@@ -354,17 +351,8 @@ public class CoapRequest implements JavaScriptCoapConstants {
 			return "";
 		if (error) return "";
 		if (response==null) return "";
-		final String nl = "\r\n";
-		final String col = ": ";
-		StringBuffer buffer = new StringBuffer();
-		
-		for (Option opt : response.getOptions().asSortedList()) {
-			buffer.append(OptionNumberRegistry.toString(opt.getNumber()));
-			buffer.append(col);
-			buffer.append(opt.toString());
-			buffer.append(nl);
-		}
-		return buffer.toString();
+
+		return response.getOptions().toString();
 	}
 
 	/**

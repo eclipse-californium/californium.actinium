@@ -16,67 +16,35 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Accept;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Bad_Gateway;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Bad_Option;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Bad_Request;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Changed;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Content;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Content_Type;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Created;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Deleted;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.ETag;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Forbidden;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Gateway_Timeout;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.If_Match;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.If_None_Match;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Internal_Server_Error;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Location_Path;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Location_Query;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Max_Age;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Method_Not_Allowed;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Not_Found;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Not_Implemented;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Precondition_Failed;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Proxy_Uri;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Proxying_Not_Supported;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Request_Entity_Too_Large;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Service_Unavailable;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Token;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Unauthorized;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Unsupported_Media_Type;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Uri_Host;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Uri_Path;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Uri_Port;
-import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Uri_Query;
 import static org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants.Valid;
 
 import java.util.HashMap;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.OptionNumberRegistry;
 
 /**
  * CoAPConstants implements the most important constants from CoAP.
  */
 public interface JavaScriptCoapConstants {
-
-	// Option Number Registry from draft-ietf-core-coap-18, chapter 12.2
-	public static final String Content_Type 	= "Content-Type";
-	public static final String Max_Age 			= "Max-Age";
-	public static final String Proxy_Uri 		= "Proxy-Uri";
-	public static final String ETag 			= "ETag";
-	public static final String Uri_Host 		= "Uri-Host";
-	public static final String Location_Path 	= "Location-Path";
-	public static final String Uri_Port 		= "Uri-Port";
-	public static final String Location_Query 	= "Location-Query";
-	public static final String Uri_Path 		= "Uri-Path";
-	public static final String Token 			= "Token";
-	public static final String Accept 			= "Accept";
-	public static final String If_Match 		= "If-Match";
-	public static final String Uri_Query 		= "Uri-Query";
-	public static final String If_None_Match 	= "If-None-Match";
 	
 	// CodeRegistry constants as JS constants
 	public static final int Created 			= ResponseCode.CREATED.value;
@@ -105,7 +73,6 @@ class CoAPConstantsConverter {
 	
 	private static final HashMap<Double, Integer> numToCode = new HashMap<Double, Integer>();
 	private static final HashMap<String, Integer> strToCode = new HashMap<String, Integer>();
-	private static final HashMap<String, Integer> strToContentType = new HashMap<String, Integer>();
 	
 	static {
 		numToCode.put(2.01, Created);
@@ -152,30 +119,6 @@ class CoAPConstantsConverter {
 		strToCode.put("Proxying Not Supported", Proxying_Not_Supported);
 	}
 	
-	// compare to ch.ethz.inf.vs.californium.coap.MediaTypeRegistry
-	static {
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.UNDEFINED), MediaTypeRegistry.UNDEFINED);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.TEXT_PLAIN), MediaTypeRegistry.TEXT_PLAIN);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.TEXT_CSV), MediaTypeRegistry.TEXT_CSV);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.TEXT_HTML), MediaTypeRegistry.TEXT_HTML);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.IMAGE_GIF), MediaTypeRegistry.IMAGE_GIF);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.IMAGE_JPEG), MediaTypeRegistry.IMAGE_JPEG);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.IMAGE_PNG), MediaTypeRegistry.IMAGE_PNG);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.IMAGE_TIFF), MediaTypeRegistry.IMAGE_TIFF);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_LINK_FORMAT), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_XML), MediaTypeRegistry.APPLICATION_XML);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_OCTET_STREAM), MediaTypeRegistry.APPLICATION_OCTET_STREAM);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_RDF_XML), MediaTypeRegistry.APPLICATION_RDF_XML);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_SOAP_XML), MediaTypeRegistry.APPLICATION_SOAP_XML);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_ATOM_XML), MediaTypeRegistry.APPLICATION_ATOM_XML);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_XMPP_XML), MediaTypeRegistry.APPLICATION_XMPP_XML);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_EXI), MediaTypeRegistry.APPLICATION_EXI);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_FASTINFOSET), MediaTypeRegistry.APPLICATION_FASTINFOSET);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_SOAP_FASTINFOSET), MediaTypeRegistry.APPLICATION_SOAP_FASTINFOSET);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_JSON), MediaTypeRegistry.APPLICATION_JSON);
-		strToContentType.put(MediaTypeRegistry.toString(MediaTypeRegistry.APPLICATION_X_OBIX_BINARY), MediaTypeRegistry.APPLICATION_X_OBIX_BINARY);
-	}
-	
 	public static int convertNumCodeToCode(double num) {
 		Integer ret = numToCode.get(num);
 		if (ret!=null) return ret;
@@ -186,47 +129,6 @@ class CoAPConstantsConverter {
 		Integer ret = strToCode.get(str);
 		if (ret!=null) return ret;
 		else return Internal_Server_Error; // better throw an exception?
-	}
-	
-	public static int convertStringToContentType(String str) {
-		Integer ret = strToContentType.get(str);
-		if (ret!=null) return ret;
-		else return MediaTypeRegistry.UNDEFINED; // better throw an exception?
-	}
-	
-	public static int convertHeaderToInt(String c) {
-		if (Content_Type.equals(c)) 	return OptionNumberRegistry.CONTENT_TYPE;
-		else if (Max_Age.equals(c)) 	return OptionNumberRegistry.MAX_AGE;
-		else if (Proxy_Uri.equals(c)) 	return OptionNumberRegistry.PROXY_URI;
-		else if (ETag.equals(c)) 		return OptionNumberRegistry.ETAG;
-		else if (Uri_Host.equals(c))	return OptionNumberRegistry.URI_HOST;
-		else if (Location_Path.equals(c))return OptionNumberRegistry.LOCATION_PATH;
-		else if (Uri_Port.equals(c))	return OptionNumberRegistry.URI_PORT;
-		else if (Location_Query.equals(c))return OptionNumberRegistry.LOCATION_QUERY;
-		else if (Uri_Path.equals(c))	return OptionNumberRegistry.URI_PATH;
-//		else if (Token.equals(c))		return OptionNumberRegistry.TOKEN;
-		else if (Accept.equals(c))		return OptionNumberRegistry.ACCEPT;
-		else if (If_Match.equals(c))	return OptionNumberRegistry.IF_MATCH;
-		else if (Uri_Query.equals(c))	return OptionNumberRegistry.URI_QUERY;
-		else if (If_None_Match.equals(c)) return OptionNumberRegistry.IF_NONE_MATCH;
-		else throw new IllegalArgumentException("Unknown Header: "+c);
-	}
-	
-	public static String convertIntToHeader(int nr) {
-		if (nr==1) return Content_Type;
-		else if (nr==2) return Max_Age;
-		else if (nr==3) return Proxy_Uri;
-		else if (nr==4) return ETag;
-		else if (nr==5) return Uri_Host;
-		else if (nr==6) return Location_Path;
-		else if (nr==7) return Uri_Port;
-		else if (nr==8) return Location_Query;
-		else if (nr==9) return Uri_Path;
-		else if (nr==11) return Token;
-		else if (nr==12) return Accept;
-		else if (nr==13) return If_Match;
-		else if (nr==15) return Uri_Query;
-		else return "Unknown";
 	}
 	
 	public static int convertCoAPCodeToHttp(int code) {

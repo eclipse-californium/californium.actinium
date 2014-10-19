@@ -18,7 +18,7 @@ var uri = 'coap://localhost/'; // set via POST
 app.dump('Set RTT URI via POST');
 
 function pollNode() {
-	var client = new CoAPRequest();
+	var client = new CoapRequest();
 	client.timeout = 60000;
 	
 	var min = client.timeout*1000000;
