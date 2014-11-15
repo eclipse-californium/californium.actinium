@@ -111,7 +111,7 @@ public class InstallResource extends CoapResource {
 		try {
 			// Figure out, whether payload is String or byte[] and install
 			String payload = request.getRequestText();
-			String query = request.getRequestOptions().getURIQueryString();	
+			String query = request.getRequestOptions().getUriQueryString();	
 			
 			// Throws IllegaArgumentException if request is not legal
 			String newpath = installAppFromString(payload, query);

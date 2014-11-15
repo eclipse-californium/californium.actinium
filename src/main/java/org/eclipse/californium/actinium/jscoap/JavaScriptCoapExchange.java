@@ -102,11 +102,11 @@ public class JavaScriptCoapExchange extends ScriptableObject implements JavaScri
 	}
 	
 	public String jsFunction_getUriPath() {
-		return request.getOptions().getURIPathString();
+		return request.getOptions().getUriPathString();
 	}
 	
 	public String jsFunction_getQuery() {
-		return request.getOptions().getURIQueryString();
+		return request.getOptions().getUriQueryString();
 	}
 	
 	public int jsFunction_getContentType() {
