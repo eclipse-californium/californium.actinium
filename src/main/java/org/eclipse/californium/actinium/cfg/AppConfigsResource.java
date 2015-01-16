@@ -54,7 +54,7 @@ public class AppConfigsResource extends CoapResource {
 	 * Adds a config, creates a correspondig resource and adds it as
 	 * subresource.
 	 * 
-	 * @param appconfig
+	 * @param appconfig the configuration
 	 */
 	public void addConfig(AppConfig appconfig) {
 		String identifier = appconfig.getName();

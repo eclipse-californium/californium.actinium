@@ -52,8 +52,8 @@ public class Config extends AbstractConfig {
 	}
 	
 	/**
-	 * Constructs a new Config from the specified path
-	 * @param path
+	 * Constructs a new Config from the specified filepath
+	 * @param path the path to the config file
 	 */
 	public Config(String path) {
 		super(path);

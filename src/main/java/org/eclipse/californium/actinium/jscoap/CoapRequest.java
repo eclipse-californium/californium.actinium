@@ -321,8 +321,8 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	
 	/**
 	 * Adds the specified request header.
-	 * @param header the header.
-	 * @param value the value.
+	 * @param option the option name
+	 * @param value the option value
 	 */
 	public void setRequestHeader(String option, int value)  {
 		checkOpenUnsentState();
@@ -374,6 +374,7 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	// called by Sender
 	/**
 	 * Sets the specified response or resets the response, if response is null.
+	 * @param response the response to this request
 	 */
 	protected synchronized void setResponse(Response response) {
 		if (response!=null) {

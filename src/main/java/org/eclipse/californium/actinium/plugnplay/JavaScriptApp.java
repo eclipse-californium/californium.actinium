@@ -306,6 +306,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		
 		/**
 		 * Prints to the standard output stream
+		 * @param args the objects to print
 		 */
 		public void dump(Object... args) { // "app.dump("hello world");
 			if (isOutputAllowed()) {
@@ -316,6 +317,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		
 		/**
 		 * Prints to the standart error output stream
+		 * @param args the objects to print
 		 */
 		public void error(Object... args) {
 			if (isErrorOutputAllowed()) {
@@ -324,9 +326,6 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			}
 		}
 		
-		/**
-		 * Concatenates the arguments
-		 */
 		private String convertToOutput(Object[] args) {
 			StringBuffer buffer = new StringBuffer();
 			if (args.length>0 && args[0]!=null && !"".equals(args[0])) {
@@ -350,6 +349,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		
 		/**
 		 * Stops the app.
+		 * @param args will be ignored
 		 */
 		public void shutdown(Object... args) {
 			JavaScriptApp.this.shutdown();
@@ -357,13 +357,16 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		
 		/**
 		 * Restarts the app.
+		 * @param args will be ignored
 		 */
 		public void restart(Object... args) {
 			JavaScriptApp.this.restart();
 		}
 		
 		/**
-		 * Sleeps for the given amount of milliseconds 
+		 * Sleeps for the given amount of milliseconds.
+		 * @param millis the time to sleep
+		 * @throws InterruptedException if interrupted
 		 */
 		public void sleep(long millis) throws InterruptedException {
 			Thread.sleep(millis);
@@ -401,6 +404,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		 * default value.
 		 * 
 		 * @param key the key
+		 * @param dflt the default if not set
 		 * @return the corresponding value to the key, if found or the given
 		 *         default value.
 		 */

@@ -177,6 +177,8 @@ public class AppManager {
 	 * 
 	 * @param appname the appname that is removed.
 	 * @throws IOException
+	 *             if the deletion process fails, e.g. file not found or not
+	 *             accessible.
 	 */
 	public void deleteApps(String appname) throws IOException {
 		appresource.deleteApps(appname);
