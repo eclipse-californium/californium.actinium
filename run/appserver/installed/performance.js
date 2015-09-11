@@ -48,7 +48,7 @@ var n_newton = 1000000;
 app.root.onget = function(request) {
 	request.accept();
 	
-	var what = request.CoapExchangeText();
+	var what = request.requestText;
 	var text = '';
 	
 	app.dump('Fibonacci');

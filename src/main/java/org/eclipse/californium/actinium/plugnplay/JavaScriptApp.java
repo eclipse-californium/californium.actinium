@@ -196,7 +196,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
         		// this was a controlled shutdown, e.g. with app.stop()
         		System.out.println("JavaScript app "+getName()+" has been interrupted");
         	} else {
-        		System.err.println("JavaScript error in ["+e.sourceName()+"#"+e.lineNumber()+"]: "+cause.getMessage());
+        		System.err.println("JavaScript error in ["+e.sourceName()+"#"+e.lineNumber()+"]: "+e.details());
         	}
         
         } finally {

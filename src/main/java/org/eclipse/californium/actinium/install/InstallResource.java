@@ -186,7 +186,7 @@ public class InstallResource extends CoapResource {
 		InstalledAppResource res = new InstalledAppResource(name, payload, manager);
 		addInstalledAppResource(res);
 		
-		return res.getPath();
+		return res.getURI();
 	}
 	
 	/**

@@ -27,7 +27,7 @@ var paths = new Array();
 var content = ""; //java.lang.reflect.Array.newInstance(java.lang.Character.TYPE, 0);
 
 app.root.onpost = function(request) {
-	var name = request.CoapExchangeText();
+	var name = request.requestText;
 	
 	if (contains(subress,name)) {
 		var path = findPathForName(subress, paths, name);
@@ -36,17 +36,17 @@ app.root.onpost = function(request) {
 	} else {
 		var storage = new Storage(name);
 		app.root.add(storage.res);
-		var path = storage.res.getPath();
+		var path = storage.res.getURI();
 		subress[subress.length] = name;
 		paths[paths.length] = path;
 		
 		request.setLocationPath(path);
-		request.respond(CodeRegistry.RESP_CREATED, "Storage "+name+" created at location "+path);
+		request.respond(2.01, "Storage "+name+" created at location "+path);
 	}
 }
 
 app.root.onput = function(request) {
-	content = request.CoapExchangeText();
+	content = request.requestText;
 	app.root.changed();
 	request.respond(2.04);
 }
@@ -71,7 +71,7 @@ function Storage(name) {
 	}
 	
 	this.res.onpost = function(request) {
-		var name = request.CoapExchangeText();
+		var name = request.requestText;
 
 		if (contains(mythis.subress, name)) {
 			request.setLocationPath(findPathForName(mythis.subress, mythis.paths, name));
@@ -79,7 +79,7 @@ function Storage(name) {
 		} else {
 			var storage = new Storage(name);
 			mythis.res.add(storage.res);
-			var path = storage.res.getPath();
+			var path = storage.res.getURI();
 			mythis.subress[mythis.subress.length] = name;
 			mythis.paths[mythis.paths.length] = path;
 
@@ -89,14 +89,14 @@ function Storage(name) {
 	}
 	
 	this.res.onput = function(request) {
-		mythis.content = request.CoapExchangeText();
+		mythis.content = request.requestText;
 		mythis.res.changed();
 		request.respond(2.04);
 	}
 	
 	this.res.ondelete = function(request) {
-		mythis.res.remove();
-		request.respond(CodeRegistry.RESP_DELETED, "deleted");
+		mythis.res.delete();
+		request.respond("Deleted");
 	}
 }
 

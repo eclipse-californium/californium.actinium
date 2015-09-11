@@ -92,7 +92,7 @@ public class StatsResource extends CoapResource {
 		// if appname==null use the appinfo for all non-app resources
 		AppInfo appinfo = appinfos.get(appname);
 		
-		String path = resource.getPath();
+		String path = resource.getURI();
 		ResourceInfo resinfo = resinfos.get(path);
 		if (resinfo==null) { 
 			// if no information about this resource available, create a new one
@@ -230,7 +230,7 @@ public class StatsResource extends CoapResource {
 	 * @param buffer - the buffer to which the text is added to
 	 */
 	private void addRequestCounter(Resource res, StringBuffer buffer) {
-		String respath = res.getPath();
+		String respath = res.getURI();
 		buffer.append("\n\t"+respath+":");
 		ResourceInfo resinfo = resinfos.get(respath);
 		if (resinfo==null) {
@@ -260,7 +260,7 @@ public class StatsResource extends CoapResource {
 	 */
 	private String getAppName(Resource res) {
 		// path in this form: /apps/running/appname/...
-		String path = res.getPath();
+		String path = res.getURI();
 		String[] parts = path.split("/"); // parts[0] is ""
 		
 		String idapps = config.getProperty(Config.APPS_RESOURCE_ID);

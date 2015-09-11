@@ -62,7 +62,7 @@ public class JavaScriptCoapExchange extends ScriptableObject implements JavaScri
     }
 	
     // Fields for JavaScript
-
+    
     public String jsGet_requestType() {
     	return MediaTypeRegistry.toString(request.getOptions().getContentFormat());
 	}
@@ -93,7 +93,7 @@ public class JavaScriptCoapExchange extends ScriptableObject implements JavaScri
 	 * Rhino: Only one method jsFunction_respond is allowed
 	 */
 	public void jsFunction_respond(Object jscode, Object jsmessage, Object jscontentType) {
-		respond(jscode, Context.toString(jsmessage), jscontentType);
+		respond(jscode, jsmessage, jscontentType);
 	}
 	
 	
@@ -205,16 +205,22 @@ public class JavaScriptCoapExchange extends ScriptableObject implements JavaScri
 		Integer code;
 
 		// Parse code (e.g. 69, 2.05 or "Content")
-		if (jsCode instanceof Integer)
+		
+		if (jsCode instanceof Integer) {
 			code = (Integer) jsCode;
-		else if (jsCode instanceof String)
+			// Problem: 4.00 becomes the Integer 4 -> convert 1--5 to actual raw value code
+			if (code <= 5) {
+				code *= 32; 
+			}
+		} else if (jsCode instanceof String) {
 			code = CoAPConstantsConverter.convertStringToCode((String) jsCode);
-		else if (jsCode instanceof Double)
+		} else if (jsCode instanceof Double) {
 			code = CoAPConstantsConverter.convertNumCodeToCode((Double) jsCode);
-		else if (jsCode instanceof Float)
+		} else if (jsCode instanceof Float) {
 			code = CoAPConstantsConverter.convertNumCodeToCode(((Float) jsCode).doubleValue());
-		else
+		} else {
 			throw new IllegalArgumentException( "JavaScriptCoapExchange.respond expects a String, Integer or Double as first argument but got "+jsCode);
+		}
 
 		// Parse content format (e.g. "text/plain", 0 or nothing)
 		if (jsContentFormat instanceof Integer)
@@ -225,7 +231,7 @@ public class JavaScriptCoapExchange extends ScriptableObject implements JavaScri
 		// Respond to the request
 		Response response = new Response(ResponseCode.valueOf(code));
 		response.setOptions(responseOptions);
-		if (jsMessage != null && !(jsMessage instanceof Undefined)) response.setPayload(jsMessage.toString());
+		if (jsMessage != null && !(jsMessage instanceof Undefined)) response.setPayload(Context.toString(jsMessage));
 		
 		exchange.respond(response);
 	}

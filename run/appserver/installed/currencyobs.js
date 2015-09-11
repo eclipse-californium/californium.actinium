@@ -68,7 +68,7 @@ app.root.onget = function(request) {
 }
 
 app.root.onpost = function(request) {
-	var payload = request.CoapExchangeText();
+	var payload = request.requestText;
 	if (payload=="stop") {
 		app.shutdown();
 		request.respond(2.03);

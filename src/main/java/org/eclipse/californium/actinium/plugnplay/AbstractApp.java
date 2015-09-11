@@ -205,7 +205,7 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	 */
 	private void removeSubresources() {
 		for (Resource res:getChildren())
-			remove(res);
+			delete(res);
 	}
 	
 	/**

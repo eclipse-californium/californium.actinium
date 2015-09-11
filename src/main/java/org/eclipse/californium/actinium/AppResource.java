@@ -176,17 +176,12 @@ public class AppResource extends CoapResource {
 	}
 
 	/**
-	 * Adds a new app to the available apps. If start_on_install in the app
-	 * server's config is set to true, AppResource also starts the specified app
-	 * and adds it to the running apps.
+	 * Adds a new app to the available apps.
 	 * 
 	 * @param app the app
 	 */
 	public void installApp(AbstractApp app) {
 		addApp(app);
-		if (manager.getConfig().getBool(Config.START_ON_INSTALL)) {
-			app.start();
-		}
 	}
 	
 	// Implementation for the process of adding an app
@@ -197,13 +192,13 @@ public class AppResource extends CoapResource {
 	 * in the app config.
 	 */
 	private void addApp(final AbstractApp app) {
-		String tempid = app.getName();
 		
-		// add app
+		// add app to internal list
 		apps.add(app);
+		// set path for headless resource
+		app.setPath(runningRes.getURI() + "/");
 		
 		// add app's config with given resid
-		final String resid = tempid;
 		final AppConfig appconfig = app.getConfig();
 		appConfigsRes.addConfig(appconfig);
 		
@@ -225,7 +220,7 @@ public class AppResource extends CoapResource {
 					if (running.equals(AppConfig.START)) {
 						runningRes.addApp(app);
 					} else if (running.equals(AppConfig.STOP)) {
-						runningRes.remove(resid);
+						app.delete();
 					}
 				}
 				if (set.contains(AppConfig.AVAILABILITY)) {

@@ -43,7 +43,7 @@ app.root.onget = function(request) {
 }
 
 function respond(request) {
-	var payload = request.CoapExchangeText();
+	var payload = request.requestText;
 	var timestr;
 	
 	if (payload.startsWith("accept")) {

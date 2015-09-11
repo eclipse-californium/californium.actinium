@@ -17,6 +17,7 @@
 package org.eclipse.californium.actinium.jscoap;
 
 import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
@@ -78,7 +79,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handleGET(CoapExchange exchange) {
 		Function onget = getOnget();
 		if (onget!=null) {
-			performFunction(onget, new JavaScriptCoapExchange(exchange));
+			performFunction(onget, exchange);
 		} else {
 			super.handleGET(exchange);
 		}
@@ -88,7 +89,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handlePOST(CoapExchange exchange) {
 		Function onpost = getOnpost();
 		if (onpost!=null) {
-			performFunction(onpost, new JavaScriptCoapExchange(exchange));
+			performFunction(onpost, exchange);
 		} else {
 			super.handlePOST(exchange);
 		}
@@ -98,7 +99,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handlePUT(CoapExchange exchange) {
 		Function onput = getOnput();
 		if (onput!=null) {
-			performFunction(onput, new JavaScriptCoapExchange(exchange));
+			performFunction(onput, exchange);
 		} else {
 			super.handlePUT(exchange);
 		}
@@ -108,13 +109,14 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handleDELETE(CoapExchange exchange) {
 		Function ondelete = getOndelete();
 		if (ondelete!=null) {
-			performFunction(ondelete, new JavaScriptCoapExchange(exchange));
+			performFunction(ondelete, exchange);
 		} else {
 			super.handleDELETE(exchange);
 		}
 	}
 	
-	private void performFunction(Function fun, JavaScriptCoapExchange request) {
+	private void performFunction(Function fun, CoapExchange exchange) {
+		JavaScriptCoapExchange request = new JavaScriptCoapExchange(exchange);
 		try {
 			Context cx = Context.enter();
 			Scriptable prototype = ScriptableObject.getClassPrototype(fun, request.getClassName());
@@ -123,8 +125,10 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 			Object thisObj = getThis();
 			fun.call(cx, fun, Context.toObject(thisObj, scope), new Object[] {request});
 		} catch (RhinoException e) {
-        	System.err.println("JavaScript error in ["+e.sourceName()+"#"+e.lineNumber()+"]: "+e.getCause().getMessage());
-        	e.printStackTrace();
+        	System.err.println("JavaScript error in ["+e.sourceName()+"#"+e.lineNumber()+"]: "+e.details());
+        	if (e.getCause()!=null) e.getCause().printStackTrace();
+        	// in a production system, the detailed information should not be made public!
+        	exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, "["+e.sourceName()+"#"+e.lineNumber()+"]: "+e.details());
 		} finally {
 			Context.exit();
 		}

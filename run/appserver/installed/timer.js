@@ -32,13 +32,13 @@ var paths = new Array(); // all names of timers
 function Timer(millis, name) {
 	periode = millis;
 	var mythis = this;
-	this.timerres = new JavaScriptResource();
+	this.timerres = new JavaScriptResource(name);
 	this.timerres.onget = function(request) {
 		request.respond(2.05, "timer periode: "+periode);
 	};
 	this.timerres.onpost = function(request) {
 		try {
-			periode = parseInt(request.CoapExchangeText());
+			periode = parseInt(request.requestText);
 			request.respond(2.04, "changed timer periode to "+periode);
 		} catch (e if e.javaException instanceof java.lang.NumberFormatException) {
 			request.respond(4.00, e.javaException.getMessage());
@@ -59,38 +59,33 @@ function Timer(millis, name) {
 		});
 		thread.start();
 	};
-	this.timerres.setName(name);
-	this.timerres.isObservable(true);
+	this.timerres.setObservable(true);
 	app.root.add(this.timerres);
 	this.go();
 }
 
-app.root.onget = function(request) {
+app.root.onget = function(exchange) {
 	var buffer = new java.lang.StringBuffer();
 	for (var i=0;i<timers.length;i++) {
 		buffer.append(timers[i]+"\n");
 	}
-	request.respond(2.05, buffer.toString());
+	exchange.respond(2.05, buffer.toString());
 }
 
-app.root.onpost = function(request) {
-	var name = request.payloadText;
+app.root.onpost = function(exchange) {
+	var name = exchange.requestText;
+	app.dump(name);
 	if (!isInUse(name)) {
 		var timer = new Timer(1000,name);
-		var path = timer.timerres.getPath();
+		var path = timer.timerres.getURI();
 		timers[timers.length] = name;
 		paths[paths.length] = path;
 		
-		var response = new Response(2.01);
-		response.setPayload("Timer "+name+" created at location "+path);
-		response.setLocationPath(path);
-		request.respond(response);
-		
+		exchange.setLocationPath(path);
+		exchange.respond(2.01, "Timer "+name+" created at location "+path);
 	} else {
-		var response = new Response(4.00);
-		response.setPayload("Timer name "+name +" is already in use");
-		response.setLocationPath(findPathForName(name));
-		request.respond(response);
+		exchange.setLocationPath(findPathForName(name));
+		exchange.respond(4.00, "Timer name "+name +" is already in use");
 	}
 }
 

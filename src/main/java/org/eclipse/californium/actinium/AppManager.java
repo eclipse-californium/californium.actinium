@@ -192,9 +192,12 @@ public class AppManager {
 	 * the AppManager ensures, that name and specified app are valid. If not, a
 	 * nIllegalArgumentException is thrown. If they are fine, the AppConfig is
 	 * stored to disk, a new AbstractApp is created and added to AppResource and
-	 * StatsResource.
+	 * StatsResource. If start_on_install in the app server's config is set to
+	 * true, AppResource also starts the specified app and adds it to the
+	 * running apps.
 	 * 
-	 * @param appcfg the AppConfig with the properties for the app
+	 * @param appcfg
+	 *            the AppConfig with the properties for the app
 	 * @return the path to the newly created app instance.
 	 */
 	public String instantiateApp(AppConfig appcfg) {
@@ -207,11 +210,18 @@ public class AppManager {
 		appcfg.store();
 		
 		AbstractApp app = createApp(appcfg);
+		
 		appresource.installApp(app);
 		
 		if (statsresource!=null) statsresource.oninstallApp(app.getName());
 		
-		return app.getPath();
+		// redirect either to the running app or its config resource
+		if (this.config.getBool(Config.START_ON_INSTALL)) {
+			app.start();
+			return app.getURI();
+		} else {
+			return appcfg.getConfigResource().getURI();
+		}
 	}
 	
 	/**
@@ -228,9 +238,6 @@ public class AppManager {
 			throw new IllegalArgumentException("There is no app with the specified name "+appname);
 		
 		appcfg.setProperty(AppConfig.DIR_PATH, config.getProperty(Config.APP_PATH));
-//		String apppath = config.getProperty(Config.APP_PATH) + filename;
-//		System.out.println("set app path to "+apppath);
-//		appcfg.setProperty(AppConfig.PATH, apppath);
 	}
 
 	/**

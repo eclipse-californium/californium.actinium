@@ -80,13 +80,13 @@ app.root.ondelete = function(request) {
 function performRequest(type, request) {
 	app.dump("----");
 	app.dump("Received "+type+"Request");
-	app.dump("Payload: "+request.CoapExchangeText());
+	app.dump("Payload: "+request.requestText);
 	app.dump("LocationPath: "+request.getLocationPath());
 	
 	// compute result
 	app.sleep(100);
 	
-	request.respond(2.05, app.root.getName()+" received your message \""+request.CoapExchangeText()+"\"");
+	request.respond(2.05, app.root.getName()+" received your message \""+request.requestText+"\"");
 }
 
 function Property(resid, dflt) {
@@ -97,7 +97,7 @@ function Property(resid, dflt) {
 		request.respond(2.05, THIS.content);
 	};
 	this.res.onput = function(request) {
-		THIS.content = request.CoapExchangeText();
+		THIS.content = request.requestText;
 		request.respond(2.05, THIS.content);
 	};
 }
@@ -127,7 +127,7 @@ function dosendAsync(request) {
 	try {
 		app.dump("\nsend assynchronous request to "+uri.content);
 		request.accept(); // accept request and respond later
-		var payload = request.CoapExchangeText();
+		var payload = request.requestText;
 
 		// create new coaprequest to call uri
 		var coapreq = new CoapRequest();
@@ -172,7 +172,7 @@ function dosendSync(request) {
 	try {
 		app.dump("\nsend synchronous request to "+uri.content);
 		request.accept(); // accept request and respond later
-		var payload = request.CoapExchangeText();
+		var payload = request.requestText;
 
 		var coapreq = new CoapRequest();
 		coapreq.ontimeout = ontimeoutSync;

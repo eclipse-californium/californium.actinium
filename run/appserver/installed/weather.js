@@ -17,7 +17,7 @@ function Property(resid, dflt) {
 	var THIS = this;
 	this.value = dflt;
 	this.res = new JavaScriptResource(resid);
-	this.res.isObservable(true);
+	this.res.setObservable(true);
 	this.set = function(val) {
 		THIS.value = val;
 		THIS.res.changed();
@@ -26,7 +26,7 @@ function Property(resid, dflt) {
 		request.respond(2.05, THIS.value);
 	};
 	this.res.onput = function(request) {
-		THIS.set(request.CoapExchangeText());
+		THIS.set(request.requestText);
 		request.respond(2.05, THIS.value);
 	};
 }

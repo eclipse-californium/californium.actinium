@@ -75,7 +75,7 @@ public class AppConfigsResource extends CoapResource {
 		buffer.append("Apps have the following configurations:\n");
 		for (AppConfig appcfg:appconfigs) {
 			String name = appcfg.getName();
-			String cfgresid = appcfg.getConfigResource().getPath();
+			String cfgresid = appcfg.getConfigResource().getURI();
 			buffer.append("	"+name+": "+cfgresid+"\n");
 		}
 		

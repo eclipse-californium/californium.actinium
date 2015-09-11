@@ -59,7 +59,7 @@ function MyDate(ts) {
 	
 	this.resDate.onput = function(request) {
 		try {
-			var str_date = request.CoapExchangeText();
+			var str_date = request.requestText;
 			mythis.setDate(str_date);
 			request.respond(2.05, mythis.getDate());
 
@@ -97,7 +97,7 @@ function MyTime(ts) {
 	
 	this.resTime = new JavaScriptResource(this.getId());
 	this.resTime.setTitle(this.getDescription());
-	this.resTime.isObservable(true);
+	this.resTime.setObservable(true);
 	
 	var mythis = this;
 	
@@ -109,7 +109,7 @@ function MyTime(ts) {
 	
 	this.resTime.onput = function(request) {
 		try {
-			var str_time = request.CoapExchangeText();
+			var str_time = request.requestText;
 			mythis.setTime(str_time);
 			request.respond(2.05,mythis.getTime());
 
