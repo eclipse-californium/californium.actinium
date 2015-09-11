@@ -18,58 +18,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.SocketException;
 
-public class HelloWorldTest {
+public class HelloWorldTest extends BaseServerTest {
 
-
-	private AcServer server;
-	private int serverPort;
-	private String baseURL;
-	private File appFolder;
-	
-	@Before
-	public void setUp() throws Exception {
-		appFolder = new File("appserver_tmp");
-		delete(appFolder);
-		appFolder.mkdir();
-		appFolder.deleteOnExit();
-		new File("appserver_tmp/installed").mkdir();
-		new File("appserver_tmp/apps").mkdir();
-		PrintWriter writer = new PrintWriter("appserver_tmp/config.cfg", "UTF-8");
-		writer.println("#Tue Sep 30 14:47:47 CEST 2014\n"+
-				"apps_resource_id=apps\n"+
-				"app_config_prefix=config_\n"+
-				"app_config_path=appserver_tmp/apps/\n"+
-				"javascript_suffix=.js\n"+
-				"app_path=appserver_tmp/installed/\n"+
-				"app_config_suffix=.cfg\n"+
-				"install_resource_id=install\n"+
-				"config_resource_id=config\n"+
-				"app_config_resources=instances\n"+
-				"running_resource_id=running\n"+
-				"stats_resource_id=stats\n"+
-				"start_on_install=true");
-		writer.close();
-		startServer();
-
-	}
-
-	private void startServer() throws SocketException {
-		Config config = new Config("appserver_tmp/config.cfg");
-		server = new AcServer(config);
-		server.start();
-		serverPort = server.getEndpoints().get(0).getAddress().getPort();
-		baseURL = "localhost:"+serverPort+"/";
-	}
-
-	@After
-	public void shutDownEndpoint() throws IOException {
-		stopServer();
-		delete(appFolder);
-	}
-
-	private void stopServer() {
-		server.stop();
-	}
 
 	@Test
 	public void testHelloWorldApp() throws Exception {
@@ -92,35 +42,34 @@ public class HelloWorldTest {
 	}
 
 	private void testHello1Instance() throws InterruptedException {
+		testHello1Instance("Hello World");
+	}
+
+	private void testHello1Instance(String expectedPayload) throws InterruptedException {
 		Request getapps2 = Request.newGet();
 		getapps2.setURI(baseURL+"apps/running/hello-1");
 		getapps2.send();
 		Response responseApps2 = getapps2.waitForResponse(100);
 		assertEquals(CoAP.ResponseCode.CONTENT, responseApps2.getCode());
-		assertEquals("Hello World", responseApps2.getPayloadString());
+		assertEquals(expectedPayload, responseApps2.getPayloadString());
 	}
 
 	@Test
 	public void testUpdateApp() throws Exception {
 		testHelloWorldApp();
-
-		Request newapp = Request.newPut();
-		newapp.setURI(baseURL+"install/helloWorld");
-		newapp.setPayload("app.root.onget = function(request) {\n"+
+		String scriptName = "helloWorld";
+		String script = "app.root.onget = function(request) {\n"+
 				"                  request.respond(2.05, \"Hello World2\");\n"+
-				"              }");
-		newapp.send();
-		Response response = newapp.waitForResponse(100);
-		assertEquals(CoAP.ResponseCode.CHANGED, response.getCode());
+				"              }";
+		Request updateApp = Request.newPut();
+		updateApp.setURI(baseURL+"install/"+scriptName);
+		updateApp.setPayload(script);
+		updateApp.send();
+		assertEquals(CoAP.ResponseCode.CHANGED, updateApp.waitForResponse(100).getCode());
 
 		Thread.sleep(2000);
 
-		Request getapps2 = Request.newGet();
-		getapps2.setURI(baseURL+"apps/running/hello-1");
-		getapps2.send();
-		Response responseApps2 = getapps2.waitForResponse(100);
-		assertEquals(CoAP.ResponseCode.CONTENT, responseApps2.getCode());
-		assertEquals("Hello World2", responseApps2.getPayloadString());
+		testHello1Instance("Hello World2");
 	}
 
 	@Test
@@ -144,15 +93,11 @@ public class HelloWorldTest {
 
 	@Test
 	public void testInstallHelloWorld() throws InterruptedException {
-		Request newapp = Request.newPost();
-		newapp.setURI(baseURL+"install?helloWorld");
-		newapp.setPayload("app.root.onget = function(request) {\n"+
+		String scriptName = "helloWorld";
+		String script = "app.root.onget = function(request) {\n"+
 				"                  request.respond(2.05, \"Hello World\");\n"+
-				"              }");
-		newapp.send();
-		Response response = newapp.waitForResponse(100);
-		assertEquals(CoAP.ResponseCode.CREATED, response.getCode());
-		assertEquals("Application helloWorld successfully installed to /install/helloWorld", response.getPayloadString());
+				"              }";
+		installScript(scriptName, script);
 
 		Request getapps = Request.newGet();
 		getapps.setURI(baseURL+"install/");
@@ -165,11 +110,13 @@ public class HelloWorldTest {
 	@Test
 	public void testInstallHelloWorldTwice() throws InterruptedException {
 		testInstallHelloWorld();
-		Request newapp = Request.newPost();
-		newapp.setURI(baseURL+"install?helloWorld");
-		newapp.setPayload("app.root.onget = function(request) {\n"+
+		String scriptName = "helloWorld";
+		String script = "app.root.onget = function(request) {\n"+
 				"                  request.respond(2.05, \"Hello World\");\n"+
-				"              }");
+				"              }";
+		Request newapp = Request.newPost();
+		newapp.setURI(baseURL+"install?"+scriptName);
+		newapp.setPayload(script);
 		newapp.send();
 		Response response = newapp.waitForResponse(100);
 		assertEquals(CoAP.ResponseCode.BAD_REQUEST, response.getCode());
@@ -202,14 +149,4 @@ public class HelloWorldTest {
 		assertEquals("Application helloWorld successfully installed to /apps/running/hello-1", responseInstallApp.getPayloadString());
 	}
 
-	void delete(File f) throws IOException {
-		if (!f.exists())
-			return;
-		if (f.isDirectory()) {
-			for (File c : f.listFiles())
-				delete(c);
-		}
-		if (!f.delete())
-			throw new FileNotFoundException("Failed to delete file: "+f);
-	}
 }
