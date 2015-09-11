@@ -64,6 +64,68 @@ public class HelloWorldTest {
 
 	@Test
 	public void testHelloWorldApp() throws Exception {
+		testInstallHelloWorld();
+		Request installApp = Request.newPost();
+		installApp.setURI(baseURL+"install/helloWorld");
+		installApp.setPayload("name=hello-1");
+		installApp.send();
+		Response responseInstallApp = installApp.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
+		assertEquals("Application helloWorld successfully installed to /apps/running/hello-1", responseInstallApp.getPayloadString());
+		Thread.sleep(2000);
+
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/running/hello-1");
+		getapps2.send();
+		Response responseApps2 = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, responseApps2.getCode());
+		assertEquals("Hello World", responseApps2.getPayloadString());
+	}
+
+	@Test
+	public void testUpdateApp() throws Exception {
+		testHelloWorldApp();
+
+		Request newapp = Request.newPut();
+		newapp.setURI(baseURL+"install/helloWorld");
+		newapp.setPayload("app.root.onget = function(request) {\n"+
+				"                  request.respond(2.05, \"Hello World2\");\n"+
+				"              }");
+		newapp.send();
+		Response response = newapp.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CHANGED, response.getCode());
+
+		Thread.sleep(2000);
+
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/running/hello-1");
+		getapps2.send();
+		Response responseApps2 = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, responseApps2.getCode());
+		assertEquals("Hello World2", responseApps2.getPayloadString());
+	}
+
+	@Test
+	public void testDeleteApp() throws Exception {
+		testHelloWorldApp();
+
+		Request newapp = Request.newDelete();
+		newapp.setURI(baseURL+"install/helloWorld");
+		newapp.send();
+		Response response = newapp.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.DELETED, response.getCode());
+
+		Thread.sleep(2000);
+
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/running/hello-1");
+		getapps2.send();
+		Response responseApps2 = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.NOT_FOUND, responseApps2.getCode());
+	}
+
+	@Test
+	public void testInstallHelloWorld() throws InterruptedException {
 		Request newapp = Request.newPost();
 		newapp.setURI(baseURL+"install?helloWorld");
 		newapp.setPayload("app.root.onget = function(request) {\n"+
@@ -80,24 +142,41 @@ public class HelloWorldTest {
 		Response responseApps = getapps.waitForResponse(100);
 		assertEquals(CoAP.ResponseCode.CONTENT, responseApps.getCode());
 		assertEquals("helloWorld\n", responseApps.getPayloadString());
+	}
 
+	@Test
+	public void testInstallHelloWorldTwice() throws InterruptedException {
+		testInstallHelloWorld();
+		Request newapp = Request.newPost();
+		newapp.setURI(baseURL+"install?helloWorld");
+		newapp.setPayload("app.root.onget = function(request) {\n"+
+				"                  request.respond(2.05, \"Hello World\");\n"+
+				"              }");
+		newapp.send();
+		Response response = newapp.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.BAD_REQUEST, response.getCode());
+		assertEquals("The given name helloWorld is already in use. Choose another name or update the current app with a PUT request", response.getPayloadString());
 
+	}
 
+	@Test
+	public void testTwoInstancesWithTheSameName() throws Exception {
+		testInstallHelloWorld();
 		Request installApp = Request.newPost();
 		installApp.setURI(baseURL+"install/helloWorld");
 		installApp.setPayload("name=hello-1");
 		installApp.send();
-		Response responseInstallApp = installApp.waitForResponse();
+		Response responseInstallApp = installApp.waitForResponse(100);
 		assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
 		assertEquals("Application helloWorld successfully installed to /apps/running/hello-1", responseInstallApp.getPayloadString());
-		Thread.sleep(2000);
 
-		Request getapps2 = Request.newGet();
-		getapps2.setURI(baseURL+"apps/running/hello-1");
-		getapps2.send();
-		Response responseApps2 = getapps2.waitForResponse();
-		assertEquals(CoAP.ResponseCode.CONTENT, responseApps2.getCode());
-		assertEquals("Hello World", responseApps2.getPayloadString());
+		Request installApp2 = Request.newPost();
+		installApp2.setURI(baseURL+"install/helloWorld");
+		installApp2.setPayload("name=hello-1");
+		installApp2.send();
+		Response responseInstallApp2 = installApp2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.BAD_REQUEST, responseInstallApp2.getCode());
+		assertEquals("The name hello-1 is already in use for an app. Please specify a new name", responseInstallApp2.getPayloadString());
 
 	}
 
