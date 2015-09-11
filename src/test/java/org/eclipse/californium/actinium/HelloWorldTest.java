@@ -25,8 +25,41 @@ public class HelloWorldTest extends BaseServerTest {
 	public void testHelloWorldApp() throws Exception {
 		testInstallHelloWorld();
 		createHello1Instance();
+		testCheckIfHello1InstanceExists();
+		testCheckHello1Instance();
 		Thread.sleep(2000);
+		testCheckIfHello1IsRunning();
 		testHello1Instance();
+	}
+
+	private void testCheckIfHello1InstanceExists() throws InterruptedException {
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/instances");
+		getapps2.send();
+		Response runningApps = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
+		String content = runningApps.getPayloadString();
+		assertTrue("Response contains \"hello-1\"", content.contains("hello-1"));
+	}
+
+	private void testCheckHello1Instance() throws InterruptedException {
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/instances/hello-1");
+		getapps2.send();
+		Response runningApps = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
+		String content = runningApps.getPayloadString();
+		assertTrue("Response contains \"name: hello-1\"", content.contains("name: hello-1"));
+		assertTrue("Response contains \"app: helloWorld\"", content.contains("app: helloWorld"));
+	}
+
+	private void testCheckIfHello1IsRunning() throws InterruptedException {
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/running");
+		getapps2.send();
+		Response runningApps = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
+		assertEquals("hello-1\n", runningApps.getPayloadString());
 	}
 
 	@Test
