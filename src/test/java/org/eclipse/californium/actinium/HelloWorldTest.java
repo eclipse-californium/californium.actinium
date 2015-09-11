@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.SocketException;
 
 public class HelloWorldTest {
 
@@ -48,32 +49,49 @@ public class HelloWorldTest {
 				"stats_resource_id=stats\n"+
 				"start_on_install=true");
 		writer.close();
+		startServer();
+
+	}
+
+	private void startServer() throws SocketException {
 		Config config = new Config("appserver_tmp/config.cfg");
 		server = new AcServer(config);
 		server.start();
 		serverPort = server.getEndpoints().get(0).getAddress().getPort();
 		baseURL = "localhost:"+serverPort+"/";
-
 	}
 
 	@After
 	public void shutDownEndpoint() throws IOException {
-		server.stop();
+		stopServer();
 		delete(appFolder);
+	}
+
+	private void stopServer() {
+		server.stop();
 	}
 
 	@Test
 	public void testHelloWorldApp() throws Exception {
 		testInstallHelloWorld();
-		Request installApp = Request.newPost();
-		installApp.setURI(baseURL+"install/helloWorld");
-		installApp.setPayload("name=hello-1");
-		installApp.send();
-		Response responseInstallApp = installApp.waitForResponse(100);
-		assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
-		assertEquals("Application helloWorld successfully installed to /apps/running/hello-1", responseInstallApp.getPayloadString());
+		createHello1Instance();
 		Thread.sleep(2000);
+		testHello1Instance();
+	}
 
+	@Test
+	public void testServerRestart() throws Exception {
+		testInstallHelloWorld();
+		createHello1Instance();
+		Thread.sleep(2000);
+		testHello1Instance();
+		stopServer();
+		startServer();
+		Thread.sleep(2000);
+		testHello1Instance();
+	}
+
+	private void testHello1Instance() throws InterruptedException {
 		Request getapps2 = Request.newGet();
 		getapps2.setURI(baseURL+"apps/running/hello-1");
 		getapps2.send();
@@ -162,13 +180,7 @@ public class HelloWorldTest {
 	@Test
 	public void testTwoInstancesWithTheSameName() throws Exception {
 		testInstallHelloWorld();
-		Request installApp = Request.newPost();
-		installApp.setURI(baseURL+"install/helloWorld");
-		installApp.setPayload("name=hello-1");
-		installApp.send();
-		Response responseInstallApp = installApp.waitForResponse(100);
-		assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
-		assertEquals("Application helloWorld successfully installed to /apps/running/hello-1", responseInstallApp.getPayloadString());
+		createHello1Instance();
 
 		Request installApp2 = Request.newPost();
 		installApp2.setURI(baseURL+"install/helloWorld");
@@ -178,6 +190,16 @@ public class HelloWorldTest {
 		assertEquals(CoAP.ResponseCode.BAD_REQUEST, responseInstallApp2.getCode());
 		assertEquals("The name hello-1 is already in use for an app. Please specify a new name", responseInstallApp2.getPayloadString());
 
+	}
+
+	private void createHello1Instance() throws InterruptedException {
+		Request installApp = Request.newPost();
+		installApp.setURI(baseURL+"install/helloWorld");
+		installApp.setPayload("name=hello-1");
+		installApp.send();
+		Response responseInstallApp = installApp.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
+		assertEquals("Application helloWorld successfully installed to /apps/running/hello-1", responseInstallApp.getPayloadString());
 	}
 
 	void delete(File f) throws IOException {
