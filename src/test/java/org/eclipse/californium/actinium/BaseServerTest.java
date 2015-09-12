@@ -12,8 +12,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.SocketException;
+import java.util.Scanner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class BaseServerTest {
@@ -86,6 +88,10 @@ public class BaseServerTest {
 		if (!f.delete())
 			throw new FileNotFoundException("Failed to delete file: "+f);
 	}
+	protected void installScript(String scriptName, File scriptFile) throws InterruptedException, FileNotFoundException {
+		String script = new Scanner( scriptFile ).useDelimiter("\\A").next();
+		installScript(scriptName, script);
+	}
 
 	protected void installScript(String scriptName, String script) throws InterruptedException {
 		Request newapp = Request.newPost();
@@ -95,5 +101,51 @@ public class BaseServerTest {
 		Response response = newapp.waitForResponse(100);
 		assertEquals(CoAP.ResponseCode.CREATED, response.getCode());
 		assertEquals("Application "+scriptName+" successfully installed to /install/"+scriptName, response.getPayloadString());
+		Request getapps = Request.newGet();
+		getapps.setURI(baseURL+"install/");
+		getapps.send();
+		Response responseApps = getapps.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, responseApps.getCode());
+		assertEquals(scriptName+"\n", responseApps.getPayloadString());
+	}
+
+	protected void createInstance(String scriptName, String instanceName) throws InterruptedException {
+		Request installApp = Request.newPost();
+		installApp.setURI(baseURL+"install/"+scriptName);
+		installApp.setPayload("name="+instanceName);
+		installApp.send();
+		Response responseInstallApp = installApp.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
+		assertEquals("Application "+scriptName+" successfully installed to /apps/running/"+instanceName, responseInstallApp.getPayloadString());
+	}
+
+	protected void testCheckIfInstanceExists(final String instanceName) throws InterruptedException {
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/instances");
+		getapps2.send();
+		Response runningApps = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
+		String content = runningApps.getPayloadString();
+		assertTrue("Response contains \""+instanceName+"\"", content.contains(instanceName));
+	}
+
+	protected void testCheckInstance(final String scriptName, final String instanceName) throws InterruptedException {
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/instances/"+instanceName);
+		getapps2.send();
+		Response runningApps = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
+		String content = runningApps.getPayloadString();
+		assertTrue("Response contains \"name: "+instanceName+"\"", content.contains("name: "+instanceName));
+		assertTrue("Response contains \"app: "+scriptName+"\"", content.contains("app: "+scriptName));
+	}
+
+	protected void testCheckIfInstanceIsRunning(final String instanceName) throws InterruptedException {
+		Request getapps2 = Request.newGet();
+		getapps2.setURI(baseURL+"apps/running");
+		getapps2.send();
+		Response runningApps = getapps2.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
+		assertEquals(instanceName+"\n", runningApps.getPayloadString());
 	}
 }
