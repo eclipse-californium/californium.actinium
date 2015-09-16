@@ -271,7 +271,10 @@ public class AppManager {
 		String name = appcfg.getName();
 		if (name==null || name.equals(AppConfig.UNNAMED))
 			throw new IllegalArgumentException("No name has been specified for the app: "+name);
-		
+		if(!name.matches("^[a-zA-Z0-9-_]*$")){
+			throw new IllegalArgumentException("The name may only contain alpha-numeric characters, dashes and underscores.");
+
+		}
 		for (String nm:appresource.getAppsNames()) {
 			if (nm.equals(name)) {
 				throw new IllegalArgumentException("The name "+name+" is already in use for an app. Please specify a new name");
