@@ -15,13 +15,36 @@ public class RTTTest extends BaseServerTest {
 
 	@Test
 	public void testInstallHelloWorld() throws InterruptedException, FileNotFoundException {
-		String scriptName = "rttTest";
-		installScript(scriptName, new File("run/appserver/installed/rtt.js"));
-		createInstance(scriptName, "rtt-1");
+		//Install RTT
+		installScript("rttTest", new File("run/appserver/installed/rtt.js"));
+		createInstance("rttTest", "rtt-1");
 		testCheckIfInstanceExists("rtt-1");
 		testCheckInstance("rttTest", "rtt-1");
-		Thread.sleep(2000);
+		//Install PostCounter
+		installScript("postcounter", new File("run/appserver/installed/postcounter.js"));
+		createInstance("postcounter", "counter");
+		Thread.sleep(3000);
 		testCheckIfInstanceIsRunning("rtt-1");
+		testCheckIfInstanceIsRunning("counter");
+		Request configureRTT = Request.newPost();
+		configureRTT.setURI(baseURL+"apps/running/rtt-1");
+		configureRTT.setPayload("POST coap://"+baseURL+"apps/running/counter");
+		configureRTT.send();
+
+		assertEquals(CoAP.ResponseCode.CHANGED, configureRTT.waitForResponse(100).getCode());
+		Request runRTT = Request.newGet();
+		runRTT.setURI(baseURL+"apps/running/rtt-1");
+		runRTT.send();
+		Response result = runRTT.waitForResponse(100*10000);
+		assertEquals(CoAP.ResponseCode.CONTENT, result.getCode());
+		Request checkCounter = Request.newGet();
+		checkCounter.setURI(baseURL+"apps/running/counter");
+		checkCounter.send();
+		Response counterResult = checkCounter.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, counterResult.getCode());
+		String counterString = counterResult.getPayloadString();
+		assertEquals("counter: 1000", counterString);
+
 	}
 
 

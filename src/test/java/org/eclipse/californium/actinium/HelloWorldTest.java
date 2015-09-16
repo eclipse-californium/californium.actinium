@@ -20,7 +20,7 @@ public class HelloWorldTest extends BaseServerTest {
 		testCheckInstance("helloWorld", "hello-1");
 		Thread.sleep(2000);
 		testCheckIfInstanceIsRunning("hello-1");
-		testHello1Instance();
+		testHello1Instance("Hello World");
 	}
 
 	@Test
@@ -28,14 +28,10 @@ public class HelloWorldTest extends BaseServerTest {
 		testInstallHelloWorld();
 		createInstance("helloWorld", "hello-1");
 		Thread.sleep(2000);
-		testHello1Instance();
+		testHello1Instance("Hello World");
 		stopServer();
 		startServer();
 		Thread.sleep(2000);
-		testHello1Instance();
-	}
-
-	private void testHello1Instance() throws InterruptedException {
 		testHello1Instance("Hello World");
 	}
 

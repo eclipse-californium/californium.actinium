@@ -11,7 +11,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static org.junit.Assert.assertEquals;
@@ -106,7 +108,12 @@ public class BaseServerTest {
 		getapps.send();
 		Response responseApps = getapps.waitForResponse(100);
 		assertEquals(CoAP.ResponseCode.CONTENT, responseApps.getCode());
-		assertEquals(scriptName+"\n", responseApps.getPayloadString());
+		String payloadString = responseApps.getPayloadString();
+		assertTrue(scriptName+" is installed", stringContainsLine(payloadString, scriptName));
+	}
+
+	private boolean stringContainsLine(String string, String line) {
+		return Arrays.asList(string.split("\\n")).contains(line);
 	}
 
 	protected void createInstance(String scriptName, String instanceName) throws InterruptedException {
@@ -146,6 +153,7 @@ public class BaseServerTest {
 		getapps2.send();
 		Response runningApps = getapps2.waitForResponse(100);
 		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
-		assertEquals(instanceName+"\n", runningApps.getPayloadString());
+		String payloadString = runningApps.getPayloadString();
+		assertTrue(instanceName+" is RUNNING", stringContainsLine(payloadString, instanceName));
 	}
 }
