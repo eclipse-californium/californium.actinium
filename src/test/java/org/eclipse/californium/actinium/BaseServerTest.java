@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 
 public class BaseServerTest {
+	public static final int TIMEOUT = 100;
 	protected String baseURL;
 	private AcServer server;
 	private int serverPort;
@@ -103,7 +104,7 @@ public class BaseServerTest {
 		newapp.setURI(baseURL+"install?"+scriptName);
 		newapp.setPayload(script);
 		newapp.send();
-		Response response = newapp.waitForResponse(100);
+		Response response = newapp.waitForResponse(TIMEOUT);
 		if(check) {
 			assertEquals(CoAP.ResponseCode.CREATED, response.getCode());
 			assertEquals("Application "+scriptName+" successfully installed to /install/"+scriptName, response.getPayloadString());
@@ -115,7 +116,7 @@ public class BaseServerTest {
 		Request getapps = Request.newGet();
 		getapps.setURI(baseURL+"install/");
 		getapps.send();
-		Response responseApps = getapps.waitForResponse(100);
+		Response responseApps = getapps.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.CONTENT, responseApps.getCode());
 		String payloadString = responseApps.getPayloadString();
 		assertTrue(scriptName+" is installed", stringContainsLine(payloadString, scriptName));
@@ -135,7 +136,7 @@ public class BaseServerTest {
 		installApp.setURI(baseURL+"install/"+scriptName);
 		installApp.setPayload("name="+instanceName);
 		installApp.send();
-		Response responseInstallApp = installApp.waitForResponse(100);
+		Response responseInstallApp = installApp.waitForResponse(TIMEOUT);
 		if(check) {
 			assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
 			assertEquals("Application "+scriptName+" successfully installed to /apps/running/"+instanceName,
@@ -148,7 +149,7 @@ public class BaseServerTest {
 		Request getapps2 = Request.newGet();
 		getapps2.setURI(baseURL+"apps/instances");
 		getapps2.send();
-		Response runningApps = getapps2.waitForResponse(100);
+		Response runningApps = getapps2.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
 		String content = runningApps.getPayloadString();
 		assertTrue("Response contains \""+instanceName+"\"", content.contains(instanceName));
@@ -158,7 +159,7 @@ public class BaseServerTest {
 		Request getapps2 = Request.newGet();
 		getapps2.setURI(baseURL+"apps/instances/"+instanceName);
 		getapps2.send();
-		Response runningApps = getapps2.waitForResponse(100);
+		Response runningApps = getapps2.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
 		String content = runningApps.getPayloadString();
 		assertTrue("Response contains \"name: "+instanceName+"\"", content.contains("name: "+instanceName));
@@ -169,7 +170,7 @@ public class BaseServerTest {
 		Request getapps2 = Request.newGet();
 		getapps2.setURI(baseURL+"apps/running");
 		getapps2.send();
-		Response runningApps = getapps2.waitForResponse(100);
+		Response runningApps = getapps2.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
 		String payloadString = runningApps.getPayloadString();
 		assertTrue(instanceName+" is RUNNING", stringContainsLine(payloadString, instanceName));
@@ -190,7 +191,7 @@ public class BaseServerTest {
 		Request request = Request.newGet();
 		request.setURI(baseURL+path);
 		request.send();
-		Response response = request.waitForResponse(100);
+		Response response = request.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
 		assertEquals(expectedPayload, response.getPayloadString());
 	}

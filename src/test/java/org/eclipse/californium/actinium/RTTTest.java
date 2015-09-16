@@ -31,16 +31,16 @@ public class RTTTest extends BaseServerTest {
 		configureRTT.setPayload("POST coap://"+baseURL+"apps/running/counter");
 		configureRTT.send();
 
-		assertEquals(CoAP.ResponseCode.CHANGED, configureRTT.waitForResponse(100).getCode());
+		assertEquals(CoAP.ResponseCode.CHANGED, configureRTT.waitForResponse(TIMEOUT).getCode());
 		Request runRTT = Request.newGet();
 		runRTT.setURI(baseURL+"apps/running/rtt-1");
 		runRTT.send();
-		Response result = runRTT.waitForResponse(100*10000);
+		Response result = runRTT.waitForResponse(TIMEOUT*10000);
 		assertEquals(CoAP.ResponseCode.CONTENT, result.getCode());
 		Request checkCounter = Request.newGet();
 		checkCounter.setURI(baseURL+"apps/running/counter");
 		checkCounter.send();
-		Response counterResult = checkCounter.waitForResponse(100);
+		Response counterResult = checkCounter.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.CONTENT, counterResult.getCode());
 		String counterString = counterResult.getPayloadString();
 		assertEquals("counter: 1000", counterString);

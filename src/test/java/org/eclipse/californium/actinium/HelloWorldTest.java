@@ -46,7 +46,7 @@ public class HelloWorldTest extends BaseServerTest {
 		updateApp.setURI(baseURL+"install/"+scriptName);
 		updateApp.setPayload(script);
 		updateApp.send();
-		assertEquals(CoAP.ResponseCode.CHANGED, updateApp.waitForResponse(100).getCode());
+		assertEquals(CoAP.ResponseCode.CHANGED, updateApp.waitForResponse(TIMEOUT).getCode());
 
 		Thread.sleep(2000);
 
@@ -60,7 +60,7 @@ public class HelloWorldTest extends BaseServerTest {
 		Request newapp = Request.newDelete();
 		newapp.setURI(baseURL+"install/helloWorld");
 		newapp.send();
-		Response response = newapp.waitForResponse(100);
+		Response response = newapp.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.DELETED, response.getCode());
 
 		Thread.sleep(2000);
@@ -68,7 +68,7 @@ public class HelloWorldTest extends BaseServerTest {
 		Request getapps2 = Request.newGet();
 		getapps2.setURI(baseURL+"apps/running/hello-1");
 		getapps2.send();
-		Response responseApps2 = getapps2.waitForResponse(100);
+		Response responseApps2 = getapps2.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.NOT_FOUND, responseApps2.getCode());
 	}
 
@@ -83,7 +83,7 @@ public class HelloWorldTest extends BaseServerTest {
 		newapp.setURI(baseURL+"install?"+scriptName);
 		newapp.setPayload(script);
 		newapp.send();
-		Response response = newapp.waitForResponse(100);
+		Response response = newapp.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.BAD_REQUEST, response.getCode());
 		assertEquals("The given name helloWorld is already in use. Choose another name or update the current app with a PUT request", response.getPayloadString());
 
@@ -98,7 +98,7 @@ public class HelloWorldTest extends BaseServerTest {
 		installApp2.setURI(baseURL+"install/helloWorld");
 		installApp2.setPayload("name=hello-1");
 		installApp2.send();
-		Response responseInstallApp2 = installApp2.waitForResponse(100);
+		Response responseInstallApp2 = installApp2.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.BAD_REQUEST, responseInstallApp2.getCode());
 		assertEquals("The name hello-1 is already in use for an app. Please specify a new name", responseInstallApp2.getPayloadString());
 
