@@ -14,34 +14,25 @@ public class HelloWorldTest extends BaseServerTest {
 
 	@Test
 	public void testHelloWorldApp() throws Exception {
-		testInstallHelloWorld();
+		testInstallHelloWorld("helloWorld");
 		createInstance("helloWorld", "hello-1");
 		testCheckIfInstanceExists("hello-1");
 		testCheckInstance("helloWorld", "hello-1");
 		Thread.sleep(2000);
 		testCheckIfInstanceIsRunning("hello-1");
-		testHello1Instance("Hello World");
+		testGET("apps/running/hello-1", "Hello World");
 	}
 
 	@Test
 	public void testServerRestart() throws Exception {
-		testInstallHelloWorld();
+		testInstallHelloWorld("helloWorld");
 		createInstance("helloWorld", "hello-1");
 		Thread.sleep(2000);
-		testHello1Instance("Hello World");
+		testGET("apps/running/hello-1", "Hello World");
 		stopServer();
 		startServer();
 		Thread.sleep(2000);
-		testHello1Instance("Hello World");
-	}
-
-	private void testHello1Instance(String expectedPayload) throws InterruptedException {
-		Request getapps2 = Request.newGet();
-		getapps2.setURI(baseURL+"apps/running/hello-1");
-		getapps2.send();
-		Response responseApps2 = getapps2.waitForResponse(100);
-		assertEquals(CoAP.ResponseCode.CONTENT, responseApps2.getCode());
-		assertEquals(expectedPayload, responseApps2.getPayloadString());
+		testGET("apps/running/hello-1", "Hello World");
 	}
 
 	@Test
@@ -59,7 +50,7 @@ public class HelloWorldTest extends BaseServerTest {
 
 		Thread.sleep(2000);
 
-		testHello1Instance("Hello World2");
+		testGET("apps/running/hello-1", "Hello World2");
 	}
 
 	@Test
@@ -82,17 +73,8 @@ public class HelloWorldTest extends BaseServerTest {
 	}
 
 	@Test
-	public void testInstallHelloWorld() throws InterruptedException {
-		String scriptName = "helloWorld";
-		String script = "app.root.onget = function(request) {\n"+
-				"                  request.respond(2.05, \"Hello World\");\n"+
-				"              }";
-		installScript(scriptName, script);
-	}
-
-	@Test
 	public void testInstallHelloWorldTwice() throws InterruptedException {
-		testInstallHelloWorld();
+		testInstallHelloWorld("helloWorld");
 		String scriptName = "helloWorld";
 		String script = "app.root.onget = function(request) {\n"+
 				"                  request.respond(2.05, \"Hello World\");\n"+
@@ -109,7 +91,7 @@ public class HelloWorldTest extends BaseServerTest {
 
 	@Test
 	public void testTwoInstancesWithTheSameName() throws Exception {
-		testInstallHelloWorld();
+		testInstallHelloWorld("helloWorld");
 		createInstance("helloWorld", "hello-1");
 
 		Request installApp2 = Request.newPost();

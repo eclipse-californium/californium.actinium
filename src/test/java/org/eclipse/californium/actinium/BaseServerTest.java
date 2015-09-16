@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -96,13 +95,23 @@ public class BaseServerTest {
 	}
 
 	protected void installScript(String scriptName, String script) throws InterruptedException {
+		installScript(scriptName, script, true);
+	}
+
+	protected boolean installScript(String scriptName, String script,boolean check) throws InterruptedException {
 		Request newapp = Request.newPost();
 		newapp.setURI(baseURL+"install?"+scriptName);
 		newapp.setPayload(script);
 		newapp.send();
 		Response response = newapp.waitForResponse(100);
-		assertEquals(CoAP.ResponseCode.CREATED, response.getCode());
-		assertEquals("Application "+scriptName+" successfully installed to /install/"+scriptName, response.getPayloadString());
+		if(check) {
+			assertEquals(CoAP.ResponseCode.CREATED, response.getCode());
+			assertEquals("Application "+scriptName+" successfully installed to /install/"+scriptName, response.getPayloadString());
+		}else{
+			if(CoAP.ResponseCode.CREATED != response.getCode()){
+				return false;
+			}
+		}
 		Request getapps = Request.newGet();
 		getapps.setURI(baseURL+"install/");
 		getapps.send();
@@ -110,6 +119,7 @@ public class BaseServerTest {
 		assertEquals(CoAP.ResponseCode.CONTENT, responseApps.getCode());
 		String payloadString = responseApps.getPayloadString();
 		assertTrue(scriptName+" is installed", stringContainsLine(payloadString, scriptName));
+		return true;
 	}
 
 	private boolean stringContainsLine(String string, String line) {
@@ -117,13 +127,21 @@ public class BaseServerTest {
 	}
 
 	protected void createInstance(String scriptName, String instanceName) throws InterruptedException {
+		createInstance(scriptName, instanceName, true);
+	}
+
+	protected boolean createInstance(String scriptName, String instanceName, boolean check) throws InterruptedException {
 		Request installApp = Request.newPost();
 		installApp.setURI(baseURL+"install/"+scriptName);
 		installApp.setPayload("name="+instanceName);
 		installApp.send();
 		Response responseInstallApp = installApp.waitForResponse(100);
-		assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
-		assertEquals("Application "+scriptName+" successfully installed to /apps/running/"+instanceName, responseInstallApp.getPayloadString());
+		if(check) {
+			assertEquals(CoAP.ResponseCode.CREATED, responseInstallApp.getCode());
+			assertEquals("Application "+scriptName+" successfully installed to /apps/running/"+instanceName,
+					responseInstallApp.getPayloadString());
+		}
+		return CoAP.ResponseCode.CREATED == responseInstallApp.getCode();
 	}
 
 	protected void testCheckIfInstanceExists(final String instanceName) throws InterruptedException {
@@ -155,5 +173,25 @@ public class BaseServerTest {
 		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
 		String payloadString = runningApps.getPayloadString();
 		assertTrue(instanceName+" is RUNNING", stringContainsLine(payloadString, instanceName));
+	}
+
+	public void testInstallHelloWorld(String scriptName) throws InterruptedException {
+		testInstallHelloWorld(scriptName, true);
+	}
+
+	public boolean testInstallHelloWorld(String scriptName, boolean check) throws InterruptedException {
+		String script = "app.root.onget = function(request) {\n"+
+				"                  request.respond(2.05, \"Hello World\");\n"+
+				"              }";
+		return installScript(scriptName, script, check);
+	}
+
+	protected void testGET(String path, String expectedPayload) throws InterruptedException {
+		Request request = Request.newGet();
+		request.setURI(baseURL+path);
+		request.send();
+		Response response = request.waitForResponse(100);
+		assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+		assertEquals(expectedPayload, response.getPayloadString());
 	}
 }
