@@ -18,7 +18,7 @@ public class AppNameTest extends BaseServerTest {
 				{"hello-1"}, {"Hello-1"}, {"a=a"}, {"a?"}, {"zürich"}, {"sd-sd"}, {"-a"}, {"4number"}, {"test/test"},
 				{"test~test"}, {"test?test"}, {"test!test"}, {"test@test"}, {"test&test"}, {"test'test"},
 				{"test/test"}, {"test+test"}, {"test,test"}, {"test*test"}, {"test;test"},
-				{"test)test"}, {"test(test"},
+				{"test)test"}, {"test(test"}, {""},
 		});
 	}
 
