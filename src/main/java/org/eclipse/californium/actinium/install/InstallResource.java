@@ -178,6 +178,12 @@ public class InstallResource extends CoapResource {
 		
 		if (name==null)
 			throw new IllegalArgumentException("The given name is null. Please specify a valid name in the uri query");
+		if(!name.matches("^[a-zA-Z0-9-_]*$")){
+			throw new IllegalArgumentException("The name may only contain alpha-numeric characters, dashes and underscores.");
+		}
+		if(name.length() == 0){
+			throw new IllegalArgumentException("The name can not be empty");
+		}
 		if (!isUnreservedName(name))
 			throw new IllegalArgumentException("The given name "+name+" is already in use. " +
 					"Choose another name or update the current app with a PUT request");

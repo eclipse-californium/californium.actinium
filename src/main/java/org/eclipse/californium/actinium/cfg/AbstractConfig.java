@@ -82,7 +82,7 @@ public abstract class AbstractConfig extends Properties {
 	}
 	
 	public CoapResource createConfigResource(String identifier) {
-		this.cfgres = new ConfigResource(identifier.toLowerCase());
+		this.cfgres = new ConfigResource(identifier);
 		return cfgres;
 	}
 	
