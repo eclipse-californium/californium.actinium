@@ -18,6 +18,8 @@ package org.eclipse.californium.actinium.cfg;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -56,14 +58,32 @@ public class AppConfigsResource extends CoapResource {
 	 * 
 	 * @param appconfig the configuration
 	 */
-	public void addConfig(AppConfig appconfig) {
+	public void addConfig(final AppConfig appconfig) {
 		String identifier = appconfig.getName();
 		appconfigs.add(appconfig);
 		
-		Resource res = appconfig.createConfigResource(identifier);
+		final Resource res = appconfig.createConfigResource(identifier);
+
+		/*
+		 * On a change of AVAILABILITY: remove app conf from list of app configurations (App has been deleted)
+		 */
+		appconfig.getObservable().addObserver(new Observer() {
+			public void update(Observable o, Object arg) {
+				if (!(arg instanceof AppConfig.ConfigChangeSet))
+					return;
+				AbstractConfig.ConfigChangeSet set = (AbstractConfig.ConfigChangeSet) arg;
+				if (set.contains(AppConfig.AVAILABILITY)) {
+					if (appconfig.getProperty(AppConfig.AVAILABILITY).equals(AppConfig.UNABAILABLE)) {
+						// app has been removed. Also remove it from list of apps
+						appconfigs.remove(appconfig);
+						AppConfigsResource.this.delete(res);
+					}
+				}
+			}
+		});
 		add(res);
 	}
-	
+
 	/**
 	 * Respond a list of all configs.
 	 */
