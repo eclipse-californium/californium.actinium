@@ -57,19 +57,57 @@ public class HelloWorldTest extends BaseServerTest {
 	public void testDeleteApp() throws Exception {
 		testHelloWorldApp();
 
-		Request newapp = Request.newDelete();
-		newapp.setURI(baseURL+"install/helloWorld");
-		newapp.send();
-		Response response = newapp.waitForResponse(TIMEOUT);
+		Request request = Request.newDelete();
+		request.setURI(baseURL+"install/helloWorld");
+		request.send();
+		Response response = request.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.DELETED, response.getCode());
 
 		Thread.sleep(2000);
 
-		Request getapps2 = Request.newGet();
-		getapps2.setURI(baseURL+"apps/running/hello-1");
-		getapps2.send();
-		Response responseApps2 = getapps2.waitForResponse(TIMEOUT);
-		assertEquals(CoAP.ResponseCode.NOT_FOUND, responseApps2.getCode());
+		request = Request.newGet();
+		request.setURI(baseURL+"apps/running/hello-1");
+		request.send();
+		response = request.waitForResponse(TIMEOUT);
+		assertEquals(CoAP.ResponseCode.NOT_FOUND, response.getCode());
+
+
+		request = Request.newGet();
+		request.setURI(baseURL+"apps/running/hello-1");
+		request.send();
+		response = request.waitForResponse(TIMEOUT);
+		assertEquals(CoAP.ResponseCode.NOT_FOUND, response.getCode());
+
+		testCheckIfInstanceDoesNotExist("hello-1");
+	}
+
+
+	@Test
+	public void testDeleteAppInstance() throws Exception {
+		testHelloWorldApp();
+
+		Request request = Request.newDelete();
+		request.setURI(baseURL+"apps/instances/hello-1");
+		request.send();
+		Response response = request.waitForResponse(TIMEOUT);
+		assertEquals(CoAP.ResponseCode.DELETED, response.getCode());
+
+		Thread.sleep(2000);
+
+		request = Request.newGet();
+		request.setURI(baseURL+"apps/running/hello-1");
+		request.send();
+		response = request.waitForResponse(TIMEOUT);
+		assertEquals(CoAP.ResponseCode.NOT_FOUND, response.getCode());
+
+
+		request = Request.newGet();
+		request.setURI(baseURL+"apps/running/hello-1");
+		request.send();
+		response = request.waitForResponse(TIMEOUT);
+		assertEquals(CoAP.ResponseCode.NOT_FOUND, response.getCode());
+
+		testCheckIfInstanceDoesNotExist("hello-1");
 	}
 
 	@Test
