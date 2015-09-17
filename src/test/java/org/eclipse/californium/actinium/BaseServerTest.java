@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
@@ -146,13 +147,22 @@ public class BaseServerTest {
 	}
 
 	protected void testCheckIfInstanceExists(final String instanceName) throws InterruptedException {
+		String content = getInstances();
+		assertTrue("Response contains \""+instanceName+"\"", content.contains(instanceName));
+	}
+
+	protected void testCheckIfInstanceDoesNotExist(final String instanceName) throws InterruptedException {
+		String content = getInstances();
+		assertFalse("Response contains \""+instanceName+"\"", content.contains(instanceName));
+	}
+
+	private String getInstances() throws InterruptedException {
 		Request getapps2 = Request.newGet();
 		getapps2.setURI(baseURL+"apps/instances");
 		getapps2.send();
 		Response runningApps = getapps2.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.CONTENT, runningApps.getCode());
-		String content = runningApps.getPayloadString();
-		assertTrue("Response contains \""+instanceName+"\"", content.contains(instanceName));
+		return runningApps.getPayloadString();
 	}
 
 	protected void testCheckInstance(final String scriptName, final String instanceName) throws InterruptedException {
