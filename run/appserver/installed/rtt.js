@@ -14,6 +14,7 @@
  *    Martin Lanter
  ******************************************************************************/
 var uri = 'coap://localhost/'; // set via POST
+var method = 'GET'; // set via POST
 
 app.dump('Set RTT URI via POST');
 
@@ -28,7 +29,7 @@ function pollNode() {
 	var sent = 0;
 	
 	for (var i=0; i<1000; ++i) {
-		client.open("GET", uri, false);
+		client.open(method, uri, false);
 		var t0 = app.getNanoTime();
 		client.send('');
 		var dt = (app.getNanoTime()-t0)/1000000;
@@ -60,7 +61,15 @@ app.root.onget = function(request) {
 }
 
 app.root.onpost = function(request) {
-	uri = request.requestText;
+	var value = request.requestText.split(' ');
+	if (value.length != 2 && value.length != 1) {
+		request.respond(128);
+		return
+	}
+	uri = value[value.length-1];
+	if (value.length == 2) {
+		method = value[0];
+	}
 	app.dump('RTT URI: ' + uri);
 	request.respond(68);
 }
