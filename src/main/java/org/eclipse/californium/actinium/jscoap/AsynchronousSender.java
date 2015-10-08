@@ -75,7 +75,6 @@ public class AsynchronousSender extends AbstractSender {
 			throw new NetworkErrorException(e.toString());
 		}
 		
-		// TODO use TokenLayer timeout
 		if (timeout>0) {
 			timer.schedule(new TimerTask() {
 				public void run() { // this is always called in a new thread
