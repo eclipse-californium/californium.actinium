@@ -121,7 +121,7 @@ public class AppManager {
 	 */
 	public List<AbstractApp> loadAllApps() {
 		System.out.println("Load apps from disk");
-		
+
 		String path = config.getProperty(Config.APP_CONFIG_PATH);
 		File dir = new File(path);
 		File[] cfgs = dir.listFiles(new ConfigFilenameFilter());
@@ -133,14 +133,14 @@ public class AppManager {
 					AppConfig appcfg = new AppConfig(cfg);
 					AbstractApp app = createApp(appcfg);
 					list.add(app);
-					
+
 					System.out.println("	loaded "+cfg.getName()+" for app "+app.getName());
 				} catch (IOException e) {
 					System.err.println("AppManagar can't read app config from file "+cfg+": "+e.getMessage());
 				}
 			}
 		}
-		
+
 		return list;
 	}
 	
@@ -169,6 +169,11 @@ public class AppManager {
 	 */
 	public void restartApps(String appname) {
 		appresource.restartApps(appname);
+	}
+
+
+	public void restartAppsByLibraryName(String libname) {
+		appresource.restartAppsByLibraryName(libname);
 	}
 
 	/**
@@ -310,12 +315,12 @@ public class AppManager {
 			throw new NullPointerException("App config "+appcfg+" returned null as app type");
 		
 		if (type.equals(AppType.JAVASCRIPT)) {
-			return new JavaScriptApp(appcfg);
+			return new JavaScriptApp(this, appcfg);
 		} else {
 			throw new RuntimeException("App config "+appcfg+" retuned an unknown type: "+type);
 		}
 	}
-	
+
 	/**
 	 * This Filename filter accepts all configuration files for apps, e.g. whose
 	 * names start with the correct prefix and end with the correct suffix.

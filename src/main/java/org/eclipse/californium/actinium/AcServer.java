@@ -20,6 +20,7 @@ import java.net.SocketException;
 
 import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.install.InstallResource;
+import org.eclipse.californium.actinium.libs.LibsResource;
 import org.eclipse.californium.core.CoapServer;
 
 /**
@@ -58,6 +59,10 @@ public class AcServer extends CoapServer {
 
 		this.add(appres);
 		this.add(insres);
+
+
+		LibsResource libsres = new LibsResource(manager);
+		this.add(libsres);
 
 		this.add(
 				config.createConfigResource(config.getProperty(Config.CONFIG_RESOURCE_ID)));

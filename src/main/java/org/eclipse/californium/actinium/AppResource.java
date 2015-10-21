@@ -250,4 +250,13 @@ public class AppResource extends CoapResource {
 		}
 		return null; // not possible to get here
 	}
+
+	public void restartAppsByLibraryName(String libname) {
+		for (AbstractApp app:apps) {
+			if (app.dependencies.contains(libname)
+					&& app.getConfig().getProperty(AppConfig.RUNNING).equals(AppConfig.START)) {
+				app.getConfig().setPropertyAndNotify(AppConfig.RUNNING, AppConfig.RESTART);
+			}
+		}
+	}
 }

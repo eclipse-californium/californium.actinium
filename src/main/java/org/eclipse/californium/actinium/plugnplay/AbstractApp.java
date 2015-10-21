@@ -18,8 +18,10 @@ package org.eclipse.californium.actinium.plugnplay;
 
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 import java.util.logging.Logger;
 
+import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AbstractConfig.ConfigChangeSet;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.core.CoapResource;
@@ -45,8 +47,9 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 		
 	protected static final Logger LOG = Logger.getLogger(AbstractApp.class.getName());
 
+	private final AppManager manager;
 	// properties of this app
-	private AppConfig appcfg;
+	private final AppConfig appcfg;
 	
 	// only for internal use (and subclasses).
 	protected boolean started;
@@ -59,15 +62,18 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	
 	// Recevier for all requests, which then get executed one after another by the app's thread
 	private WorkQueue requestReceiver;
-	
+	public Set<String> dependencies;
+
 	/**
 	 * Constructs a new AbstractApp with the specified properties. If the
 	 * AppConfig defines a special reousece title or type, they will be used.
-	 * 
+	 *
+	 * @param manager
 	 * @param appcfg the properties for this app instance.
 	 */
-	public AbstractApp(AppConfig appcfg) {
+	public AbstractApp(final AppManager manager, AppConfig appcfg) {
 		super(appcfg.getName().toLowerCase());
+		this.manager = manager;
 		this.appcfg = appcfg;
 		this.allowOutput = appcfg.getBool(AppConfig.ALLOW_OUTPUT);
 		this.allowErrorOutput = appcfg.getBool(AppConfig.ALLOW_ERROR_OUTPUT);
@@ -82,7 +88,7 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 
 		this.requestReceiver = new WorkQueue(appcfg.getName()+"-ReceiverThread");
 	}
-	
+
 	/**
 	 * Returns the AppConfig of this app.
 	 * @return the AppConfig of this app.
@@ -90,6 +96,8 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	public AppConfig getConfig() {
 		return appcfg;
 	}
+
+
 	
 	public long getStartTimestamp() {
 		return startTimestamp;
@@ -297,5 +305,8 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	 * @return the executing thread or -1
 	 */
 	public abstract long getRunningThreadId();
-	
+
+	public AppManager getManager() {
+		return manager;
+	}
 }

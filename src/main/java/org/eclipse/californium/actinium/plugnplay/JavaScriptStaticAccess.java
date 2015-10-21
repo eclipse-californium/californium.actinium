@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.plugnplay;
 
-import org.eclipse.californium.core.server.resources.Resource;
-
 /**
  * JavaScriptStatisAccess defines global functions for JavaScript.
  */
@@ -45,4 +43,6 @@ public class JavaScriptStaticAccess {
 //    	Resource child = (Resource) Context.jsToJava(args[1],Resource.class);
 //    	parent.add(child);
 //    }
+
+
 }

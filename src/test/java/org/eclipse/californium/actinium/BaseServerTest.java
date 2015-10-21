@@ -6,7 +6,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,21 +41,25 @@ public class BaseServerTest {
 		appFolder.deleteOnExit();
 		new File("appserver_tmp/installed").mkdir();
 		new File("appserver_tmp/apps").mkdir();
-		PrintWriter writer = new PrintWriter("appserver_tmp/config.cfg", "UTF-8");
-		writer.println("#Tue Sep 30 14:47:47 CEST 2014\n"+
-				"apps_resource_id=apps\n"+
-				"app_config_prefix=config_\n"+
-				"app_config_path=appserver_tmp/apps/\n"+
-				"javascript_suffix=.js\n"+
-				"app_path=appserver_tmp/installed/\n"+
-				"app_config_suffix=.cfg\n"+
-				"install_resource_id=install\n"+
-				"config_resource_id=config\n"+
-				"app_config_resources=instances\n"+
-				"running_resource_id=running\n"+
-				"stats_resource_id=stats\n"+
-				"start_on_install=true");
-		writer.close();
+		new File("appserver_tmp/libs").mkdir();
+		{
+			PrintWriter writer = new PrintWriter("appserver_tmp/config.cfg", "UTF-8");
+			writer.println("#Tue Sep 30 14:47:47 CEST 2014\n" +
+					"apps_resource_id=apps\n" +
+					"app_config_prefix=config_\n" +
+					"app_config_path=appserver_tmp/apps/\n" +
+					"app_libs_path=appserver_tmp/libs/\n" +
+					"javascript_suffix=.js\n" +
+					"app_path=appserver_tmp/installed/\n" +
+					"app_config_suffix=.cfg\n" +
+					"install_resource_id=install\n" +
+					"config_resource_id=config\n" +
+					"app_config_resources=instances\n" +
+					"running_resource_id=running\n" +
+					"stats_resource_id=stats\n" +
+					"start_on_install=true");
+			writer.close();
+		}
 	}
 
 	protected void startServer() throws SocketException {
@@ -98,30 +101,40 @@ public class BaseServerTest {
 	}
 
 	protected void installScript(String scriptName, String script) throws InterruptedException {
-		installScript(scriptName, script, true);
+		installScript(scriptName, script, true, "install");
 	}
 
-	protected boolean installScript(String scriptName, String script,boolean check) throws InterruptedException {
+
+	protected void installLibrary(String name, File file) throws InterruptedException, FileNotFoundException {
+		String script = new Scanner( file ).useDelimiter("\\A").next();
+		installLibrary(name, script);
+	}
+
+	protected void installLibrary(String name, String script) throws InterruptedException {
+		installScript(name, script, true, "libs");
+	}
+
+	protected boolean installScript(String scriptName, String script, boolean check, String ep) throws InterruptedException {
 		Request newapp = Request.newPost();
-		newapp.setURI(baseURL+"install?"+scriptName);
+		newapp.setURI(baseURL+ ep + "?" +scriptName);
 		newapp.setPayload(script);
 		newapp.send();
 		Response response = newapp.waitForResponse(TIMEOUT);
 		if(check) {
 			assertEquals(CoAP.ResponseCode.CREATED, response.getCode());
-			assertEquals("Application "+scriptName+" successfully installed to /install/"+scriptName, response.getPayloadString());
+			assertTrue(response.getPayloadString().endsWith(scriptName+ " successfully installed to /"+ ep +"/" +scriptName));
 		}else{
 			if(CoAP.ResponseCode.CREATED != response.getCode()){
 				return false;
 			}
 		}
 		Request getapps = Request.newGet();
-		getapps.setURI(baseURL+"install/");
+		getapps.setURI(baseURL+ ep + "/");
 		getapps.send();
 		Response responseApps = getapps.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.CONTENT, responseApps.getCode());
 		String payloadString = responseApps.getPayloadString();
-		assertTrue(scriptName+" is installed", stringContainsLine(payloadString, scriptName));
+		assertTrue(scriptName+ " is installed", stringContainsLine(payloadString, scriptName));
 		return true;
 	}
 
@@ -195,7 +208,7 @@ public class BaseServerTest {
 		String script = "app.root.onget = function(request) {\n"+
 				"                  request.respond(ResponseCode.CONTENT, \"Hello World\");\n"+
 				"              }";
-		return installScript(scriptName, script, check);
+		return installScript(scriptName, script, check, "install");
 	}
 
 	protected void testGET(String path, String expectedPayload) throws InterruptedException {

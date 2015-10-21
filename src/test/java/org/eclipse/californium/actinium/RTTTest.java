@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 public class RTTTest extends BaseServerTest {
 
 	@Test
-	public void testInstallHelloWorld() throws InterruptedException, FileNotFoundException {
+	public void testRTT() throws InterruptedException, FileNotFoundException {
 		//Install RTT
 		installScript("rttTest", new File("run/appserver/installed/rtt.js"));
 		createInstance("rttTest", "rtt-1");

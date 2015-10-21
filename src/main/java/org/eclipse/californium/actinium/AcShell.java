@@ -155,7 +155,7 @@ public class AcShell extends CoapServer {
 	private static class OneTimeJavaScriptApp extends JavaScriptApp {
 		
 		private OneTimeJavaScriptApp(AppConfig appcfg) {
-			super(appcfg);
+			super(null, appcfg);
 		}
 		
 		@Override

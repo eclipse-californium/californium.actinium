@@ -16,25 +16,23 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.plugnplay;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.function.Function;
-
 import jdk.nashorn.api.scripting.NashornScriptEngine;
-import jdk.nashorn.internal.runtime.ScriptFunction;
+import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
+import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.jscoap.CoapCallback;
 import org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants;
 import org.eclipse.californium.actinium.jscoap.JavaScriptResource;
-import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import javax.script.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * JavaScriptApp executes apps written in JavaScript using Rhino.
@@ -64,12 +62,17 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	private AppContext context;
 	private NashornScriptEngine engine;
 
+	private Map<Object, Object> moduleCache;
+
 	/**
-	 * Constructs a new JavaScriptApp with the given appcofnig
+	 * Constructs a new JavaScriptApp with the given appconfig
+	 * @param manager
 	 * @param appconfig the configuration for this app
 	 */
-	public JavaScriptApp(AppConfig appconfig) {
-		super(appconfig);
+	public JavaScriptApp(final AppManager manager, AppConfig appconfig) {
+		super(manager, appconfig);
+		moduleCache=new HashMap<>();
+		dependencies=new HashSet<>();
 		this.appcfg = appconfig;
 		this.requestHandler = new JSRequestHandler();
 		appconfig.getObservable().addObserver(this);
@@ -130,7 +133,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		    super.receiveMessages();
 		    
         } catch (Exception e) {
-        	System.err.println("Exception while executing '"+getName()+"'");
+        	System.err.println("Exception while executing '" + getName() + "'");
         	e.printStackTrace();
         }
 	}
@@ -140,6 +143,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	 * @param code the JavaScript code
 	 */
 	public void execute(String code) {
+		dependencies.clear();
+		moduleCache.clear();
 		String name = getName();
 		code = code;
 
@@ -173,9 +178,16 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			// Add object "app" to JavaScript
             jsaccess = new JavaScriptAccess();
 			engineScope.put("app", jsaccess);
+			engineScope.put("require", (IRequire) moduleName -> jsaccess.require(moduleName));
 
-			code = "var CoapRequest = Java.type(\"org.eclipse.californium.actinium.jscoap.CoapRequest\");var JavaScriptStaticAccess = Java.type(\"org.eclipse.californium.actinium.plugnplay.JavaScriptStaticAccess\");" +
-					"var dump = JavaScriptStaticAccess.dump; var ResponseCode = Java.type(\"org.eclipse.californium.core.coap.CoAP.ResponseCode\");\n" +
+			code = "var CoapRequest = Java.type(\"org.eclipse.californium.actinium.jscoap.CoapRequest\");" +
+					"var JavaScriptStaticAccess = Java.type(\"org.eclipse.californium.actinium.plugnplay.JavaScriptStaticAccess\");" +
+					"var dump = JavaScriptStaticAccess.dump;" +
+					"var setInterval = app.setInterval;" +
+					"var clearInterval = app.clearInterval;" +
+					"var setTimeout = app.setTimeout;" +
+					"var clearTimeout = app.clearTimeout;" +
+					"var ResponseCode = Java.type(\"org.eclipse.californium.core.coap.CoAP.ResponseCode\");\n" +
 					"var JavaScriptResource = Java.type(\"org.eclipse.californium.actinium.jscoap.JavaScriptResource\");\n" + code;
 			// Execute code
 			engine.eval(code, context);
@@ -191,7 +203,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			}
 		}
 	}
-	
+
 	@Override
 	public long getRunningThreadId() {
 		if (thread!=null)
@@ -283,7 +295,36 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 				JavaScriptApp.this.printOutput(output);
 			}
 		}
-		
+
+		/**
+		 * This functions implements the require function defined the CommonJS module format.
+		 * http://wiki.commonjs.org/wiki/Modules/1.1.1
+		 */
+		public Object require(String name) {
+			try {
+				Object element = moduleCache.get(name);
+				if (element == null) {
+					String libPath = getManager().getConfig().get(Config.APP_LIBS_PATH) + name;
+					File file = new File(libPath + ".js");
+					if (file.exists()) {
+						element = JavaScriptModuleObject.create(name, engine, context, file);
+					} else {
+						File propertiesFile = new File(libPath + "/config.cfg");
+						Properties properties = new Properties();
+						properties.load(new FileInputStream(propertiesFile));
+						element = NativeJavaModuleObject.create(engine, propertiesFile, properties);
+					}
+					moduleCache.put(name, element);
+				}
+				return element;
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ScriptException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
 		/**
 		 * Prints to the standart error output stream
 		 * @param args the objects to print
@@ -528,7 +569,9 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			return jsaccess.root;
 		}
 	}
-	class AppContext extends SimpleScriptContext {
-		
+
+	@FunctionalInterface
+	public interface IRequire {
+		Object call(String name);
 	}
 }
