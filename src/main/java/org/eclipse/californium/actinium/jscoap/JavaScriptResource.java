@@ -16,7 +16,6 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import jdk.nashorn.internal.runtime.ScriptFunction;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
@@ -74,7 +73,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handleGET(CoapExchange exchange) {
 		CoapCallback onget = getOnget();
 		if (onget!=null) {
-			onget.call(exchange);
+			onget.call(new JSCoapExchange(exchange));
 		} else {
 			super.handleGET(exchange);
 		}
@@ -84,7 +83,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handlePOST(CoapExchange exchange) {
 		CoapCallback onpost = getOnpost();
 		if (onpost!=null) {
-			onpost.call(exchange);
+			onpost.call(new JSCoapExchange(exchange));
 		} else {
 			super.handlePOST(exchange);
 		}
@@ -94,7 +93,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handlePUT(CoapExchange exchange) {
 		CoapCallback onput = getOnput();
 		if (onput!=null) {
-			onput.call(exchange);
+			onput.call(new JSCoapExchange(exchange));
 		} else {
 			super.handlePUT(exchange);
 		}
@@ -104,7 +103,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handleDELETE(CoapExchange exchange) {
 		CoapCallback ondelete = getOndelete();
 		if (ondelete!=null) {
-			ondelete.call(exchange);
+			ondelete.call(new JSCoapExchange(exchange));
 		} else {
 			super.handleDELETE(exchange);
 		}

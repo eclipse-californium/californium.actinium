@@ -52,19 +52,19 @@ function getWeather() {
 	
 	app.dump("Getting "+query);
 	
-	var xhr = new XMLHttpRequest();
-	xhr.open("GET", query, false);
-	xhr.send();	
-	
-	var response = JSON.parse(xhr.responseText);
-	
-	
-	propTemperature.set( response.current_observation.temp_c );
-	propHumidity.set( response.current_observation.relative_humidity );
-	propWind.set( response.current_observation.wind_kph );
-	
-	rootText = response.current_observation.display_location.city+": "+response.current_observation.temperature_string+", "+response.current_observation.relative_humidity+" humidity, Wind "+response.current_observation.wind_string;
-	app.dump("Got "+rootText);
+	////var xhr = new XMLHttpRequest();
+	////xhr.open("GET", query, false);
+	////xhr.send();
+	//
+	//var response = JSON.parse(xhr.responseText);
+	//
+	//
+	//propTemperature.set( response.current_observation.temp_c );
+	//propHumidity.set( response.current_observation.relative_humidity );
+	//propWind.set( response.current_observation.wind_kph );
+	//
+	//rootText = response.current_observation.display_location.city+": "+response.current_observation.temperature_string+", "+response.current_observation.relative_humidity+" humidity, Wind "+response.current_observation.wind_string;
+	//app.dump("Got "+rootText);
 }
 
 app.root.onget = function(request) {
