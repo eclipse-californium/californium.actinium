@@ -4,13 +4,32 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class RequestTest extends BaseServerTest {
+
+	private final boolean async;
+
+	@Parameterized.Parameters(name = "{0}")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][]{
+				{true},{false}
+		});
+	}
+
+
+	public RequestTest(Boolean async) {
+		this.async = async;
+	}
 
 	@Test
 	public void testInstallHelloWorld() throws InterruptedException, FileNotFoundException {
@@ -27,11 +46,12 @@ public class RequestTest extends BaseServerTest {
 		testCheckIfInstanceIsRunning("counter");
 		Request configureRTT = Request.newPost();
 		configureRTT.setURI(baseURL + "apps/running/requ");
-		configureRTT.setPayload("POST coap://" + baseURL + "apps/running/counter");
+		configureRTT.setPayload("POST coap://" + baseURL + "apps/running/counter " + async);
 		configureRTT.send();
-
-		Thread.sleep(1000);
-		assertEquals(CoAP.ResponseCode.CHANGED, configureRTT.waitForResponse(TIMEOUT).getCode());
+		if(async) {
+			Thread.sleep(1000);
+		}
+		assertEquals(CoAP.ResponseCode.CHANGED, configureRTT.waitForResponse(TIMEOUT*30).getCode());
 		Request runRTT = Request.newGet();
 		runRTT.setURI(baseURL + "apps/running/requ");
 		runRTT.send();
@@ -59,11 +79,12 @@ public class RequestTest extends BaseServerTest {
 		testCheckIfInstanceIsRunning("requ");
 		Request configureRTT = Request.newPost();
 		configureRTT.setURI(baseURL + "apps/running/requ");
-		configureRTT.setPayload("POST coap://localhost:2222");
+		configureRTT.setPayload("POST coap://localhost:2222 " + async);
 		configureRTT.send();
-
-		Thread.sleep(3000);
-		assertEquals(CoAP.ResponseCode.CHANGED, configureRTT.waitForResponse(TIMEOUT).getCode());
+		if(async) {
+			Thread.sleep(3000);
+		}
+		assertEquals(CoAP.ResponseCode.CHANGED, configureRTT.waitForResponse(TIMEOUT*30).getCode());
 		Request runRTT = Request.newGet();
 		runRTT.setURI(baseURL + "apps/running/requ");
 		runRTT.send();
