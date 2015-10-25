@@ -16,7 +16,6 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import jdk.nashorn.internal.runtime.ScriptFunction;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.*;
 
@@ -173,13 +172,8 @@ public class CoapRequest implements JavaScriptCoapConstants {
 			
 			// create request
 			request = createNewRequest(data);
-			
-			// create sender
-			if (isAsync()) {
-				s = new AsynchronousSender(this, onreadystatechange, ontimeout, onload, onerror, timeout);
-			} else {
-				s = new SynchronousSender(this, onreadystatechange, ontimeout, onload, onerror, timeout);
-			}
+
+				s = new Sender(this, onreadystatechange, ontimeout, onload, onerror, timeout, isAsync());
 			this.sender = s;
 			
 		}
@@ -426,22 +420,22 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	private Request createNewRequest(String data) {
 		Request request;
 		
-		if (JavaScriptCoapMethod.GET.equals(method)) {
+		if ("GET".equals(method)) {
 			request = Request.newGet();
 		
-		} else if (JavaScriptCoapMethod.POST.equals(method)) {
+		} else if ("POST".equals(method)) {
 			request = Request.newPost();
 		
-		} else if (JavaScriptCoapMethod.PUT.equals(method)) {
+		} else if ("PUT".equals(method)) {
 			request = Request.newPut();
 		
-		} else if (JavaScriptCoapMethod.DELETE.equals(method)) {
+		} else if ("DELETE".equals(method)) {
 			request = Request.newDelete();
 		
 		} else {
 			throw new IllegalArgumentException("Unknown CoAP method: "+method+". Only \"GET\", \"POST\", \"PUT\" and \"DELETE\" are allowed");
 		}
-		
+
 		request.setType(confirmable ? Type.CON : Type.NON);
 		request.setURI(uri);
 		request.setPayload(data);
