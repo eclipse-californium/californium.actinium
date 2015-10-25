@@ -23,6 +23,7 @@ import org.eclipse.californium.core.coap.Response;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * AsynchronousSender implements the process to send a request asynchronously.
@@ -35,11 +36,17 @@ import java.util.TimerTask;
 
 public class AsynchronousSender extends AbstractSender {
 
-    private final Lock lock = new Lock();
+    public static final int READY = 0;
+    public static final int SENT = 1;
+    public static final int TIMEOUT = 2;
+    public static final int ABORTED = 3;
+    public static final int DONE = 4;
+    public static final int ERROR = 5;
+    private AtomicInteger state = new AtomicInteger(READY);
     private Timer timer = new Timer();
     private CoapRequest coapRequest;
     private CoapRequestEvent onready; // onreadystatechange
-    private CoapRequestEvent ontimeout; // timeout error
+    private CoapRequestEvent ontimeout;
     private CoapRequestEvent onload;
     private CoapRequestEvent onerror; // if a network error occurs
     private long timeout;
@@ -55,53 +62,38 @@ public class AsynchronousSender extends AbstractSender {
 
     @Override
     public void send(Request request) {
-        request.addMessageObserver(new MessageObserverAdapter() {
-            @Override
-            public void onResponse(Response response) {
-                if (!isAcknowledgement(response)) {
-                    handleAsyncResponse(response);
+        if (state.compareAndSet(READY, SENT)) {
+            request.addMessageObserver(new MessageObserverAdapter() {
+                @Override
+                public void onResponse(Response response) {
+                    if (!isAcknowledgement(response)) {
+                        handleResponse(response);
+                    }
                 }
-            }
-        });
+            });
 
-        try {
-            request.send();
-        } catch (Exception e) {
-            handleError(onerror);
-            throw new NetworkErrorException(e.toString());
+            try {
+                request.send();
+            } catch (Exception e) {
+                handleError(ERROR);
+                throw new NetworkErrorException(e.toString());
+            }
         }
 
-        // TODO use TokenLayer timeout
         if (timeout > 0) {
             timer.schedule(new TimerTask() {
-                public void run() { // this is always called in a new thread
-                    boolean istimeout;
-                    synchronized (lock) {
-                        if (!lock.receivedresponse)
-                            lock.timeouted = true;
-                        istimeout = !lock.receivedresponse && !lock.aborted;
-                    }
-                    if (istimeout) {
-                        handleError(ontimeout);
-                    }
+                public void run() {
+                    handleError(TIMEOUT);
                 }
             }, timeout);
         }
     }
 
     // by ReceiverThread
-    private void handleAsyncResponse(Response response) {
-        boolean callonready;
-        synchronized (lock) {
-            callonready = !lock.aborted && !lock.timeouted;
-            if (callonready)
-                lock.receivedresponse = true;
-        }
-        if (callonready) {
-            synchronized (coapRequest) {
-                coapRequest.setResponse(response);
-                coapRequest.setReadyState(CoapRequest.DONE);
-            }
+    private void handleResponse(Response response) {
+        if (state.compareAndSet(SENT, DONE)) {
+            coapRequest.setResponse(response);
+            coapRequest.setReadyState(CoapRequest.DONE);
             if (onready != null)
                 onready.call(coapRequest, response);
             if (onload != null)
@@ -111,41 +103,28 @@ public class AsynchronousSender extends AbstractSender {
 
     @Override
     public void abort() {
-        boolean isabort;
-        // Terminate send() algorithm
-        synchronized (lock) {
-            isabort = !lock.receivedresponse && !lock.timeouted;
-            if (isabort)
-                lock.aborted = true;
-        }
-        if (isabort) {
-            synchronized (coapRequest) {
-                coapRequest.setError(true);
-                coapRequest.setReadyState(CoapRequest.DONE);
-                coapRequest.setSend(false);
-            }
+        if (state.compareAndSet(SENT, ABORTED)) {
+            coapRequest.setError(true);
+            coapRequest.setReadyState(CoapRequest.DONE);
+            coapRequest.setSend(false);
             if (onready != null)
                 onready.call(coapRequest, null);
             coapRequest.setReadyState(CoapRequest.UNSENT);
             // no onreadystatechange event is dispatched
+
         }
     }
 
-    private void handleError(CoapRequestEvent function) {
-        synchronized (coapRequest) {
+    private void handleError(int newState) {
+        if (state.compareAndSet(SENT, newState)) {
+            CoapRequestEvent function = newState == TIMEOUT ? ontimeout : onerror;
             coapRequest.setError(true);
             coapRequest.setReadyState(CoapRequest.DONE);
+            if (onready != null)
+                onready.call(coapRequest, null);
+            if (function != null)
+                function.call(coapRequest, null);
         }
-        if (onready != null)
-            onready.call(coapRequest, null);
-        if (function != null)
-            function.call(coapRequest, null);
-    }
-
-    private class Lock {
-        private boolean aborted = false;
-        private boolean receivedresponse = false;
-        private boolean timeouted = false;
     }
 
 }
