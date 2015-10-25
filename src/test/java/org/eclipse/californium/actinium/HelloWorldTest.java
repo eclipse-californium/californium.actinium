@@ -40,7 +40,7 @@ public class HelloWorldTest extends BaseServerTest {
 		testHelloWorldApp();
 		String scriptName = "helloWorld";
 		String script = "app.root.onget = function(request) {\n"+
-				"                  request.respond(2.05, \"Hello World2\");\n"+
+				"                  request.respond(ResponseCode.CONTENT, \"Hello World2\");\n"+
 				"              }";
 		Request updateApp = Request.newPut();
 		updateApp.setURI(baseURL+"install/"+scriptName);
@@ -115,7 +115,7 @@ public class HelloWorldTest extends BaseServerTest {
 		testInstallHelloWorld("helloWorld");
 		String scriptName = "helloWorld";
 		String script = "app.root.onget = function(request) {\n"+
-				"                  request.respond(2.05, \"Hello World\");\n"+
+				"                  request.respond(ResponseCode.CONTENT, \"Hello World\");\n"+
 				"              }";
 		Request newapp = Request.newPost();
 		newapp.setURI(baseURL+"install?"+scriptName);

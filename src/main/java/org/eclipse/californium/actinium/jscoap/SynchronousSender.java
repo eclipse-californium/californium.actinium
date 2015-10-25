@@ -16,13 +16,13 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
+import jdk.nashorn.internal.runtime.ScriptFunction;
 import org.eclipse.californium.actinium.jscoap.jserror.AbortErrorException;
 import org.eclipse.californium.actinium.jscoap.jserror.RequestErrorException;
 import org.eclipse.californium.actinium.jscoap.jserror.TimeoutErrorException;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.mozilla.javascript.Function;
 
 /**
  * SynchronousSender implements the process to send a request synchronously.
@@ -33,17 +33,17 @@ public class SynchronousSender extends AbstractSender {
 
 	private CoapRequest coapRequest;
 	
-	private Function onready; // onreadystatechange
-	private Function ontimeout;
-	private Function onload;
-	private Function onerror;
+	private CoapRequestEvent onready; // onreadystatechange
+	private CoapRequestEvent ontimeout;
+	private CoapRequestEvent onload;
+	private CoapRequestEvent onerror;
 	
 	private long timeout;
 	private long timestamp;
 	
 	private final Lock lock = new Lock(); // never sync(coapreq) within sync(lock)
 	
-	public SynchronousSender(CoapRequest coapRequest, Function onready, Function ontimeout, Function onload, Function onerror, long timeout) {
+	public SynchronousSender(CoapRequest coapRequest, CoapRequestEvent onready, CoapRequestEvent ontimeout, CoapRequestEvent onload, CoapRequestEvent onerror, long timeout) {
 		this.coapRequest = coapRequest;
 		this.onready = onready;
 		this.ontimeout = ontimeout;
@@ -119,8 +119,10 @@ public class SynchronousSender extends AbstractSender {
 				 * While the app's receiver thread executes this function, the
 				 * caller of send() is still blocked!
 				 */
-				callJavaScriptFunction(onready, coapRequest, response);
-				callJavaScriptFunction(onload, coapRequest, response);
+				if(onready!=null)
+					onready.call(coapRequest, response);
+				if(onload!=null)
+					onload.call(coapRequest, response);
 			}
 
 			lock.notifyAll();
@@ -177,19 +179,22 @@ public class SynchronousSender extends AbstractSender {
 				coapRequest.setReadyState(CoapRequest.DONE);
 				coapRequest.setSend(false);
 			}
-			callJavaScriptFunction(onready, coapRequest);
+			if(onready!=null)
+				onready.call(coapRequest, null);
 			coapRequest.setReadyState(CoapRequest.UNSENT);
 			throw new AbortErrorException("Connection has been aborted");
 		}
 	}
 	
-	private void handleError(Function function) {
+	private void handleError(CoapRequestEvent function) {
 		synchronized (coapRequest) {
 			coapRequest.setError(true);
 			coapRequest.setReadyState(CoapRequest.DONE);
 		}
-		callJavaScriptFunction(onready, coapRequest);
-		callJavaScriptFunction(function, coapRequest);
+		if(onready!=null)
+			onready.call(coapRequest,null);
+		if(function!=null)
+			function.call(coapRequest, null);
 	}
 	
 	private class Lock {

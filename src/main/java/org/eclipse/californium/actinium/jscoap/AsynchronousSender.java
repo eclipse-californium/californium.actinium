@@ -16,14 +16,13 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.eclipse.californium.actinium.jscoap.jserror.NetworkErrorException;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.mozilla.javascript.Function;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * AsynchronousSender implements the process to send a request asynchronously.
@@ -40,16 +39,16 @@ public class AsynchronousSender extends AbstractSender {
 	
 	private CoapRequest coapRequest;
 	
-	private Function onready; // onreadystatechange
-	private Function ontimeout; // timeout error
-	private Function onload;
-	private Function onerror; // if a network error occurs
+	private CoapRequestEvent onready; // onreadystatechange
+	private CoapRequestEvent ontimeout; // timeout error
+	private CoapRequestEvent onload;
+	private CoapRequestEvent onerror; // if a network error occurs
 	
 	private long timeout;
 	
 	private final Lock lock = new Lock();
 	
-	public AsynchronousSender(CoapRequest coapRequest, Function onready, Function ontimeout, Function onload, Function onerror, long timeout) {
+	public AsynchronousSender(CoapRequest coapRequest, CoapRequestEvent onready, CoapRequestEvent ontimeout, CoapRequestEvent onload, CoapRequestEvent onerror, long timeout) {
 		this.coapRequest = coapRequest;
 		this.onready = onready;
 		this.ontimeout = ontimeout;
@@ -106,8 +105,10 @@ public class AsynchronousSender extends AbstractSender {
 				coapRequest.setResponse(response);
 				coapRequest.setReadyState(CoapRequest.DONE);
 			}
-			callJavaScriptFunction(onready, coapRequest, response);
-			callJavaScriptFunction(onload, coapRequest, response);
+			if(onready!=null)
+				onready.call(coapRequest, response);
+			if(onload!=null)
+				onload.call(coapRequest, response);
 		}
 	}
 
@@ -126,24 +127,28 @@ public class AsynchronousSender extends AbstractSender {
 				coapRequest.setReadyState(CoapRequest.DONE);
 				coapRequest.setSend(false);
 			}
-			callJavaScriptFunction(onready, coapRequest);
+			if(onready!=null)
+				onready.call(coapRequest, null);
 			coapRequest.setReadyState(CoapRequest.UNSENT);
 			// no onreadystatechange event is dispatched
 		}
 	}
 	
-	private void handleError(Function function) {
+	private void handleError(CoapRequestEvent function) {
 		synchronized (coapRequest) {
 			coapRequest.setError(true);
 			coapRequest.setReadyState(CoapRequest.DONE);
 		}
-		callJavaScriptFunction(onready, coapRequest);
-		callJavaScriptFunction(function, coapRequest);
+		if(onready!=null)
+			onready.call(coapRequest, null);
+		if(function!=null)
+			function.call(coapRequest, null);
 	}
-	
+
 	private class Lock {
 		private boolean aborted = false;
 		private boolean receivedresponse = false;
 		private boolean timeouted = false;
 	}
+
 }

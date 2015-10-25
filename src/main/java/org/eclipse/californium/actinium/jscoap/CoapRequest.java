@@ -16,20 +16,16 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
+import jdk.nashorn.internal.runtime.ScriptFunction;
+import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.core.coap.*;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.californium.core.coap.CoAP.Type;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.Option;
-import org.eclipse.californium.core.coap.OptionNumberRegistry;
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
-import org.mozilla.javascript.Function;
 
 /**
  * CoapRequest implements the CoapRequest API
@@ -67,10 +63,10 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	public String responseText; // the payload as string
 	public String responseLocationPath; // the response's location header (if defined)
 	
-	public Function onreadystatechange; 
-	public Function ontimeout; // called, if timeout occurs
-	public Function onload; // called, if response successfully received
-	public Function onerror; // called, if a network error in Californium occurs
+	public CoapRequestEvent onreadystatechange;
+	public CoapRequestEvent ontimeout; // called, if timeout occurs
+	public CoapRequestEvent onload; // called, if response successfully received
+	public CoapRequestEvent onerror; // called, if a network error in Californium occurs
 	
 	// request
 	public String uri; // target of the request
@@ -137,7 +133,8 @@ public class CoapRequest implements JavaScriptCoapConstants {
 		setResponse(null);
 		
 		setReadyState(OPENED);
-		AbstractSender.callJavaScriptFunction(onreadystatechange, this);
+		if(onreadystatechange!=null)
+			onreadystatechange.call(this, null);
 	}
 
 	/**

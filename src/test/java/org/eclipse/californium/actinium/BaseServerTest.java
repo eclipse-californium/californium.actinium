@@ -193,7 +193,7 @@ public class BaseServerTest {
 
 	public boolean testInstallHelloWorld(String scriptName, boolean check) throws InterruptedException {
 		String script = "app.root.onget = function(request) {\n"+
-				"                  request.respond(2.05, \"Hello World\");\n"+
+				"                  request.respond(ResponseCode.CONTENT, \"Hello World\");\n"+
 				"              }";
 		return installScript(scriptName, script, check);
 	}

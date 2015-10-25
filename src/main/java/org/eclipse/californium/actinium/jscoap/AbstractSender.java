@@ -16,12 +16,10 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
+import jdk.nashorn.internal.runtime.ScriptFunction;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * AbstractSender provides methods for calling JavaScript functions (listeners).
@@ -33,28 +31,7 @@ public abstract class AbstractSender implements Sender {
 	
 	@Override
 	public abstract void abort();
-	
-	/**
-	 * Calls the specified JavaScript function on the specified this object with
-	 * the specified arguments
-	 * 
-	 * @param function the JavaScript function
-	 * @param thisobj the this object
-	 * @param args the parameters
-	 */
-	protected static void callJavaScriptFunction(Function function, CoapRequest thisobj, Object... args) {
-		if (function!=null) {
-			try {
-				Context cx = Context.enter();
-				Scriptable scope = function.getParentScope();
-				function.call(cx, scope, Context.toObject(thisobj, scope), args);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			} finally {
-				Context.exit();
-			}
-		}
-	}
+
 	
 	/**
 	 * Returns true, if the specified response only is an empty acknowledgement

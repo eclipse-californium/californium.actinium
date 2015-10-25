@@ -16,14 +16,9 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
+import jdk.nashorn.internal.runtime.ScriptFunction;
 import org.eclipse.californium.core.CoapResource;
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.RhinoException;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
 
 /**
  * It is not possible to add further methods or fields to this class within
@@ -33,10 +28,10 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	// Cannot extend ScriptableObject, because has to extend CoapResource
 	// Cannot (reasonably) implement Scriptable, because we then have to implement all 16 methods like ScriptableObject
 
-	public Function onget = null;
-	public Function onpost = null;
-	public Function onput = null;
-	public Function ondelete = null;
+	public CoapCallback onget = null;
+	public CoapCallback onpost = null;
+	public CoapCallback onput = null;
+	public CoapCallback ondelete = null;
 	
 	public JavaScriptResource() {
 		super(null);
@@ -55,19 +50,19 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 		super.changed();
 	}
 	
-	public Function getOnget() {
+	public CoapCallback getOnget() {
 		return onget;
 	}
 	
-	public Function getOnpost() {
+	public CoapCallback getOnpost() {
 		return onpost;
 	}
 	
-	public Function getOnput() {
+	public CoapCallback getOnput() {
 		return onput;
 	}
 	
-	public Function getOndelete() {
+	public CoapCallback getOndelete() {
 		return ondelete;
 	}
 	
@@ -77,9 +72,9 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	
 	@Override
 	public void handleGET(CoapExchange exchange) {
-		Function onget = getOnget();
+		CoapCallback onget = getOnget();
 		if (onget!=null) {
-			performFunction(onget, exchange);
+			onget.call(exchange);
 		} else {
 			super.handleGET(exchange);
 		}
@@ -87,9 +82,9 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 
 	@Override
 	public void handlePOST(CoapExchange exchange) {
-		Function onpost = getOnpost();
+		CoapCallback onpost = getOnpost();
 		if (onpost!=null) {
-			performFunction(onpost, exchange);
+			onpost.call(exchange);
 		} else {
 			super.handlePOST(exchange);
 		}
@@ -97,9 +92,9 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 
 	@Override
 	public void handlePUT(CoapExchange exchange) {
-		Function onput = getOnput();
+		CoapCallback onput = getOnput();
 		if (onput!=null) {
-			performFunction(onput, exchange);
+			onput.call(exchange);
 		} else {
 			super.handlePUT(exchange);
 		}
@@ -107,30 +102,12 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 
 	@Override
 	public void handleDELETE(CoapExchange exchange) {
-		Function ondelete = getOndelete();
+		CoapCallback ondelete = getOndelete();
 		if (ondelete!=null) {
-			performFunction(ondelete, exchange);
+			ondelete.call(exchange);
 		} else {
 			super.handleDELETE(exchange);
 		}
 	}
-	
-	private void performFunction(Function fun, CoapExchange exchange) {
-		JavaScriptCoapExchange request = new JavaScriptCoapExchange(exchange);
-		try {
-			Context cx = Context.enter();
-			Scriptable prototype = ScriptableObject.getClassPrototype(fun, request.getClassName());
-			request.setPrototype(prototype);
-			Scriptable scope = fun.getParentScope();
-			Object thisObj = getThis();
-			fun.call(cx, fun, Context.toObject(thisObj, scope), new Object[] {request});
-		} catch (RhinoException e) {
-        	System.err.println("JavaScript error in ["+e.sourceName()+"#"+e.lineNumber()+"]: "+e.details());
-        	if (e.getCause()!=null) e.getCause().printStackTrace();
-        	// in a production system, the detailed information should not be made public!
-        	exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, "["+e.sourceName()+"#"+e.lineNumber()+"]: "+e.details());
-		} finally {
-			Context.exit();
-		}
-	}
+
 }

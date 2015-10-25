@@ -17,28 +17,24 @@
 package org.eclipse.californium.actinium.plugnplay;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Function;
 
+import jdk.nashorn.api.scripting.NashornScriptEngine;
+import jdk.nashorn.internal.runtime.ScriptFunction;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
+import org.eclipse.californium.actinium.jscoap.CoapCallback;
 import org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants;
-import org.eclipse.californium.actinium.jscoap.JavaScriptCoapExchange;
 import org.eclipse.californium.actinium.jscoap.JavaScriptResource;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.ImporterTopLevel;
-import org.mozilla.javascript.RhinoException;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.WrappedException;
 
-import xmlhttp.XMLHttpRequest;
+import javax.script.*;
 
 /**
  * JavaScriptApp executes apps written in JavaScript using Rhino.
@@ -50,9 +46,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	
 	// The thred that executes the app
 	private Thread thread;
-	
-	// The JavaScript environment for this app (e.g. variables)
-	private ScriptableObject scope;
+	 
 	
 	// The object "app", that is accessible by JavaScript
 	private JavaScriptAccess jsaccess;
@@ -61,22 +55,14 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	 * Functions onget, onpost, onput, ondelete can be assigned to from within
 	 * JavaScript by e.g. "app.root.onget = ..."
 	 */
-	public Function onget, onpost, onput, ondelete; // for JavaScript scripts
+	public CoapCallback onget, onpost, onput, ondelete; // for JavaScript scripts
 	
 	// The handler, that makes JavaScript execute requests on "app.root"
 	private JSRequestHandler requestHandler;
 	
-	// Java Packages, that are imported automatically for Rhino
-	private static String[] defaultpackages = {
-		"java.lang",
-		"java.util",
-		"java.io",
-		"java.net",
-		"java.text",
-		"org.eclipse.californium.core.coap", // Response
-		"org.eclipse.californium.actinium.jscoap", // CoapRequest
-		"org.eclipse.californium.actinium.jscoap.jserror" // CoAPRequest RequestErrorException
-	};
+
+	private AppContext context;
+	private NashornScriptEngine engine;
 
 	/**
 	 * Constructs a new JavaScriptApp with the given appcofnig
@@ -155,53 +141,55 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	 */
 	public void execute(String code) {
 		String name = getName();
-		code = prependDefaultImporterCode(code);
-		
-		Context cx = Context.enter();
-		cx.addActivationName(name);
+		code = code;
+
+		ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+		engine = (NashornScriptEngine) scriptEngineManager.getEngineByName("nashorn");
         try {
         	// initialize JavaScrip environmetn for the app: scope (variables)
-        	scope = cx.initStandardObjects();
-    		Scriptable s = new ImporterTopLevel(cx); // makes it possible to import packages inside JS
-    		scope.setPrototype(s);
-            
-    		// add two global functions dump and addSubResource
-            String[] names = { "dump", "addSubResource"};
-            scope.defineFunctionProperties(names, JavaScriptStaticAccess.class,
-                                           ScriptableObject.DONTENUM);
 
-            try {
-            	// Add AJAX' XMLHttpRequest to JavaScript
-            	ScriptableObject.defineClass(scope,	XMLHttpRequest.class);
-            	ScriptableObject.defineClass(scope,	JavaScriptCoapExchange.class);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-            
+			context = new AppContext();
+			context.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
+			Bindings engineScope = context.getBindings(ScriptContext.ENGINE_SCOPE);
+//    		scope.setPrototype(s);
+//
+//    		// add two global functions dump and addSubResource
+//            String[] names = { "dump", "addSubResource"};
+//            scope.defineFunctionProperties(names, JavaScriptStaticAccess.class,
+//                                           ScriptableObject.DONTENUM);
+//
+//            try {
+//            	// Add AJAX' XMLHttpRequest to JavaScript
+//            	ScriptableObject.defineClass(scope,	XMLHttpRequest.class);
+//            	ScriptableObject.defineClass(scope,	JavaScriptCoapExchange.class);
+//			} catch (IllegalAccessException e) {
+//				e.printStackTrace();
+//			} catch (InstantiationException e) {
+//				e.printStackTrace();
+//			} catch (InvocationTargetException e) {
+//				e.printStackTrace();
+//			}
+
 			// Add object "app" to JavaScript
             jsaccess = new JavaScriptAccess();
-			Object wrappedOut = Context.javaToJS(jsaccess, scope);
-			ScriptableObject.putProperty(scope, "app", wrappedOut);
-            
-			// Execute code
-			cx.evaluateString(scope, code, name, 1, null);
+			engineScope.put("app", jsaccess);
 
-        } catch (RhinoException e) {
-        	Throwable cause = e.getCause();
-        	if (cause!=null && cause instanceof InterruptedException) {
-        		// this was a controlled shutdown, e.g. with app.stop()
-        		System.out.println("JavaScript app "+getName()+" has been interrupted");
-        	} else {
-        		System.err.println("JavaScript error in ["+e.sourceName()+"#"+e.lineNumber()+"]: "+e.details());
-        	}
-        
-        } finally {
-            Context.exit();
-        }
+			code = "var CoapRequest = Java.type(\"org.eclipse.californium.actinium.jscoap.CoapRequest\");var JavaScriptStaticAccess = Java.type(\"org.eclipse.californium.actinium.plugnplay.JavaScriptStaticAccess\");" +
+					"var dump = JavaScriptStaticAccess.dump; var ResponseCode = Java.type(\"org.eclipse.californium.core.coap.CoAP.ResponseCode\");\n" +
+					"var JavaScriptResource = Java.type(\"org.eclipse.californium.actinium.jscoap.JavaScriptResource\");\n" + code;
+			// Execute code
+			engine.eval(code, context);
+
+        } catch (ScriptException e) {
+			e.printStackTrace();
+			Throwable cause = e.getCause();
+			if (cause!=null && cause instanceof InterruptedException) {
+				// this was a controlled shutdown, e.g. with app.stop()
+				System.out.println("JavaScript app "+getName()+" has been interrupted");
+			} else {
+				System.err.println("JavaScript error in ["+e.getFileName()+"#"+e.getLineNumber()+"]: "+e.getMessage());
+			}
+		}
 	}
 	
 	@Override
@@ -218,6 +206,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		} else if (!appcfg.getBool(AppConfig.ENABLE_REQUEST_DELIVERY)) {
 			request.respond(ResponseCode.FORBIDDEN, "Request delivery has been disabled for this app");
 		} else {
+
 			requestHandler.handleGET(request);
 		}
 	}
@@ -261,30 +250,10 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	private void cleanup() {
 		Function onunload = jsaccess.onunload;
 		if (onunload!=null) {
-		    System.out.println("Call cleanup function onunload in script "+getName());
-			try {
-				Context cx = Context.enter();
-				Scriptable scope = onunload.getParentScope();
-				onunload.call(cx, scope, Context.toObject(jsaccess, scope), new Object[0]);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			} finally {
-				Context.exit();
-			}
+		    jsaccess.onunload.apply(null);
 		} else {
 		    System.out.println("No cleanup function in script "+getName()+" defined");
 		}
-	}
-	
-	/**
-	 * Creates commands for importing the default Java packages.
-	 */
-	private String prependDefaultImporterCode(String code) {
-		StringBuffer buffer = new StringBuffer();
-		for (String pckg:defaultpackages) {
-			buffer.append("importPackage(Packages."+pckg+");");
-		}
-		return buffer.toString() + code;
 	}
 
 	/**
@@ -508,7 +477,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		 */
 		private class FunctionExecuter implements Runnable {
 			public void run() {
-				try {
+				function.apply(null);
+				/*try {
 					// call function
 					Context cx = Context.enter();
 					Scriptable scope = function.getParentScope();
@@ -521,7 +491,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					e.printStackTrace();
 				} finally {
 					Context.exit();
-				}
+				}*/
 			}
 		}
 	}
@@ -533,22 +503,22 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	private class JSRequestHandler extends JavaScriptResource {
 		
 		@Override
-		public Function getOnget() {
+		public CoapCallback getOnget() {
 			return JavaScriptApp.this.onget;
 		}
 
 		@Override
-		public Function getOnpost() {
+		public CoapCallback getOnpost() {
 			return JavaScriptApp.this.onpost;
 		}
 
 		@Override
-		public Function getOnput() {
+		public CoapCallback getOnput() {
 			return JavaScriptApp.this.onput;
 		}
 
 		@Override
-		public Function getOndelete() {
+		public CoapCallback getOndelete() {
 			return JavaScriptApp.this.ondelete;
 		}
 		
@@ -557,5 +527,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		public Object getThis() {
 			return jsaccess.root;
 		}
+	}
+	class AppContext extends SimpleScriptContext {
+		
 	}
 }
