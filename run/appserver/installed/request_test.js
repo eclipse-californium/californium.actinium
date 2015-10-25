@@ -5,10 +5,13 @@ app.dump('Set RTT URI via POST');
 
 function pollNode() {
     var client = new CoapRequest();
-    client.timeout = 60000;
+    client.timeout = 1000;
     client.open(method, uri, true);
-    client.onload = function(a,b){
+    client.onload = function(){
         result = 'OK';
+    };
+    client.ontimeout = function(){
+        result = 'TIMEOUT';
     };
     client.send('');
 }
@@ -17,8 +20,6 @@ app.root.onget = function(request) {
     request.accept();
 
     dump('RTT waiting...');
-
-    app.sleep(1000);
 
     request.respond(ResponseCode.CONTENT, result);
 }
@@ -35,5 +36,6 @@ app.root.onpost = function(request) {
     }
     app.dump('RTT URI: ' + uri);
     pollNode();
+    app.dump('Done');
     request.respond(ResponseCode.CHANGED);
 }
