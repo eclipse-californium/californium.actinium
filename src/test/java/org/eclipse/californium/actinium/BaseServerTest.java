@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 
 public class BaseServerTest {
-	public static final int TIMEOUT = 100;
+	public static final int TIMEOUT = 200;
 	protected String baseURL;
 	private AcServer server;
 	private int serverPort;
