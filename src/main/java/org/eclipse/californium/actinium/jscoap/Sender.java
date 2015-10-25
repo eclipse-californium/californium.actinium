@@ -43,18 +43,18 @@ public class Sender {
     public static final int ABORTED = 3;
     public static final int DONE = 4;
     public static final int ERROR = 5;
-    private AtomicInteger state = new AtomicInteger(READY);
-    private Timer timer = new Timer();
-    private CoapRequest coapRequest;
-    private CoapRequestEvent onready; // onreadystatechange
-    private CoapRequestEvent ontimeout;
-    private CoapRequestEvent onload;
-    private CoapRequestEvent onerror; // if a network error occurs
-    private long timeout;
+    private final AtomicInteger state = new AtomicInteger(READY);
+    private final Timer timer = new Timer();
+    private final CoapRequest coapRequest;
+    private final CoapRequestEvent onready; // onreadystatechange
+    private final CoapRequestEvent ontimeout;
+    private final CoapRequestEvent onload;
+    private final CoapRequestEvent onerror; // if a network error occurs
+    private final long timeout;
     private final boolean async;
-    private Request request;
+    private final Request request;
 
-    public Sender(CoapRequest coapRequest, CoapRequestEvent onready, CoapRequestEvent ontimeout, CoapRequestEvent onload, CoapRequestEvent onerror, long timeout, boolean async) {
+    public Sender(CoapRequest coapRequest, Request request, CoapRequestEvent onready, CoapRequestEvent ontimeout, CoapRequestEvent onload, CoapRequestEvent onerror, long timeout, boolean async) {
         this.coapRequest = coapRequest;
         this.onready = onready;
         this.ontimeout = ontimeout;
@@ -62,11 +62,11 @@ public class Sender {
         this.onerror = onerror;
         this.timeout = timeout;
         this.async = async;
+        this.request = request;
     }
 
-    public void send(Request request) {
+    public void send() {
         if (state.compareAndSet(READY, SENT)) {
-            this.request = request;
             if (async) {
                 request.addMessageObserver(new MessageObserverAdapter() {
                     @Override

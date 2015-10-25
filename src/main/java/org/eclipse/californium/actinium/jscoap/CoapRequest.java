@@ -173,13 +173,11 @@ public class CoapRequest implements JavaScriptCoapConstants {
 			// create request
 			request = createNewRequest(data);
 
-				s = new Sender(this, onreadystatechange, ontimeout, onload, onerror, timeout, isAsync());
+			s = new Sender(this, request, onreadystatechange, ontimeout, onload, onerror, timeout, isAsync());
+			s.send();
 			this.sender = s;
 			
 		}
-		// send request
-		// Must not be within synchronized-block, if request not async.
-		s.send(request);
 	}
 	
 	/**
