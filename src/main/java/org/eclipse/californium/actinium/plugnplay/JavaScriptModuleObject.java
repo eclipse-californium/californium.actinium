@@ -4,6 +4,7 @@ import jdk.nashorn.api.scripting.NashornScriptEngine;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,8 +20,11 @@ public class JavaScriptModuleObject  {
         String content = new Scanner(jsFile).useDelimiter("\\Z").next();
         AppContext context = new AppContext();
         context.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
+        context.setAttribute(ScriptEngine.FILENAME, name, ScriptContext.ENGINE_SCOPE);
+        context.setAttribute(ScriptEngine.NAME, name, ScriptContext.ENGINE_SCOPE);
         Bindings engineScope = context.getBindings(ScriptContext.ENGINE_SCOPE);
         engineScope.put("require", ctx.getAttribute("require"));
+        engineScope.put("dump", ctx.getAttribute("dump"));
         return engine.eval(transformSource(name, content), context);
     }
 

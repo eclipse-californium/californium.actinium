@@ -17,6 +17,7 @@
 package org.eclipse.californium.actinium.plugnplay;
 
 import jdk.nashorn.api.scripting.NashornScriptEngine;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
@@ -63,6 +64,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	private NashornScriptEngine engine;
 
 	private Map<Object, Object> moduleCache;
+	private DynamicClassloader classloader;
 
 	/**
 	 * Constructs a new JavaScriptApp with the given appconfig
@@ -149,7 +151,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		code = code;
 
 		ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-		engine = (NashornScriptEngine) scriptEngineManager.getEngineByName("nashorn");
+		classloader = new DynamicClassloader(Thread.currentThread().getContextClassLoader());
+		engine = (NashornScriptEngine) new NashornScriptEngineFactory().getScriptEngine(classloader);
         try {
         	// initialize JavaScrip environmetn for the app: scope (variables)
 
@@ -312,7 +315,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 						File propertiesFile = new File(libPath + "/config.cfg");
 						Properties properties = new Properties();
 						properties.load(new FileInputStream(propertiesFile));
-						element = NativeJavaModuleObject.create(engine, propertiesFile, properties);
+						element = NativeJavaModuleObject.create(engine,classloader, propertiesFile, properties);
 					}
 					moduleCache.put(name, element);
 				}
