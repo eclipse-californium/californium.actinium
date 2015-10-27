@@ -35,7 +35,34 @@ public class DynamicClassloader extends ClassLoader {
 
             }
         }
-        return super.loadClass(name);
+        try {
+            return super.loadClass(name);
+        }catch (ClassNotFoundException e){
+            if(name.startsWith("gen.")) {
+                String[] segments = name.split("_");
+                if (segments.length == 2) {
+                    try {
+                        ClassPool pool = ClassPool.getDefault();
+                        CtClass ctObject = pool.getCtClass("java.lang.Object");
+                        String methodname = segments[0];
+                        int arguments = Integer.parseInt(segments[1]);
+                        CtClass cc = pool.makeInterface(name);
+                        CtClass[] args = new CtClass[arguments];
+                        for (int i = 0; i < arguments; i++) {
+                            args[i] = ctObject;
+                        }
+                        CtMethod method = new CtMethod(ctObject, methodname.substring(4), args, cc);
+                        cc.addMethod(method);
+                        return cc.toClass();
+                    } catch (NotFoundException e1) {
+                        e1.printStackTrace();
+                    } catch (CannotCompileException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+            throw e;
+        }
     }
 
 
