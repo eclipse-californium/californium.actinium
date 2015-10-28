@@ -25,6 +25,7 @@ public class JavaScriptModuleObject  {
         Bindings engineScope = context.getBindings(ScriptContext.ENGINE_SCOPE);
         engineScope.put("require", ctx.getAttribute("require"));
         engineScope.put("dump", ctx.getAttribute("dump"));
+        engineScope.put("extend", ctx.getAttribute("extend"));
         return engine.eval(transformSource(name, content), context);
     }
 

@@ -16,8 +16,14 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.plugnplay;
 
+import jdk.internal.dynalink.beans.StaticClass;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.api.scripting.ScriptUtils;
+import jdk.nashorn.internal.objects.NativeJava;
+import jdk.nashorn.internal.objects.NativeObject;
+import jdk.nashorn.internal.runtime.ScriptObject;
 import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
@@ -34,6 +40,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * JavaScriptApp executes apps written in JavaScript using Rhino.
@@ -182,6 +190,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
             jsaccess = new JavaScriptAccess();
 			engineScope.put("app", jsaccess);
 			engineScope.put("require", (IRequire) moduleName -> jsaccess.require(moduleName));
+			engineScope.put("extend", (IExtend) (a, b) -> jsaccess.extend(a, b));
 
 			code = "var CoapRequest = Java.type(\"org.eclipse.californium.actinium.jscoap.CoapRequest\");" +
 					"var JavaScriptStaticAccess = Java.type(\"org.eclipse.californium.actinium.plugnplay.JavaScriptStaticAccess\");" +
@@ -326,6 +335,32 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 				e.printStackTrace();
 			}
 			return null;
+		}
+
+		public Object extend(StaticClass base, final ScriptObjectMirror function){
+			Class cl = base.getRepresentedClass();
+			try {
+				Set<String> existingMethods = Stream.of(cl.getDeclaredMethods())
+						.map((x)->x.getName())
+						.collect(Collectors.toSet());
+
+				Set<String> definedMethods = function.keySet();
+				List<Object> interfaces = definedMethods.stream().filter(x->!existingMethods.contains(x)).map(x -> {
+					try {
+						return NativeJava.type(null, "gen." + x + "_" + ((ScriptObjectMirror)function.get(x)).get("length"));
+					} catch (ClassNotFoundException e) {
+						return null;
+					}
+				}).collect(Collectors.toList());
+
+
+				interfaces.add(0, base);
+				interfaces.add(ScriptUtils.unwrap(function));
+				return NativeJava.extend(base, interfaces.toArray());
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
 		}
 
 		/**
@@ -576,5 +611,10 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	@FunctionalInterface
 	public interface IRequire {
 		Object call(String name);
+	}
+
+	@FunctionalInterface
+	public interface IExtend {
+		Object call(StaticClass a, ScriptObjectMirror b);
 	}
 }
