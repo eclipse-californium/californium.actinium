@@ -67,6 +67,17 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	// The handler, that makes JavaScript execute requests on "app.root"
 	private JSRequestHandler requestHandler;
 	
+	// Java Packages, that are imported automatically for Rhino
+	private static String[] defaultpackages = {
+		"java.lang",
+		"java.util",
+		"java.io",
+		"java.net",
+		"java.text",
+		"org.eclipse.californium.core.coap", // Response
+		"org.eclipse.californium.actinium.jscoap", // CoapRequest
+		"org.eclipse.californium.actinium.jscoap.jserror" // CoAPRequest RequestErrorException
+	};
 
 	private AppContext context;
 	private NashornScriptEngine engine;
@@ -199,8 +210,26 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"var clearInterval = app.clearInterval;" +
 					"var setTimeout = app.setTimeout;" +
 					"var clearTimeout = app.clearTimeout;" +
-					"var ResponseCode = Java.type(\"org.eclipse.californium.core.coap.CoAP.ResponseCode\");\n" +
-					"var JavaScriptResource = Java.type(\"org.eclipse.californium.actinium.jscoap.JavaScriptResource\");\n" + code;
+					"var ResponseCode = Java.type(\"org.eclipse.californium.core.coap.CoAP.ResponseCode\");" +
+					"var JavaScriptResource = Java.type(\"org.eclipse.californium.actinium.jscoap.JavaScriptResource\");" +
+					"var _packages = [\"" + String.join("\", \"", defaultpackages) + "\"];" +
+					"var global = this;" +
+					"this.__noSuchProperty__ = function(name) {" +
+					"for (var i in _packages) {" +
+					"try {" +
+					"var type = Java.type(_packages[i] + \".\" + name);" +
+					"global[name] = type;" +
+					"return type;\n" +
+					"} catch (e) {}\n" +
+					"}" +
+					"if (this === undefined) {" +
+					"throw new ReferenceError(name + \" is not defined\");" +
+					"} else {" +
+					"return undefined;" +
+					"}" +
+					"};" +
+					"var Date = java.util.Date;" +
+					"" + code+"\n";
 			// Execute code
 			engine.eval(code, context);
 

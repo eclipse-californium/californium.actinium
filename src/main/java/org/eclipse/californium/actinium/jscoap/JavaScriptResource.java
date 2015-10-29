@@ -16,6 +16,7 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.jscoap;
 
+import jdk.nashorn.api.scripting.NashornException;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
@@ -73,9 +74,19 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handleGET(CoapExchange exchange) {
 		CoapCallback onget = getOnget();
 		if (onget!=null) {
-			onget.call(new JSCoapExchange(exchange));
+			callJSCallback(exchange, onget);
 		} else {
 			super.handleGET(exchange);
+		}
+	}
+
+	private void callJSCallback(CoapExchange exchange, CoapCallback onget) {
+		try {
+			onget.call(new JSCoapExchange(exchange));
+
+		}catch (NashornException e){
+			System.err.println("JavaScript error in ["+e.getFileName()+"#"+e.getLineNumber()+"]: "+e.getMessage());
+			throw e;
 		}
 	}
 
@@ -83,7 +94,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handlePOST(CoapExchange exchange) {
 		CoapCallback onpost = getOnpost();
 		if (onpost!=null) {
-			onpost.call(new JSCoapExchange(exchange));
+			callJSCallback(exchange, onpost);
 		} else {
 			super.handlePOST(exchange);
 		}
@@ -93,7 +104,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handlePUT(CoapExchange exchange) {
 		CoapCallback onput = getOnput();
 		if (onput!=null) {
-			onput.call(new JSCoapExchange(exchange));
+			callJSCallback(exchange, onput);
 		} else {
 			super.handlePUT(exchange);
 		}
@@ -103,7 +114,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public void handleDELETE(CoapExchange exchange) {
 		CoapCallback ondelete = getOndelete();
 		if (ondelete!=null) {
-			ondelete.call(new JSCoapExchange(exchange));
+			callJSCallback(exchange, ondelete);
 		} else {
 			super.handleDELETE(exchange);
 		}

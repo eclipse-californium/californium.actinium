@@ -34,10 +34,6 @@ if (typeof String.prototype.startsWith != 'function') {
 
 var counter = 0;
 
-app.root.onpost = respond;
-app.root.onput = respond;
-app.root.ondelete = respond;
-
 app.root.onget = function(request) {
 	request.respond(2.05, howto);
 }
@@ -74,6 +70,11 @@ function respond(request) {
 	
 	counter++;
 }
+
+
+app.root.onpost = respond;
+app.root.onput = respond;
+app.root.ondelete = respond;
 
 function hasAccept(payload) {
 	return payload.startsWith("accept");
