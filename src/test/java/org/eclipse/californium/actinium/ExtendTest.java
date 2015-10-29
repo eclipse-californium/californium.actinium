@@ -33,7 +33,7 @@ public class ExtendTest extends BaseServerTest {
 
     @Test
     public void testExtend() throws InterruptedException, FileNotFoundException {
-        installScript(script, new File("run/appserver/installed/test_extend.js"));
+        installScript(script, new File("run/appserver/installed/" + script + ".js"));
         createInstance(script, script);
         testCheckIfInstanceExists(script);
         testCheckInstance(script, script);

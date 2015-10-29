@@ -217,7 +217,12 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"      fn = _copy(base, fn);\n" +
 					"      cls = cls._cls;\n" +
 					"  }\n" +
-					"  var extended = new JSAdapter() { __new__:function (){\n" +
+					"  var local_cls = cls;var local_fn = fn;\n" +
+					"  var extended = new JSAdapter() { " +
+					"   __get__: function(name) {\n" +
+					"        return name=='_cls'?local_cls:(name=='_fn'?local_fn:undefined);\n" +
+					"    }," +
+					"   __new__:function (){\n" +
 					"    var dev = _copy({}, fn);\n" +
 					"    var t = _extend(cls, dev);\n" +
 					"    var self  = new t(); \n" +
