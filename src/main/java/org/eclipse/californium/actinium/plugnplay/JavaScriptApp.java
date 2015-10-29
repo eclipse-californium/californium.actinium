@@ -22,6 +22,7 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.api.scripting.ScriptUtils;
 import jdk.nashorn.internal.objects.NativeJava;
+import jdk.nashorn.internal.runtime.ScriptObject;
 import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
@@ -212,18 +213,18 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"\n" +
 					"var extend = function(cls, fn) {\n" +
 					"  if (cls._cls != undefined) {\n" +
-					"      var base = _copy({}, cls._fn)\n" +
+					"      var base = _copy({}, cls._fn);\n" +
 					"      fn = _copy(base, fn);\n" +
 					"      cls = cls._cls;\n" +
 					"  }\n" +
-					"  var extended = function() {\n" +
+					"  var extended = new JSAdapter() { __new__:function (){\n" +
 					"    var dev = _copy({}, fn);\n" +
 					"    var t = _extend(cls, dev);\n" +
 					"    var self  = new t(); \n" +
 					"    dev.super = self;\n" +
 					"    Object.bindProperties(dev, self);\n" +
-					"    Object.bindProperties(this, self);\n" +
-					"  };\n" +
+					"    return self;\n" +
+					"  } };\n" +
 					"  extended._cls = cls;\n" +
 					"  extended._fn = _copy({}, fn);\n" +
 					"  return extended;\n" +
