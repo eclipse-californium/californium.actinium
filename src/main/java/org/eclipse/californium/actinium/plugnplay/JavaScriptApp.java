@@ -22,8 +22,6 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.api.scripting.ScriptUtils;
 import jdk.nashorn.internal.objects.NativeJava;
-import jdk.nashorn.internal.objects.NativeObject;
-import jdk.nashorn.internal.runtime.ScriptObject;
 import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
@@ -34,7 +32,10 @@ import org.eclipse.californium.actinium.jscoap.JavaScriptResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import javax.script.*;
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -201,8 +202,32 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
             jsaccess = new JavaScriptAccess();
 			engineScope.put("app", jsaccess);
 			engineScope.put("require", (IRequire) moduleName -> jsaccess.require(moduleName));
-			engineScope.put("extend", (IExtend) (a, b) -> jsaccess.extend(a, b));
-
+			engineScope.put("_extend", (IExtend) (a, b) -> jsaccess.extend(a, b));
+			String extendFunction = "function _copy(copy, obj) {\n" +
+					"  for (var attr in obj) {\n" +
+					"    if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];\n" +
+					"  }\n" +
+					"  return copy;\n" +
+					"}\n" +
+					"\n" +
+					"var extend = function(cls, fn) {\n" +
+					"  if (cls._cls != undefined) {\n" +
+					"      var base = _copy({}, cls._fn)\n" +
+					"      fn = _copy(base, fn);\n" +
+					"      cls = cls._cls;\n" +
+					"  }\n" +
+					"  var extended = function() {\n" +
+					"    var dev = _copy({}, fn);\n" +
+					"    var t = _extend(cls, dev);\n" +
+					"    var self  = new t(); \n" +
+					"    dev.super = self;\n" +
+					"    Object.bindProperties(dev, self);\n" +
+					"    Object.bindProperties(this, self);\n" +
+					"  };\n" +
+					"  extended._cls = cls;\n" +
+					"  extended._fn = _copy({}, fn);\n" +
+					"  return extended;\n" +
+					"};";
 			code = "var CoapRequest = Java.type(\"org.eclipse.californium.actinium.jscoap.CoapRequest\");" +
 					"var JavaScriptStaticAccess = Java.type(\"org.eclipse.californium.actinium.plugnplay.JavaScriptStaticAccess\");" +
 					"var dump = JavaScriptStaticAccess.dump;" +
@@ -212,7 +237,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"var clearTimeout = app.clearTimeout;" +
 					"var ResponseCode = Java.type(\"org.eclipse.californium.core.coap.CoAP.ResponseCode\");" +
 					"var JavaScriptResource = Java.type(\"org.eclipse.californium.actinium.jscoap.JavaScriptResource\");" +
-					"var _packages = [\"" + String.join("\", \"", defaultpackages) + "\"];" +
+					"var _packages = [\"" + String.join("\", \"", defaultpackages) + "\"];" + extendFunction.replace('\n',' ') +
 					"var global = this;" +
 					"this.__noSuchProperty__ = function(name) {" +
 					"for (var i in _packages) {" +
@@ -370,17 +395,17 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			Class cl = base.getRepresentedClass();
 			try {
 				Set<String> existingMethods = Stream.of(cl.getDeclaredMethods())
-						.map((x)->x.getName())
+						.map((x) -> x.getName())
 						.collect(Collectors.toSet());
 
 				Set<String> definedMethods = function.keySet();
-				List<Object> interfaces = definedMethods.stream().filter(x->!existingMethods.contains(x)).map(x -> {
+				List<Object> interfaces = definedMethods.stream().filter(x -> !existingMethods.contains(x)).map(x -> {
 					try {
-						return NativeJava.type(null, "gen." + x + "_" + ((ScriptObjectMirror)function.get(x)).get("length"));
-					} catch (ClassNotFoundException e) {
+						return NativeJava.type(null, "gen." + x + "_" + ((ScriptObjectMirror) function.get(x)).get("length"));
+					} catch (Exception e) {
 						return null;
 					}
-				}).collect(Collectors.toList());
+				}).filter((x) -> x != null).collect(Collectors.toList());
 
 
 				interfaces.add(0, base);
