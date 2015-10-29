@@ -80,10 +80,9 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 		}
 	}
 
-	private void callJSCallback(CoapExchange exchange, CoapCallback onget) {
+	private void callJSCallback(CoapExchange exchange, CoapCallback callback) {
 		try {
-			onget.call(new JSCoapExchange(exchange));
-
+			callback.call(new JavaScriptCoapExchange(exchange), exchange.advanced().getRequest());
 		}catch (NashornException e){
 			System.err.println("JavaScript error in ["+e.getFileName()+"#"+e.getLineNumber()+"]: "+e.getMessage());
 			throw e;

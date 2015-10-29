@@ -4,24 +4,43 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class ExtendTest extends BaseServerTest {
+
+    private final String script;
+
+    public ExtendTest(String script) {
+        this.script = script;
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"test_extend"},
+                {"test_multi_extend"},
+        });
+    }
 
     @Test
     public void testExtend() throws InterruptedException, FileNotFoundException {
-        installScript("test_extend", new File("run/appserver/installed/test_extend.js"));
-        createInstance("test_extend", "test_extend");
-        testCheckIfInstanceExists("test_extend");
-        testCheckInstance("test_extend", "test_extend");
+        installScript(script, new File("run/appserver/installed/test_extend.js"));
+        createInstance(script, script);
+        testCheckIfInstanceExists(script);
+        testCheckInstance(script, script);
         Thread.sleep(3000);
-        testCheckIfInstanceIsRunning("test_extend");
+        testCheckIfInstanceIsRunning(script);
         Request checkCounter = Request.newGet();
-        checkCounter.setURI(baseURL+"apps/running/test_extend");
+        checkCounter.setURI(baseURL + "apps/running/" + script);
         checkCounter.send();
         Response counterResult = checkCounter.waitForResponse(TIMEOUT);
         assertEquals(CoAP.ResponseCode.CONTENT, counterResult.getCode());

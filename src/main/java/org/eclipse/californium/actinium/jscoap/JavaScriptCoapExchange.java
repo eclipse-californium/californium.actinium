@@ -11,10 +11,10 @@ import java.net.InetAddress;
 /**
  * Created by ynh on 25/10/15.
  */
-public class JSCoapExchange {
+public class JavaScriptCoapExchange {
     private final CoapExchange exchange;
 
-    public JSCoapExchange(CoapExchange exchange) {
+    public JavaScriptCoapExchange(CoapExchange exchange) {
         this.exchange = exchange;
     }
 
