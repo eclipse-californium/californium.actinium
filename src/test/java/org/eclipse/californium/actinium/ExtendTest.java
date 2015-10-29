@@ -42,7 +42,7 @@ public class ExtendTest extends BaseServerTest {
         Request checkCounter = Request.newGet();
         checkCounter.setURI(baseURL + "apps/running/" + script);
         checkCounter.send();
-        Response counterResult = checkCounter.waitForResponse(TIMEOUT);
+        Response counterResult = checkCounter.waitForResponse(TIMEOUT*10);
         assertEquals(CoAP.ResponseCode.CONTENT, counterResult.getCode());
         String counterString = counterResult.getPayloadString();
         assertEquals("OK", counterString);
