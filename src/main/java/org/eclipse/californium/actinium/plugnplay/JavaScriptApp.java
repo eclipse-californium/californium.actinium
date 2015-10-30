@@ -206,32 +206,64 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			engineScope.put("_extend", (IExtend) (a, b) -> jsaccess.extend(a, b));
 			String extendFunction = "function _copy(copy, obj) {\n" +
 					"  for (var attr in obj) {\n" +
-					"    if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];\n" +
+					"    if (obj.hasOwnProperty(attr)) {\n" +
+					"      copy[attr] = obj[attr];\n" +
+					"    }\n" +
 					"  }\n" +
 					"  return copy;\n" +
 					"}\n" +
-					"\n" +
-					"var extend = function(cls, fn) {\n" +
-					"  if (cls._cls != undefined) {\n" +
-					"      var base = _copy({}, cls._fn);\n" +
-					"      fn = _copy(base, fn);\n" +
-					"      cls = cls._cls;\n" +
+					"function _copy_with_scope(copy, obj, scope) {\n" +
+					"  var sc = scope;\n" +
+					"  for (var attr in obj) {\n" +
+					"    if (obj.hasOwnProperty(attr)) {\n" +
+					"      if ((typeof obj[attr]) != \"function\"){\n" +
+					"        copy[attr] = obj[attr];\n" +
+					"      }else{\n" +
+					"        copy[attr] = function(fn){\n" +
+					"          return function(){\n" +
+					"            return fn.apply(sc, arguments);\n" +
+					"          };}(obj[attr]);\n" +
+					"        copy[attr]._length = obj[attr].length;\n" +
+					"      }\n" +
+					"    }\n" +
 					"  }\n" +
-					"  var local_cls = cls;var local_fn = fn;\n" +
-					"  var extended = new JSAdapter() { " +
-					"   __get__: function(name) {\n" +
-					"        return name=='_cls'?local_cls:(name=='_fn'?local_fn:undefined);\n" +
-					"    }," +
-					"   __new__:function (){\n" +
-					"    var dev = _copy({}, fn);\n" +
-					"    var t = _extend(cls, dev);\n" +
-					"    var self  = new t(); \n" +
-					"    dev.super = self;\n" +
-					"    Object.bindProperties(dev, self);\n" +
-					"    return self;\n" +
-					"  } };\n" +
-					"  extended._cls = cls;\n" +
-					"  extended._fn = _copy({}, fn);\n" +
+					"  return copy;\n" +
+					"}\n" +
+					"var extend = function(cls, fn) {\n" +
+					"  var local_fn = _copy({}, fn);\n" +
+					"  var parent_super = function(container){\n" +
+					"    var ctx = {super:{}};\n" +
+					"    Object.setPrototypeOf(ctx, ctx.super);\n" +
+					"    return ctx;\n" +
+					"  };\n" +
+					"  if (cls._cls != undefined) {\n" +
+					"    var base = _copy({}, cls._fn); \n" +
+					"    parent_super = cls._super;\n" +
+					"    cls = cls._cls;\n" +
+					"  }\n" +
+					"  var local_cls = cls;\n" +
+					"  var superfn = function(container){\n" +
+					"    var ctx = {super:parent_super(container)};\n" +
+					"    _copy_with_scope(ctx, local_fn, ctx);\n" +
+					"    Object.setPrototypeOf(ctx, ctx.super);\n" +
+					"    return ctx;\n" +
+					"  };\n" +
+					"  var extended = new JSAdapter() {\n" +
+					"    __get__: function(name) {\n" +
+					"      return name == '_cls' ? local_cls : (name==\"_super\"?superfn:undefined);\n" +
+					"    },\n" +
+					"      __new__: function() {\n" +
+					"        var ctx = {};\n" +
+					"        var scopes = superfn(ctx);\n" +
+					"        var t = _extend(cls, scopes);\n" +
+					"        var self = new t();\n" +
+					"        while(scopes.super != undefined){\n" +
+					"          scopes = scopes.super;\n" +
+					"        }\n" +
+					"        Object.bindProperties(scopes, self);\n" +
+					"        return self;\n" +
+					"      }\n" +
+					"  };\n" +
 					"  return extended;\n" +
 					"};";
 			code = "var CoapRequest = Java.type(\"org.eclipse.californium.actinium.jscoap.CoapRequest\");" +
@@ -351,8 +383,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		public JavaScriptApp root = JavaScriptApp.this; // "app.root"
 		
 		public Function onunload = null; // "app.onunload = ..."
-		
-		private HashMap<Integer, JavaScriptTimeoutTask> tasks = 
+
+		private HashMap<Integer, JavaScriptTimeoutTask> tasks =
 			new HashMap<Integer, JavaScriptTimeoutTask>(); // tasks and their id
 		private Timer timer = new Timer(getName()+"-timer", true); // timer to schedule tasks
 		private int timernr = 1; // increasing task counter
@@ -407,7 +439,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 				Set<String> definedMethods = function.keySet();
 				List<Object> interfaces = definedMethods.stream().filter(x -> !existingMethods.contains(x)).map(x -> {
 					try {
-						return NativeJava.type(null, "gen." + x + "_" + ((ScriptObjectMirror) function.get(x)).get("length"));
+						ScriptObjectMirror fn = ((ScriptObjectMirror) function.get(x));
+						return NativeJava.type(null, "gen." + x + "_" + fn.get("_length"));
 					} catch (Exception e) {
 						return null;
 					}

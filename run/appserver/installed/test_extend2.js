@@ -1,22 +1,21 @@
-var dev = {
-    val: -1,
+
+var Container  = extend(Java.type("java.util.concurrent.atomic.AtomicInteger"), {
     set: function(val){
-        this.val = val;
+        this.super.set(val);
     },
 
     get: function(){
-        return this.val;
+        return this.super.get();
     }
 
-};
-var Container = extend(Java.type("java.lang.Object"), dev);
+});
 
 app.root.onget = function(request) {
     var c = new Container();
     var y = new Container();
     var x = new Container();
 
-    if(c.get() != -1){
+    if(c.get() != 0){
         request.respond(2.05, "failed 0");
         return;
     }
@@ -31,7 +30,7 @@ app.root.onget = function(request) {
         return;
     }
 
-    if(x.get() != -1){
+    if(x.get() != 0){
         request.respond(2.05, "failed");
         return;
     }
@@ -45,7 +44,7 @@ app.root.onget = function(request) {
         request.respond(2.05, "failed 4");
         return;
     }
-    if(y.get() != -1){
+    if(y.get() != 0){
         request.respond(2.05, "failed");
         return;
     }

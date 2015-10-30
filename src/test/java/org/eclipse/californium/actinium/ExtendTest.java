@@ -27,7 +27,11 @@ public class ExtendTest extends BaseServerTest {
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"test_extend"},
+                {"test_extend2"},
+                {"test_extend3"},
                 {"test_multi_extend"},
+                {"test_multi_extend2"},
+                {"test_multi_extend3"}
         });
     }
 
