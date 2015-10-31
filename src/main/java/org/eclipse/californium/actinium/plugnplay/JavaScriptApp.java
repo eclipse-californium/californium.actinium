@@ -22,7 +22,6 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.api.scripting.ScriptUtils;
 import jdk.nashorn.internal.objects.NativeJava;
-import jdk.nashorn.internal.runtime.ScriptObject;
 import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppType;
@@ -30,6 +29,8 @@ import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.jscoap.CoapCallback;
 import org.eclipse.californium.actinium.jscoap.JavaScriptCoapConstants;
 import org.eclipse.californium.actinium.jscoap.JavaScriptResource;
+import org.eclipse.californium.actinium.jsmodule.JavaScriptModuleObject;
+import org.eclipse.californium.actinium.jsmodule.NativeJavaModuleObject;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
@@ -416,7 +417,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 						File propertiesFile = new File(libPath + "/config.cfg");
 						Properties properties = new Properties();
 						properties.load(new FileInputStream(propertiesFile));
-						element = NativeJavaModuleObject.create(engine,classloader, propertiesFile, properties);
+						element = NativeJavaModuleObject.create(engine, classloader, propertiesFile, properties);
 					}
 					moduleCache.put(name, element);
 				}
@@ -440,10 +441,11 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 				List<Object> interfaces = definedMethods.stream().filter(x -> !existingMethods.contains(x)).map(x -> {
 					try {
 						ScriptObjectMirror fn = ((ScriptObjectMirror) function.get(x));
-						return NativeJava.type(null, "gen." + x + "_" + fn.get("_length"));
+						if(fn.get("_length")!=null)
+							return NativeJava.type(null, "gen." + x + "_" + fn.get("_length"));
 					} catch (Exception e) {
-						return null;
 					}
+					return null;
 				}).filter((x) -> x != null).collect(Collectors.toList());
 
 
