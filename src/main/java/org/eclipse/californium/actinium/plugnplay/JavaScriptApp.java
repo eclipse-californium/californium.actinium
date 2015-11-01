@@ -214,15 +214,14 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"  return copy;\n" +
 					"}\n" +
 					"function _copy_with_scope(copy, obj, scope) {\n" +
-					"  var sc = scope;\n" +
 					"  for (var attr in obj) {\n" +
 					"    if (obj.hasOwnProperty(attr)) {\n" +
 					"      if ((typeof obj[attr]) != \"function\"){\n" +
-					"        copy[attr] = obj[attr];\n" +
+					"        scope[attr] = obj[attr];\n" +
 					"      }else{\n" +
 					"        copy[attr] = function(fn){\n" +
 					"          return function(){\n" +
-					"            return fn.apply(sc, arguments);\n" +
+					"            return fn.apply(scope, arguments);\n" +
 					"          };}(obj[attr]);\n" +
 					"        copy[attr]._length = obj[attr].length;\n" +
 					"      }\n" +
@@ -232,42 +231,44 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"}\n" +
 					"var extend = function(cls, fn) {\n" +
 					"  var local_fn = _copy({}, fn);\n" +
-					"  var parent_super = function(container){\n" +
-					"    var ctx = {super:{}};\n" +
-					"    return ctx;\n" +
+					"  var parent_jsobj = function(contexts, container){\n" +
+					"    var obj = {};\n" +
+					"    contexts.push(obj);\n" +
+					"    return obj;\n" +
 					"  };\n" +
 					"  if (cls._cls != undefined) {\n" +
 					"    var base = _copy({}, cls._fn); \n" +
-					"    parent_super = cls._super;\n" +
+					"    parent_jsobj = cls._jsobj;\n" +
 					"    cls = cls._cls;\n" +
 					"  }\n" +
 					"  var local_cls = cls;\n" +
-					"  var superfn = function(container){\n" +
-					"    var ctx = {super:parent_super(container)};\n" +
-					"    _copy_with_scope(ctx, local_fn, ctx);\n" +
-					"    Object.setPrototypeOf(ctx, ctx.super);\n" +
-					"    _copy(container, ctx);\n" +
-					"    delete container['super'];\n" +
-					"    return ctx;\n" +
+					"  var _jsobj = function(contexts, container){\n" +
+					"    var context = {super:parent_jsobj(contexts, container)};\n" +
+					"    contexts.push(context);\n" +
+					"    var obj = {};\n" +
+					"    _copy_with_scope(obj, local_fn, context);\n" +
+					"    _copy(container, obj);\n" +
+					"    Object.setPrototypeOf(obj, context.super);\n" +
+					"    return obj;\n" +
 					"  };\n" +
 					"  var extended = new JSAdapter() {\n" +
 					"    __get__: function(name) {\n" +
-					"      return name == '_cls' ? local_cls : (name==\"_super\"?superfn:undefined);\n" +
+					"      return name == '_cls' ? local_cls : (name==\"_jsobj\"?_jsobj:undefined);\n" +
 					"    },\n" +
-					"      __new__: function() {\n" +
-					"        var ctx = {};\n" +
-					"        var scopes = superfn(ctx);\n" +
-					"        var t = _extend(cls, ctx);\n" +
-					"        var self = new t();\n" +
-					"        var self_obj = {};\n" +
-					"        Object.bindProperties(self_obj, self);\n" +
-					"        while(scopes != undefined){\n" +
-					"          var sc = scopes;\n" +
-					"          scopes = scopes.super;\n" +
-					"          Object.setPrototypeOf(sc, self_obj);\n" +
-					"        }\n" +
-					"        return self;\n" +
-					"      }\n" +
+					"    __new__: function() {\n" +
+					"      var container = {};\n" +
+					"      var contexts = [];\n" +
+					"      _jsobj(contexts, container);\n" +
+					"      var t = _extend(cls, container);\n" +
+					"      var self = new t();\n" +
+					"      var self_obj = {};\n" +
+					"      Object.bindProperties(self_obj, self);\n" +
+					"      Object.setPrototypeOf(container, self_obj);\n" +
+					"      for (var i = contexts.length - 1; i >= 0; i--) {\n" +
+					"        Object.setPrototypeOf(contexts[i], self_obj);\n" +
+					"      };\n" +
+					"      return self;\n" +
+					"    }\n" +
 					"  };\n" +
 					"  return extended;\n" +
 					"};";
