@@ -1,51 +1,30 @@
 
 var Container  = extend(Java.type("java.util.concurrent.atomic.AtomicInteger"), {
-    set: function(val){
-        this.super.set(val);
-    },
+    hashCode: function(){
+        return this.super.hashCode()%10;
+    }
 
-    get: function(){
-        return this.super.get();
+});
+
+
+var Container2  = extend(Java.type("java.util.concurrent.atomic.AtomicInteger"), {
+    hashCode2: function(){
+        return this.super.hashCode()%10;
     }
 
 });
 
 app.root.onget = function(request) {
     var c = new Container();
-    var y = new Container();
-    var x = new Container();
+    var y = new Container2();
 
-    if(c.get() != 0){
-        request.respond(2.05, "failed 0");
+    if(c.super$hashCode()%10 != c.hashCode()){
+        request.respond(2.05, "failed 0 "+c.super$hashCode()+"--"+c.hashCode());
         return;
     }
-    c.set(99);
-    if(c.get() != 99){
+
+    if(y.hashCode()%10 != y.hashCode2()){
         request.respond(2.05, "failed 1");
-        return;
-    }
-    c.set(999);
-    if(c.get() != 999){
-        request.respond(2.05, "failed 2");
-        return;
-    }
-
-    if(x.get() != 0){
-        request.respond(2.05, "failed");
-        return;
-    }
-    x.set(4);
-    if(x.get() != 4){
-        request.respond(2.05, "failed 3");
-        return;
-    }
-
-    if(c.get() != 999){
-        request.respond(2.05, "failed 4");
-        return;
-    }
-    if(y.get() != 0){
-        request.respond(2.05, "failed");
         return;
     }
     request.respond(2.05, "OK");

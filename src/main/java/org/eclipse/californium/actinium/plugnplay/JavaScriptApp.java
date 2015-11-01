@@ -41,6 +41,7 @@ import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -205,6 +206,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			engineScope.put("app", jsaccess);
 			engineScope.put("require", (IRequire) moduleName -> jsaccess.require(moduleName));
 			engineScope.put("_extend", (IExtend) (a, b) -> jsaccess.extend(a, b));
+			engineScope.put("_super", (ISuperCall) (a, b,c) -> jsaccess.superCall(a, b, c));
 			String extendFunction = "function _copy(copy, obj) {\n" +
 					"  for (var attr in obj) {\n" +
 					"    if (obj.hasOwnProperty(attr)) {\n" +
@@ -231,10 +233,18 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"}\n" +
 					"var extend = function(cls, fn) {\n" +
 					"  var local_fn = _copy({}, fn);\n" +
-					"  var parent_jsobj = function(contexts, container){\n" +
-					"    var obj = {};\n" +
-					"    contexts.push(obj);\n" +
-					"    return obj;\n" +
+					"  var parent_jsobj = function(data, contexts, container){\n" +
+					"\n" +
+					"    return new JSAdapter() {\n" +
+					"        \n" +
+					"        __call__: function(name) {\n" +
+					"            var val = _super(data.self, name, Array.apply(null, arguments).slice(1));\n" +
+					"            return val;\n" +
+					"        },\n" +
+					"        __get__: function(name) {\n" +
+					"            return data.self[name];\n" +
+					"        }\n" +
+					"    };\n" +
 					"  };\n" +
 					"  if (cls._cls != undefined) {\n" +
 					"    var base = _copy({}, cls._fn); \n" +
@@ -242,8 +252,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"    cls = cls._cls;\n" +
 					"  }\n" +
 					"  var local_cls = cls;\n" +
-					"  var _jsobj = function(contexts, container){\n" +
-					"    var context = {super:parent_jsobj(contexts, container)};\n" +
+					"  var _jsobj = function(data, contexts, container){\n" +
+					"    var context = {super:parent_jsobj(data, contexts, container)};\n" +
 					"    contexts.push(context);\n" +
 					"    var obj = {};\n" +
 					"    _copy_with_scope(obj, local_fn, context);\n" +
@@ -256,9 +266,10 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"      return name == '_cls' ? local_cls : (name==\"_jsobj\"?_jsobj:undefined);\n" +
 					"    },\n" +
 					"    __new__: function() {\n" +
+					"      var data =  {self:null};\n" +
 					"      var container = {};\n" +
 					"      var contexts = [];\n" +
-					"      _jsobj(contexts, container);\n" +
+					"      _jsobj(data, contexts, container);\n" +
 					"      var t = _extend(cls, container);\n" +
 					"      var self = new t();\n" +
 					"      var self_obj = {};\n" +
@@ -267,6 +278,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"      for (var i = contexts.length - 1; i >= 0; i--) {\n" +
 					"        Object.setPrototypeOf(contexts[i], self_obj);\n" +
 					"      };\n" +
+					"      data.self = self;\n" +
 					"      return self;\n" +
 					"    }\n" +
 					"  };\n" +
@@ -617,8 +629,22 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		public synchronized void clearInterval(int id) {
 			clearTimeout(id);
 		}
+
+		public Object superCall(Object a, String method_name, Object[] arguments) {
+			try {
+				Object val = a.getClass().getMethod("super$" + method_name).invoke(a,arguments);
+				return val;
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
 	}
-	
+
 	/**
 	 * When app.setTimeout is called a new task for a specified function is
 	 * created and added to the timer. After the specified milliseconds have
@@ -716,5 +742,9 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	@FunctionalInterface
 	public interface IExtend {
 		Object call(StaticClass a, ScriptObjectMirror b);
+	}
+	@FunctionalInterface
+	public interface ISuperCall {
+		Object call(Object target, String method, Object[] args);
 	}
 }
