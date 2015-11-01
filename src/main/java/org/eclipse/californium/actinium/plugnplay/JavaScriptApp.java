@@ -234,7 +234,6 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"  var local_fn = _copy({}, fn);\n" +
 					"  var parent_super = function(container){\n" +
 					"    var ctx = {super:{}};\n" +
-					"    Object.setPrototypeOf(ctx, ctx.super);\n" +
 					"    return ctx;\n" +
 					"  };\n" +
 					"  if (cls._cls != undefined) {\n" +
@@ -247,6 +246,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"    var ctx = {super:parent_super(container)};\n" +
 					"    _copy_with_scope(ctx, local_fn, ctx);\n" +
 					"    Object.setPrototypeOf(ctx, ctx.super);\n" +
+					"    _copy(container, ctx);\n" +
+					"    delete container['super'];\n" +
 					"    return ctx;\n" +
 					"  };\n" +
 					"  var extended = new JSAdapter() {\n" +
@@ -256,12 +257,15 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					"      __new__: function() {\n" +
 					"        var ctx = {};\n" +
 					"        var scopes = superfn(ctx);\n" +
-					"        var t = _extend(cls, scopes);\n" +
+					"        var t = _extend(cls, ctx);\n" +
 					"        var self = new t();\n" +
-					"        while(scopes.super != undefined){\n" +
+					"        var self_obj = {};\n" +
+					"        Object.bindProperties(self_obj, self);\n" +
+					"        while(scopes != undefined){\n" +
+					"          var sc = scopes;\n" +
 					"          scopes = scopes.super;\n" +
+					"          Object.setPrototypeOf(sc, self_obj);\n" +
 					"        }\n" +
-					"        Object.bindProperties(scopes, self);\n" +
 					"        return self;\n" +
 					"      }\n" +
 					"  };\n" +
