@@ -209,7 +209,9 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			engineScope.put("_extend", (IExtend) (a, b) -> jsaccess.extend(a, b));
 			engineScope.put("_super", (ISuperCall) (a, b,c) -> jsaccess.superCall(a, b, c));
 			String bootstrap = Utils.readFile(getClass().getClassLoader().getResource("bootstrap.js"));
-			code =  bootstrap.replaceAll("//.*?\n","\n").replace('\n',' ') + code + "\n";
+			code =  bootstrap.replaceAll("//.*?\n","\n").replace('\n',' ') +
+					"(function () {" + code + "}).apply({});";
+
 			// Execute code
 			engine.eval(code, context);
 
@@ -333,7 +335,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 						File propertiesFile = new File(libPath + "/config.cfg");
 						Properties properties = new Properties();
 						properties.load(new FileInputStream(propertiesFile));
-						element = NativeJavaModuleObject.create(engine, classloader, propertiesFile, properties);
+						element = NativeJavaModuleObject.create(engine, context, classloader, propertiesFile, properties);
 					}
 					moduleCache.put(name, element);
 				}

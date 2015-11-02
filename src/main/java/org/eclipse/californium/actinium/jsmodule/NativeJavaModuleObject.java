@@ -20,14 +20,11 @@ public class NativeJavaModuleObject {
      * file. A mapping is defined by adding a key value entry to the config file. The key represents the property name and
      * the value defines the fully qualified class name. The property name must start with an uppercase letter.
      */
-    public static Object create(NashornScriptEngine engine, DynamicClassloader classloader, File file, Properties properties) throws IOException, ScriptException {
+    public static Object create(NashornScriptEngine engine, AppContext ctx, DynamicClassloader classloader, File file, Properties properties) throws IOException, ScriptException {
         File jarFile = new File(file.getParentFile().getAbsolutePath() + File.separator + properties.getProperty("file"));
         URL fileURL = jarFile.toURI().toURL();
         classloader.addJARFile(fileURL);
-
-        AppContext context = new AppContext();
-        context.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
-        return engine.eval(getJsSource(properties), context);
+        return engine.eval(getJsSource(properties), ctx);
     }
 
 
