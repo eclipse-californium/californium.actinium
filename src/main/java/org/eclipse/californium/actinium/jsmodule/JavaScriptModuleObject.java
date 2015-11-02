@@ -1,6 +1,7 @@
 package org.eclipse.californium.actinium.jsmodule;
 
 import jdk.nashorn.api.scripting.NashornScriptEngine;
+import org.eclipse.californium.actinium.Utils;
 import org.eclipse.californium.actinium.plugnplay.AppContext;
 
 import javax.script.Bindings;
@@ -19,7 +20,7 @@ public class JavaScriptModuleObject  {
      * variable as defined in the CommonJS module format.
      */
     public static Object create(String name, NashornScriptEngine engine, AppContext ctx, File jsFile) throws FileNotFoundException, ScriptException {
-        String content = new Scanner(jsFile).useDelimiter("\\Z").next();
+        String content = Utils.readFile(jsFile);
         AppContext context = new AppContext();
         context.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
         context.setAttribute(ScriptEngine.FILENAME, name, ScriptContext.ENGINE_SCOPE);
