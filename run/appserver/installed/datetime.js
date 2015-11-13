@@ -123,7 +123,7 @@ function DateTime(ts,id) {
 	this.date = new MyDate(ts);
 	this.time = new MyTime(ts);
 	
-	this.resource = new JavaScriptResource(id);
+	this.resource = new JavaScriptResource(id.replace(/ /g,'_'));
 	
 	var mythis = this;
 	this.resource.onget = function(request) {

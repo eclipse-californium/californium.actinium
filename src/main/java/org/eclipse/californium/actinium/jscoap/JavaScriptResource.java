@@ -44,7 +44,11 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 	public JavaScriptResource(String resourceIdentifier, boolean hidden) {
 		super(resourceIdentifier, hidden);
 	}
-	
+
+	public void setTitle(String resourceTitle){
+		getAttributes().setTitle(resourceTitle);
+	}
+
 	@Override
 	public void changed() {
 		super.changed();

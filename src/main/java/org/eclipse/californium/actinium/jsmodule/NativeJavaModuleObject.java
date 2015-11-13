@@ -4,7 +4,6 @@ import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.eclipse.californium.actinium.plugnplay.AppContext;
 import org.eclipse.californium.actinium.plugnplay.DynamicClassloader;
 
-import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +30,9 @@ public class NativeJavaModuleObject {
     private static String getJsSource(Properties properties) {
         String items = "";
         for (String k : properties.stringPropertyNames()) {
-            items += "get " + k + "(){ return Java.type(\"" + properties.getProperty(k) + "\")},";
+            if(Character.isUpperCase(k.codePointAt(0))) {
+                items += "get " + k + "(){ return Java.type(\"" + properties.getProperty(k) + "\")},";
+            }
         }
         return "(function () {\nvar exports = {" + items + "};\nreturn exports;\n}());";
     }
