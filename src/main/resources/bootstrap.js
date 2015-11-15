@@ -101,7 +101,7 @@ var extend = function(cls, fn) {
             _jsobj(data, contexts, container);
             var t = _extend(cls, container);
             var self = new t();
-            var self_obj = {};
+            var self_obj = {"__java":self};
             Object.bindProperties(self_obj, self);
             Object.setPrototypeOf(container, self_obj);
             for (var i = contexts.length - 1; i >= 0; i--) {
