@@ -52,7 +52,20 @@ function _copy_with_scope(copy, obj, scope) {
     return copy;
 }
 // Extend function with a java like behavior
-var extend = function(cls, fn) {
+var extend = function() {
+    var cls, fn, clname;
+    if(arguments.length == 2){
+        cls = arguments[0];
+        fn = arguments[1];
+    }
+    if(arguments.length == 3){
+        clname = arguments[0];
+        cls = arguments[1];
+        fn = arguments[2];
+        fn['getClassName'] = function(){
+            return clname;
+        }
+    }
     var local_fn = _copy({}, fn);
     var parent_jsobj = function(data, contexts, container) {
 
@@ -84,11 +97,22 @@ var extend = function(cls, fn) {
         return obj;
     };
     var extended = new JSAdapter() {
-        __get__: function(name) {
-            return name == '_cls' ? local_cls : (name == "_jsobj" ? _jsobj : undefined);
+        __get__: function (name) {
+            if (name == '_cls') {
+                return local_cls;
+            } else if (name == "_jsobj") {
+                return _jsobj;
+            } else if (name == "new") {
+                //return supplier
+                return function (){
+                    return new extended();
+                };
+            } else {
+                return undefined;
+            }
         },
 
-        __call__: function(name, arg1, arg2) {
+        __call__: function (name, arg1, arg2) {
             // ignore calls
         },
 
