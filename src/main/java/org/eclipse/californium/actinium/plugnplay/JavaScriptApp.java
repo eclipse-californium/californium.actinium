@@ -37,7 +37,6 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -171,10 +170,6 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	public void execute(String code) {
 		dependencies.clear();
 		moduleCache.clear();
-		String name = getName();
-		code = code;
-
-		ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
 		classloader = new DynamicClassloader(Thread.currentThread().getContextClassLoader());
 		engine = (NashornScriptEngine) new NashornScriptEngineFactory().getScriptEngine(classloader);
         try {
@@ -291,6 +286,10 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		} else {
 		    System.out.println("No cleanup function in script "+getName()+" defined");
 		}
+		classloader = null;
+		context=null;
+		moduleCache.clear();
+		System.gc();
 	}
 
 	/**
