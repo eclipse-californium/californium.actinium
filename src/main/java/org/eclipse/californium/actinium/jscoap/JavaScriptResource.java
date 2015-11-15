@@ -18,6 +18,7 @@ package org.eclipse.californium.actinium.jscoap;
 
 import jdk.nashorn.api.scripting.NashornException;
 import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 /**
@@ -88,6 +89,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 		try {
 			callback.call(new JavaScriptCoapExchange(exchange), exchange.advanced().getRequest());
 		}catch (NashornException e){
+			exchange.respond(CoAP.ResponseCode.INTERNAL_SERVER_ERROR, e.getMessage());
 			System.err.println("JavaScript error in ["+e.getFileName()+"#"+e.getLineNumber()+"]: "+e.getMessage());
 			throw e;
 		}

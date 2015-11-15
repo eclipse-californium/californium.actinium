@@ -215,14 +215,16 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			// Execute code
 			engine.eval(code, context);
 
-        } catch (ScriptException e) {
-			e.printStackTrace();
+        } catch (RuntimeException|ScriptException e) {
 			Throwable cause = e.getCause();
 			if (cause!=null && cause instanceof InterruptedException) {
 				// this was a controlled shutdown, e.g. with app.stop()
 				System.out.println("JavaScript app "+getName()+" has been interrupted");
 			} else {
-				System.err.println("JavaScript error in ["+e.getFileName()+"#"+e.getLineNumber()+"]: "+e.getMessage());
+				e.printStackTrace();
+				if (e instanceof ScriptException) {
+					System.err.println("JavaScript error in [" + ((ScriptException) e).getFileName() + "#" + ((ScriptException) e).getLineNumber() + "]: " + e.getMessage());
+				}
 			}
 		}
 	}

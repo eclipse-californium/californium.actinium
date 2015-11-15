@@ -87,6 +87,11 @@ var extend = function(cls, fn) {
         __get__: function(name) {
             return name == '_cls' ? local_cls : (name == "_jsobj" ? _jsobj : undefined);
         },
+
+        __call__: function(name, arg1, arg2) {
+            // ignore calls
+        },
+
         __new__: function() {
             var data = {
                 self: null

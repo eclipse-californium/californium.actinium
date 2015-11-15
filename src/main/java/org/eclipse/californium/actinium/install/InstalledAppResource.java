@@ -16,14 +16,6 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.install;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Properties;
-import java.util.Scanner;
-
 import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.Config;
@@ -31,6 +23,11 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+
+import java.io.*;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+import java.util.Scanner;
 
 /**
  * InstalledAppResource represents an app's code, whichs is stored to the disk.
@@ -93,7 +90,7 @@ public class InstalledAppResource extends CoapResource {
 		    scanner.close();
 			request.respond(ResponseCode.CONTENT, content);
 			
-		} catch (FileNotFoundException e) {
+		} catch (FileNotFoundException|NoSuchElementException e) {
 			e.printStackTrace();
 			request.respond(ResponseCode.INTERNAL_SERVER_ERROR);
 		}
