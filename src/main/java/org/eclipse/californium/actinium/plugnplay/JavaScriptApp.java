@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -203,7 +204,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			engineScope.put("require", (IRequire) moduleName -> jsaccess.require(moduleName));
 			engineScope.put("_extend", (IExtend) (a, b) -> jsaccess.extend(a, b));
 			engineScope.put("_super", (ISuperCall) (a, b,c) -> jsaccess.superCall(a, b, c));
-			String bootstrap = Utils.readFile(getClass().getClassLoader().getResource("bootstrap.js"));
+
+			String bootstrap = Utils.readFile(JavaScriptApp.class.getResourceAsStream("/bootstrap.js"));
 			code =  bootstrap.replaceAll("//.*?\n","\n").replace('\n',' ') +
 					"(function () {" + code + "}).apply({});";
 

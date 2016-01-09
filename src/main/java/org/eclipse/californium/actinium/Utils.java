@@ -2,6 +2,7 @@ package org.eclipse.californium.actinium;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Scanner;
@@ -17,6 +18,10 @@ public class Utils {
         } catch (FileNotFoundException e) {
             return null;
         }
+    }
+
+    public static String readFile(InputStream file) {
+        return new Scanner(file).useDelimiter("\\Z").next();
     }
 
     public static String readFile(URL resource) {
