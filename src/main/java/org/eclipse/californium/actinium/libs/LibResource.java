@@ -59,7 +59,6 @@ public class LibResource extends CoapResource{
     @Override
     public void handleDELETE(CoapExchange request) {
         try {
-            manager.deleteApps(name); // throws IOException if not successful (e.g. no write-access to config file)
             deleteLib(); // throws IOException if not successful (e.g. no write-access to javascript file)
             delete();
             request.respond(CoAP.ResponseCode.DELETED);
@@ -71,7 +70,7 @@ public class LibResource extends CoapResource{
 
 
     /**
-     * Deletes the file with the code of this app.
+     * Deletes the file with the code of this lib.
      * @throws IOException if file does not exist or is not deletable.
      */
     private void deleteLib() throws IOException {

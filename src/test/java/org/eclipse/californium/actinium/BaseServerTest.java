@@ -39,9 +39,9 @@ public class BaseServerTest {
 		cleanupConfiguration();
 		appFolder.mkdir();
 		appFolder.deleteOnExit();
-		new File("appserver_tmp/installed").mkdir();
-		new File("appserver_tmp/apps").mkdir();
-		new File("appserver_tmp/libs").mkdir();
+		new File("appserver_tmp"+File.separator+"installed").mkdir();
+		new File("appserver_tmp"+File.separator+"apps").mkdir();
+		new File("appserver_tmp"+File.separator+"libs").mkdir();
 		{
 			PrintWriter writer = new PrintWriter("appserver_tmp/config.cfg", "UTF-8");
 			writer.println("#Tue Sep 30 14:47:47 CEST 2014\n" +
