@@ -143,14 +143,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		try {
 			// Load JavaScript code
 			String path = appcfg.getProperty(AppConfig.DIR_PATH) + appcfg.getProperty(AppConfig.APP) + "." + AppType.getAppSuffix(appcfg.getProperty(AppConfig.TYPE));
-		
-			File file = new File(path);
-			@SuppressWarnings("resource")
-			Scanner scanner = new Scanner(file).useDelimiter("\\Z");
-			String code = "";
-			if (scanner.hasNext())
-		    	code = scanner.next();
-		    scanner.close();
+			String code = Utils.readFile(path);
 
 		    // execute code
 		    execute(code);
@@ -169,6 +162,9 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	 * @param code the JavaScript code
 	 */
 	public void execute(String code) {
+		
+		if (code==null || code.isEmpty()) return;
+		
 		dependencies.clear();
 		moduleCache.clear();
 		classloader = new DynamicClassloader(Thread.currentThread().getContextClassLoader());
@@ -206,8 +202,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			engineScope.put("_super", (ISuperCall) (a, b,c) -> jsaccess.superCall(a, b, c));
 
 			String bootstrap = Utils.readFile(JavaScriptApp.class.getResourceAsStream("/bootstrap.js"));
-			code =  bootstrap.replaceAll("//.*?\n","\n").replace('\n',' ') +
-					"(function () {" + code + "}).apply({});";
+			code =  bootstrap.replaceAll("//.*?\n","\n").replace('\n',' ') + "(function () {" + code + "}).apply({});";
 
 			// Execute code
 			engine.eval(code, context);
@@ -351,24 +346,20 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			return null;
 		}
 
-		public Object extend(StaticClass base, final ScriptObjectMirror function){
+		public Object extend(StaticClass base, final ScriptObjectMirror function) {
 			Class cl = base.getRepresentedClass();
 			try {
-				Set<String> existingMethods = Stream.of(cl.getDeclaredMethods())
-						.map((x) -> x.getName())
-						.collect(Collectors.toSet());
+				Set<String> existingMethods = Stream.of(cl.getDeclaredMethods()).map((x) -> x.getName()).collect(Collectors.toSet());
 
 				Set<String> definedMethods = function.keySet();
 				List<Object> interfaces = definedMethods.stream().filter(x -> !existingMethods.contains(x)).map(x -> {
 					try {
 						ScriptObjectMirror fn = ((ScriptObjectMirror) function.get(x));
-						if(fn.get("_length")!=null)
+						if (fn.get("_length") != null)
 							return NativeJava.type(null, "gen." + x + "_" + fn.get("_length"));
-					} catch (Exception e) {
-					}
+					} catch (Exception e) { }
 					return null;
 				}).filter((x) -> x != null).collect(Collectors.toList());
-
 
 				interfaces.add(0, base);
 				interfaces.add(ScriptUtils.unwrap(function));

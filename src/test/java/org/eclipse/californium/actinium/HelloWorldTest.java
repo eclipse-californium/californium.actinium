@@ -123,7 +123,7 @@ public class HelloWorldTest extends BaseServerTest {
 		newapp.send();
 		Response response = newapp.waitForResponse(TIMEOUT);
 		assertEquals(CoAP.ResponseCode.BAD_REQUEST, response.getCode());
-		assertEquals("The given name helloWorld is already in use. Choose another name or update the current app with a PUT request", response.getPayloadString());
+		assertEquals("The given app name helloWorld is already in use. Choose another name or update the current app with a PUT request", response.getPayloadString());
 
 	}
 

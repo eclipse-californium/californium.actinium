@@ -12,23 +12,33 @@ import java.util.Scanner;
  */
 public class Utils {
 
-    public static String readFile(File file) {
-        try {
-            return new Scanner(file).useDelimiter("\\Z").next();
-        } catch (FileNotFoundException e) {
-            return null;
-        }
-    }
+	public static String readFile(File file) {
+		try {
+			Scanner s = new Scanner(file);
+			String contents = s.useDelimiter("\\Z").next();
+			s.close();
+			return contents;
+		} catch (FileNotFoundException e) {
+			return null;
+		}
+	}
 
-    public static String readFile(InputStream file) {
-        return new Scanner(file).useDelimiter("\\Z").next();
-    }
+	public static String readFile(InputStream file) {
+		Scanner s = new Scanner(file);
+		String contents = s.useDelimiter("\\Z").next();
+		s.close();
+		return contents;
+	}
 
-    public static String readFile(URL resource) {
-        try {
-            return readFile(new File(resource.toURI()));
-        } catch (URISyntaxException e) {
-            return null;
-        }
-    }
+	public static String readFile(URL resource) {
+		try {
+			return readFile(new File(resource.toURI()));
+		} catch (URISyntaxException e) {
+			return null;
+		}
+	}
+
+	public static String readFile(String path) {
+		return readFile(new File(path));
+	}
 }

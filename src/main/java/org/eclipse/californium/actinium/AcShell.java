@@ -17,10 +17,8 @@
 package org.eclipse.californium.actinium;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.SocketException;
 import java.util.Observable;
-import java.util.Scanner;
 
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.plugnplay.JavaScriptApp;
@@ -54,27 +52,23 @@ public class AcShell extends CoapServer {
 	}
 	
 	private void execute() {
-		try {
-			File file = new File(path);
-			@SuppressWarnings("resource")
-			Scanner scanner = new Scanner(file).useDelimiter("\\Z");
-		    String code = scanner.next();  
-		    scanner.close();
-		    
-		    if (name==null)
-		    	name = file.getName();
-		    
-		    AppConfig appcfg = new AppConfig();
-		    appcfg.setProperty(AppConfig.NAME, name);
-		    OneTimeJavaScriptApp app = new OneTimeJavaScriptApp(appcfg);
-		    add(app);
-		    
-		    app.execute(code);
-		    
-		} catch (IOException e) {
-			System.err.println("Error while reading file "+path+": "+e.getMessage());
+		File file = new File(path);
+	    String code = Utils.readFile(file);
+	    
+	    if (code==null) {
+			System.err.println("File not found: " + path);
 			System.exit(ERR_FILE_IO);
 		}
+	    if (name==null) {
+	    	name = file.getName();
+	    }
+	    
+	    AppConfig appcfg = new AppConfig();
+	    appcfg.setProperty(AppConfig.NAME, name);
+	    OneTimeJavaScriptApp app = new OneTimeJavaScriptApp(appcfg);
+	    add(app);
+	    
+	    app.execute(code);
 	}
 
 	public static void main(String[] args) {
