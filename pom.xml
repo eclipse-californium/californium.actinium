@@ -11,7 +11,7 @@
 
 	<groupId>org.eclipse.californium</groupId>
 	<artifactId>actinium</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>2.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Actinium (Ac)</name>
@@ -55,6 +55,14 @@
 			<email>martin.lanter@gmx.ch</email>
 			<roles>
 				<role>Committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>hassany</id>
+			<name>Yassin N. Hassan</name>
+			<email>hassany@student.ethz.ch</email>
+			<roles>
+				<role>Contributer</role>
 			</roles>
 		</developer>
 	</developers>
@@ -161,7 +169,7 @@
 		<dependency>
 			<groupId>org.eclipse.californium</groupId>
 			<artifactId>californium-core</artifactId>
-			<version>${project.version}</version>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.uk</groupId>
