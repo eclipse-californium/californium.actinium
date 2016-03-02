@@ -1,15 +1,11 @@
-Actinium (Ac) App-server for Californium
-========================================
+Actinium (Ac) App-server 2.0 for Californium
+============================================
 
-Our novel runtime container Actinium (Ac) exposes scripts, their configuration,
-and their lifecycle management through a fully RESTful programming interface
-using the Constrained Application Protocol (CoAP). We endow the JavaScript
-language with an API for direct interaction with mote-class IoT devices, the
-CoapRequest object, and means to export script data as Web resources. With
-Actinium, applications can be created by simply mashing up resources provided
-by CoAP servers on devices, other scripts, and classic Web services. We also
-discuss security considerations and show the suitability of this architecture
-in terms of performance with our publicly available implementation. 
+## Version 2.0 is now based on Nashorn and provides module loading mechanism
+
+Our novel runtime container Actinium (Ac) exposes scripts, their configuration, and their lifecycle management through a RESTful programming interface using the Constrained Application Protocol (CoAP).
+We endow the JavaScript language with an API for direct interaction with mote-class IoT devices, the CoapRequest object, and means to export script data as Web resources.
+With Actinium, applications can be created by simply mashing up resources provided by CoAP servers on devices, other scripts, and classic Web services.
 
 Maven
 -----
