@@ -1,7 +1,7 @@
 
 var Container  = extend(Java.type("java.util.concurrent.atomic.AtomicInteger"), {
     hashCode: function(){
-        return this.super.hashCode()%10;
+        return this.super$hashCode()%10;
     }
 
 });
@@ -9,7 +9,7 @@ var Container  = extend(Java.type("java.util.concurrent.atomic.AtomicInteger"), 
 
 var Container2  = extend(Java.type("java.util.concurrent.atomic.AtomicInteger"), {
     hashCode2: function(){
-        return this.super.hashCode()%10;
+        return this.super$hashCode()%10;
     }
 
 });
