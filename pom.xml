@@ -9,6 +9,7 @@
 		<project.build.javaVersion>1.8</project.build.javaVersion>
 		<californium.version>2.0.0-SNAPSHOT</californium.version>
 		<junit.version>4.12</junit.version>
+		<logback.version>1.2.3</logback.version>
 	</properties>
 
 	<groupId>org.eclipse.californium</groupId>
@@ -178,6 +179,13 @@
 			<artifactId>e4x-utils</artifactId>
 			<version>1.0-2005-02-28</version>
 		</dependency>
+		<!-- runtime dependencies -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>runtime</scope>
+			<version>${logback.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -268,6 +276,12 @@
 				<version>2.22.1</version>
 				<configuration>
 					<useSystemClassLoader>false</useSystemClassLoader>
+					<systemPropertyVariables>
+						<!--
+							configures the logback logging framework to use a config file
+						-->
+						<logback.configurationFile>${project.basedir}/logback-test.xml</logback.configurationFile>
+					</systemPropertyVariables>
 					<excludes>
 						<exclude>**/*$*</exclude>
 					</excludes>
