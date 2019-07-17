@@ -28,7 +28,7 @@ public class RTTTest extends BaseServerTest {
 		testCheckIfInstanceIsRunning("counter");
 		Request configureRTT = Request.newPost();
 		configureRTT.setURI(baseURL+"apps/running/rtt-1");
-		configureRTT.setPayload("POST coap://"+baseURL+"apps/running/counter");
+		configureRTT.setPayload("POST "+baseURL+"apps/running/counter");
 		configureRTT.send();
 
 		assertEquals(CoAP.ResponseCode.CHANGED, configureRTT.waitForResponse(TIMEOUT).getCode());

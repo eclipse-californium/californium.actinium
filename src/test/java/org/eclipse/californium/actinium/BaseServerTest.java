@@ -88,7 +88,7 @@ public class BaseServerTest {
 		server = new AcServer(config);
 		server.start();
 		serverPort = server.getEndpoints().get(0).getAddress().getPort();
-		baseURL = "localhost:" + serverPort + "/";
+		baseURL = "coap://localhost:" + serverPort + "/";
 	}
 
 	private void cleanupConfiguration() throws IOException {

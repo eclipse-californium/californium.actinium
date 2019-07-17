@@ -46,7 +46,7 @@ public class RequestTest extends BaseServerTest {
 		testCheckIfInstanceIsRunning("counter");
 		Request configureRTT = Request.newPost();
 		configureRTT.setURI(baseURL + "apps/running/requ");
-		configureRTT.setPayload("POST coap://" + baseURL + "apps/running/counter " + async);
+		configureRTT.setPayload("POST " + baseURL + "apps/running/counter " + async);
 		configureRTT.send();
 		if(async) {
 			Thread.sleep(1000);
