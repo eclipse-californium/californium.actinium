@@ -16,12 +16,16 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium;
 
+import java.io.File;
 import java.net.SocketException;
 
 import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.install.InstallResource;
 import org.eclipse.californium.actinium.libs.LibsResource;
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfigDefaultHandler;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 
 /**
  * Actinium (Ac) App-server for Californium
@@ -37,54 +41,72 @@ import org.eclipse.californium.core.CoapServer;
  */
 public class AcServer extends CoapServer {
 
+	private static NetworkConfigDefaultHandler DEFAULTS = new NetworkConfigDefaultHandler() {
+
+		@Override
+		public void applyDefaults(NetworkConfig config) {
+			final int CORES = Runtime.getRuntime().availableProcessors();
+			// javascripts are too frequently blocking!
+			config.setInt(Keys.PROTOCOL_STAGE_THREAD_COUNT, Math.max(8, CORES));
+		}
+	};
+
 	// AppManager to figure out to which apps a request belongs
 	private AppManager manager;
-	
+
 	// resource that holds the stats for all app instances
 	private StatsResource stats;
-	
+
 	/**
 	 * Constructs a new Actinium app-server with the specified config.
+	 * 
 	 * @param config the app server's config.
 	 * @throws SocketException if the Socket is blocked.
 	 */
 	public AcServer(Config config) throws SocketException {
-		
-		//Log.setLevel(Level.ALL);
-		
+		this(config, null, null);
+	}
+
+	public AcServer(Config config, NetworkConfig networkConfig, int... ports) throws SocketException {
+		super(networkConfig, ports);
+
 		this.manager = new AppManager(config);
-		
+
 		AppResource appres = new AppResource(manager);
 		InstallResource insres = new InstallResource(manager);
 
 		this.add(appres);
 		this.add(insres);
 
-
 		LibsResource libsres = new LibsResource(manager);
 		this.add(libsres);
 
-		this.add(
-				config.createConfigResource(config.getProperty(Config.CONFIG_RESOURCE_ID)));
-		
+		this.add(config.createConfigResource(config.getProperty(Config.CONFIG_RESOURCE_ID)));
+
 		this.stats = new StatsResource(config, manager);
 		this.add(stats);
 		appres.startApps();
 	}
-	
+
+	public static NetworkConfig initNetworkConfig() {
+		return NetworkConfig.createWithFile(new File(NetworkConfig.DEFAULT_FILE_NAME), NetworkConfig.DEFAULT_HEADER, DEFAULTS);
+	}
+
 	/**
 	 * Setups a new config and a new app server.
+	 * 
 	 * @param args no arguments required
 	 */
 	public static void main(String[] args) {
 		try {
-			
+			initNetworkConfig();
 			Config config = new Config();
 			AcServer server = new AcServer(config);
 			server.start();
-			
-			System.out.println("Actinium (Ac) App-server listening on port "+server.getEndpoints().get(0).getAddress().getPort());
-			
+
+			System.out.println("Actinium (Ac) App-server listening on port "
+					+ server.getEndpoints().get(0).getAddress().getPort());
+
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}

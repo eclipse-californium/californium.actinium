@@ -4,6 +4,9 @@ import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.junit.After;
 import org.junit.Before;
 
@@ -11,11 +14,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class BaseServerTest {
@@ -23,7 +29,6 @@ public class BaseServerTest {
 	public static final int TIMEOUT = 200;
 	protected String baseURL;
 	private AcServer server;
-	private int serverPort;
 	private File appFolder;
 
 	@Before
@@ -84,11 +89,16 @@ public class BaseServerTest {
 	}
 
 	protected void startServer() throws SocketException {
+		NetworkConfig networkConfig = AcServer.initNetworkConfig();
 		Config config = new Config(TEST_APP_FOLDER + "/config.cfg");
-		server = new AcServer(config);
+		server = new AcServer(config, networkConfig);
+		CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
+		builder.setInetSocketAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(),
+				networkConfig.getInt(NetworkConfig.Keys.COAP_PORT)));
+		server.addEndpoint(builder.build());
 		server.start();
-		serverPort = server.getEndpoints().get(0).getAddress().getPort();
-		baseURL = "coap://localhost:" + serverPort + "/";
+		Endpoint endpoint = server.getEndpoints().get(0);
+		baseURL = endpoint.getUri() + "/";
 	}
 
 	private void cleanupConfiguration() throws IOException {
@@ -137,6 +147,7 @@ public class BaseServerTest {
 		newapp.send();
 		Response response = newapp.waitForResponse(TIMEOUT);
 		if (check) {
+			assertNotNull("response missing", response);
 			assertEquals(CoAP.ResponseCode.CREATED, response.getCode());
 			assertTrue(response.getPayloadString().endsWith(scriptName + " successfully installed to /" + ep + "/" + scriptName));
 		} else {
