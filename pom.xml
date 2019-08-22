@@ -85,6 +85,38 @@
 
 	<profiles>
 		<profile>
+			<!--
+				this profile downloads licenses used by 3rd-party library
+			-->
+			<id>download-licenses</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+				<property>
+					<name>downloadLicenses</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>license-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>download-licenses</id>
+								<configuration>
+									<excludedGroups>org.eclipse.californium</excludedGroups>
+									<excludedScopes>system,test</excludedScopes>
+								</configuration>
+								<goals>
+									<goal>download-licenses</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
 			<!-- this profile generate all the needed artifact and signatures needed for releasing on maven central -->
 			<id>release</id>
 			<activation>
@@ -302,6 +334,11 @@
 				<configuration>
 					<mainClass>org.eclipse.californium.actinium.AcServer</mainClass>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.16</version>
 			</plugin>
 		</plugins>
 	</build>
