@@ -1,5 +1,7 @@
 package org.eclipse.californium.actinium;
 
+import org.eclipse.californium.elements.rule.ThreadsRule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -9,6 +11,8 @@ import java.util.Collection;
 
 @RunWith(Parameterized.class)
 public class AppNameTest extends BaseServerTest {
+	@ClassRule
+	public static ThreadsRule cleanup = new ThreadsRule();
 
 	private final String appName;
 

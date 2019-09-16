@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +53,8 @@ import java.util.stream.Stream;
  * JavaScriptApp executes apps written in JavaScript using Rhino.
  */
 public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstants {
+
+	private static final AtomicInteger THREAD_ID = new AtomicInteger();
 
 	// The app's configuration
 	private AppConfig appcfg; // Note: appcfg can be null if has ben started SimpleAppServer
@@ -106,13 +109,13 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	
 	@Override
 	protected synchronized void startImpl() {
-		thread = new Thread(this,"JavsScript "+getName());
+		thread = new Thread(this, "JavaScript " + getName() + "-" + THREAD_ID.incrementAndGet());
 		thread.start();
 	}
 	
 	@Override
 	protected synchronized void restartImpl() {
-		if (started) {
+		if (jsaccess != null) {
 			thread.interrupt();
 			cleanup();
 
@@ -128,9 +131,10 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	protected synchronized void shutdownImpl() {
 		thread.interrupt();
 		cleanup(); // call app.onunload in JavaScript
-		
-		for (JavaScriptTimeoutTask task : jsaccess.tasks.values()) {
-			task.cancel();
+		if (jsaccess != null) {
+			for (JavaScriptTimeoutTask task : jsaccess.tasks.values()) {
+				task.cancel();
+			}
 		}
 	}
 
@@ -150,8 +154,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 
 		    // Start receiving requests for this app
 		    super.receiveMessages();
-		    
-        } catch (Exception e) {
+
+		} catch (Exception e) {
         	System.err.println("Exception while executing '" + getName() + "'");
         	e.printStackTrace();
         }
@@ -195,18 +199,21 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 //			}
 
 			// Add object "app" to JavaScript
-            jsaccess = new JavaScriptAccess();
+			JavaScriptAccess jsaccess = new JavaScriptAccess();
 			engineScope.put("app", jsaccess);
 			engineScope.put("require", (IRequire) moduleName -> jsaccess.require(moduleName));
 			engineScope.put("_extend", (IExtend) (a, b) -> jsaccess.extend(a, b));
 			engineScope.put("_super", (ISuperCall) (a, b,c) -> jsaccess.superCall(a, b, c));
+			this.jsaccess = jsaccess;
 
 			String bootstrap = Utils.readFile(JavaScriptApp.class.getResourceAsStream("/bootstrap.js"));
 			code =  bootstrap.replaceAll("//.*?\n","\n").replace('\n',' ') + "(function () {" + code + "}).apply({});";
 
 			// Execute code
 			engine.eval(code, context);
-
+			if (!isStarted()) {
+				jsaccess.timer.cancel();
+			}
         } catch (RuntimeException|ScriptException e) {
 			Throwable cause = e.getCause();
 			if (cause!=null && cause instanceof InterruptedException) {
@@ -277,11 +284,14 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	 * Calls the function onunload in the JavaScript script if defined.
 	 */
 	private void cleanup() {
-		Function onunload = jsaccess.onunload;
-		if (onunload!=null) {
-		    jsaccess.onunload.apply(null);
-		} else {
-		    System.out.println("No cleanup function in script "+getName()+" defined");
+		if (jsaccess != null) {
+			Function onunload = jsaccess.onunload;
+			if (onunload!=null) {
+				jsaccess.onunload.apply(null);
+			} else {
+				System.out.println("No cleanup function in script "+getName()+" defined");
+			}
+			jsaccess.timer.cancel();
 		}
 		classloader = null;
 		context=null;
@@ -303,9 +313,10 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 
 		private HashMap<Integer, JavaScriptTimeoutTask> tasks =
 			new HashMap<Integer, JavaScriptTimeoutTask>(); // tasks and their id
-		private Timer timer = new Timer(getName()+"-timer", true); // timer to schedule tasks
+		// timer to schedule tasks
+		private Timer timer = new Timer(getName() + "-timer" + "-" + THREAD_ID.incrementAndGet(), true);
 		private int timernr = 1; // increasing task counter
-		
+
 		/**
 		 * Prints to the standard output stream
 		 * @param args the objects to print

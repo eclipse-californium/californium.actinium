@@ -107,7 +107,7 @@ public class InstallResource extends CoapResource {
 	 */
 	@Override
 	public void handlePOST(CoapExchange request) {
-		System.out.println("Installer receivesd data");
+		System.out.println("Installer received data");
 		try {
 			// Figure out, whether payload is String or byte[] and install
 			String payload = request.getRequestText();

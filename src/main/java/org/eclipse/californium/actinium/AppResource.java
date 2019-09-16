@@ -100,7 +100,16 @@ public class AppResource extends CoapResource {
 			}
 		}
 	}
-	
+
+	/**
+	 * Stop all apps.
+	 */
+	public void stopApps() {
+		for (AbstractApp app:apps) {
+			app.getConfig().setPropertyAndNotify(AppConfig.RUNNING, AppConfig.STOP);
+		}
+	}
+
 	/**
 	 * Return a list of all running apps.
 	 */

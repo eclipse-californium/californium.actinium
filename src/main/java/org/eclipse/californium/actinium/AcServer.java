@@ -88,6 +88,12 @@ public class AcServer extends CoapServer {
 		appres.startApps();
 	}
 
+	@Override
+	public void destroy() {
+		manager.stopAllApps();
+		super.destroy();
+	}
+
 	public static NetworkConfig initNetworkConfig() {
 		return NetworkConfig.createWithFile(new File(NetworkConfig.DEFAULT_FILE_NAME), NetworkConfig.DEFAULT_HEADER, DEFAULTS);
 	}

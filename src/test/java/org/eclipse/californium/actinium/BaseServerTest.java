@@ -6,6 +6,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.junit.After;
 import org.junit.Before;
@@ -40,6 +41,7 @@ public class BaseServerTest {
 	@After
 	public void shutDownEndpoint() throws IOException, InterruptedException {
 		stopServer();
+		EndpointManager.reset();
 		cleanupConfiguration();
 	}
 
@@ -99,6 +101,10 @@ public class BaseServerTest {
 		server.start();
 		Endpoint endpoint = server.getEndpoints().get(0);
 		baseURL = endpoint.getUri() + "/";
+
+		builder = new CoapEndpoint.Builder();
+		builder.setInetSocketAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+		EndpointManager.getEndpointManager().setDefaultEndpoint(builder.build());
 	}
 
 	private void cleanupConfiguration() throws IOException {
@@ -106,7 +112,7 @@ public class BaseServerTest {
 	}
 
 	protected void stopServer() throws InterruptedException {
-		server.stop();
+		server.destroy();
 		Thread.sleep(500);
 	}
 

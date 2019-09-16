@@ -3,6 +3,8 @@ package org.eclipse.californium.actinium;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.elements.rule.ThreadsRule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -16,6 +18,9 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class ExtendTest extends BaseServerTest {
+	@ClassRule
+	public static ThreadsRule cleanup = new ThreadsRule();
+
 
     private final String script;
 

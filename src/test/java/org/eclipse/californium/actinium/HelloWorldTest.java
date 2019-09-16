@@ -1,16 +1,22 @@
 package org.eclipse.californium.actinium;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.elements.rule.TestNameLoggerRule;
+import org.eclipse.californium.elements.rule.ThreadsRule;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class HelloWorldTest extends BaseServerTest {
+	@ClassRule
+	public static ThreadsRule cleanup = new ThreadsRule();
 
+	@Rule
+	public TestNameLoggerRule names = new TestNameLoggerRule();
 
 	@Test
 	public void testHelloWorldApp() throws Exception {

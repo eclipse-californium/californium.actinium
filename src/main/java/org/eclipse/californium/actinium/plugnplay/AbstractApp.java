@@ -52,7 +52,7 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	private final AppConfig appcfg;
 	
 	// only for internal use (and subclasses).
-	protected boolean started;
+	protected volatile boolean started;
 	
 	private long startTimestamp; // timestamp, when app has started
 	private long stopTimestamp; // timestamp, when app has stopped (shutdown)
@@ -164,6 +164,9 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 			stopTimestamp = 0;
 			startTimestamp = System.currentTimeMillis();
 			started = true;
+			if (requestReceiver != null && !requestReceiver.isRunning()) {
+				requestReceiver = new WorkQueue(appcfg.getName()+"-ReceiverThread");
+			}
 			appcfg.setPropertyAndNotify(
 					AppConfig.RUNNING, AppConfig.START);
 			
@@ -182,10 +185,10 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 			System.err.println("App "+getName()+" is already shutdown");
 		} else {
 			System.out.println("App "+getName()+" shutdown");
-
+			started = false;
+			requestReceiver.stop();
 			removeSubresources();
 			shutdownImpl();
-			started = false;
 			
 			stopTimestamp = System.currentTimeMillis();
 			appcfg.setPropertyAndNotify(
@@ -202,6 +205,7 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	public synchronized void restart() {
 		System.out.println("App "+getName()+" restart");
 
+		requestReceiver.stop();
 		removeSubresources();
 		startTimestamp = System.currentTimeMillis();
 		restartImpl();

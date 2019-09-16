@@ -29,6 +29,7 @@ public class WorkQueue {
 	
 	private final PoolWorker thread;
 	private final LinkedList<Runnable> queue;
+	private volatile boolean running = true;
 
 	public WorkQueue() {
 		this(null);
@@ -70,9 +71,18 @@ public class WorkQueue {
 	public void execute() {
 		thread.run();
 	}
-	
+
 	public void stop() {
-		thread.interrupt();
+		synchronized (queue) {
+			running = false;
+			thread.interrupt();
+		}
+	}
+
+	public boolean isRunning() {
+		synchronized (queue) {
+			return running;
+		}
 	}
 
 	/*
@@ -90,16 +100,20 @@ public class WorkQueue {
 		
 		public void run() {
 			Runnable r;
-			while (true) {
+			while (running) {
 				// wait for another task to execute
-				synchronized (queue) {
-					while (queue.isEmpty()) {
-						try {
+				try {
+					synchronized (queue) {
+						if (!running) {
+							break;
+						}
+						while (queue.isEmpty()) {
 							queue.wait();
-						} catch (InterruptedException ignored) { }
+						}
+						r = queue.removeFirst();
+						r.run();
 					}
-					r = queue.removeFirst();
-					r.run();
+				} catch (InterruptedException ignored) {
 				}
 			}
 		}

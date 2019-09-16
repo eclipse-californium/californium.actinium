@@ -85,6 +85,27 @@
 
 	<profiles>
 		<profile>
+			<!-- maven compile would try to resolve test dependencies, 
+				even if tests are skipped. Therefore include this 
+				test dependency only, if tests are enabled -->
+			<id>tests</id>
+			<activation>
+				<property>
+					<name>maven.test.skip</name>
+					<value>!true</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>${project.groupId}</groupId>
+					<artifactId>element-connector</artifactId>
+					<version>${californium.version}</version>
+					<classifier>tests</classifier>
+					<type>test-jar</type>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
 			<!--
 				this profile downloads licenses used by 3rd-party library
 			-->
@@ -202,7 +223,7 @@
 			<version>3.20.0-GA</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.californium</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>californium-core</artifactId>
 			<version>${californium.version}</version>
 		</dependency>

@@ -114,6 +114,13 @@ public class AppManager {
 	}
 
 	/**
+	 * Stop all apps.
+	 */
+	public void stopAllApps() {
+		appresource.stopApps();
+	}
+
+	/**
 	 * Scans the folder for app configs for configs, loads them into AppConfigs
 	 * and creates the apps.
 	 * 
