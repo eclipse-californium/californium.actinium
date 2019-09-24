@@ -227,11 +227,6 @@
 			<artifactId>californium-core</artifactId>
 			<version>${californium.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.ibm.uk</groupId>
-			<artifactId>e4x-utils</artifactId>
-			<version>1.0-2005-02-28</version>
-		</dependency>
 		<!-- runtime dependencies -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -246,7 +241,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
+				<version>3.8.0</version>
 				<configuration>
 					<source>${project.build.javaVersion}</source>
 					<target>${project.build.javaVersion}</target>
@@ -257,12 +252,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
+				<version>3.1.1</version>
 				<!-- nothing here -->
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.0</version>
 				<inherited>true</inherited>
 				<configuration>
 					<appendAssemblyId>false</appendAssemblyId>
@@ -314,7 +309,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
+				<version>3.0.1</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
