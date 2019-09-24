@@ -37,6 +37,8 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,8 +89,8 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		"org.eclipse.californium.actinium.jscoap.jserror" // CoAPRequest RequestErrorException
 	};
 
-	private AppContext context;
-	private NashornScriptEngine engine;
+	private volatile AppContext context;
+	private ScriptEngine engine;
 
 	private Map<Object, Object> moduleCache;
 	private DynamicClassloader classloader;
@@ -172,11 +174,13 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		dependencies.clear();
 		moduleCache.clear();
 		classloader = new DynamicClassloader(Thread.currentThread().getContextClassLoader());
-		engine = (NashornScriptEngine) new NashornScriptEngineFactory().getScriptEngine(classloader);
+		engine = new NashornScriptEngineFactory().getScriptEngine(classloader);
+//		engine = (ScriptEngine) new ScriptEngineManager(classloader).getEngineByName("JavaScript");
         try {
         	// initialize JavaScrip environmetn for the app: scope (variables)
 
-			context = new AppContext();
+        	AppContext context = new AppContext();
+        	this.context = context;
 			context.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
 			Bindings engineScope = context.getBindings(ScriptContext.ENGINE_SCOPE);
 //    		scope.setPrototype(s);
@@ -210,10 +214,13 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			code =  bootstrap.replaceAll("//.*?\n","\n").replace('\n',' ') + "(function () {" + code + "}).apply({});";
 
 			// Execute code
-			engine.eval(code, context);
+			if (this.context != null) {
+				engine.eval(code, context);
+			}
 			if (!isStarted()) {
 				jsaccess.timer.cancel();
 			}
+			
         } catch (RuntimeException|ScriptException e) {
 			Throwable cause = e.getCause();
 			if (cause!=null && cause instanceof InterruptedException) {
@@ -285,9 +292,9 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	 */
 	private void cleanup() {
 		if (jsaccess != null) {
-			Function onunload = jsaccess.onunload;
+			Function<Object, Void> onunload = jsaccess.onunload;
 			if (onunload!=null) {
-				jsaccess.onunload.apply(null);
+				onunload.apply(null);
 			} else {
 				System.out.println("No cleanup function in script "+getName()+" defined");
 			}
@@ -309,7 +316,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		
 		public JavaScriptApp root = JavaScriptApp.this; // "app.root"
 		
-		public Function onunload = null; // "app.onunload = ..."
+		public Function<Object, Void> onunload = null; // "app.onunload = ..."
 
 		private HashMap<Integer, JavaScriptTimeoutTask> tasks =
 			new HashMap<Integer, JavaScriptTimeoutTask>(); // tasks and their id
@@ -358,7 +365,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		}
 
 		public Object extend(StaticClass base, final ScriptObjectMirror function) {
-			Class cl = base.getRepresentedClass();
+			Class<?> cl = base.getRepresentedClass();
 			try {
 				Set<String> existingMethods = Stream.of(cl.getDeclaredMethods()).map((x) -> x.getName()).collect(Collectors.toSet());
 
@@ -487,7 +494,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		 * @param args the arguments for the function
 		 * @return the id of the created task
 		 */
-		public synchronized int setTimeout(Function function, long millis, Object... args) {
+		public synchronized int setTimeout(Function<Object, Void> function, long millis, Object... args) {
 			if (function==null) throw new NullPointerException("app.setTimeout expects function not null");
 			int nr = timernr++;
 			JavaScriptTimeoutTask task = new JavaScriptTimeoutTask(function, args);
@@ -518,7 +525,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		 * @param args the arguments for the function
 		 * @return the id of the created task
 		 */
-		public synchronized int setInterval(Function function, long millis, Object... args) {
+		public synchronized int setInterval(Function<Object, Void> function, long millis, Object... args) {
 			if (function==null) throw new NullPointerException("app.setInterval expects function not null");
 			int nr = timernr++;
 			JavaScriptTimeoutTask task = new JavaScriptTimeoutTask(function, args);
@@ -562,10 +569,10 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	// Ugly but neccessary.
 	private class JavaScriptTimeoutTask extends TimerTask {
 		
-		private Function function; // the function
+		private Function<Object, Void> function; // the function
 		private Object[] args; // the arguments
 		
-		public JavaScriptTimeoutTask(Function function, Object[] args) {
+		public JavaScriptTimeoutTask(Function<Object, Void> function, Object[] args) {
 			this.function = function;
 			this.args = args;
 		}

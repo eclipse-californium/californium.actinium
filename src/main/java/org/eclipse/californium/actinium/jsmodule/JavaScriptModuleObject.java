@@ -1,9 +1,9 @@
 package org.eclipse.californium.actinium.jsmodule;
 
-import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.eclipse.californium.actinium.Utils;
 import org.eclipse.californium.actinium.plugnplay.AppContext;
 
+import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,7 +15,7 @@ public class JavaScriptModuleObject  {
      * Returns an object containing the exported variables. The variables are exported using the exports
      * variable as defined in the CommonJS module format.
      */
-    public static Object create(String name, NashornScriptEngine engine, AppContext ctx, File jsFile) throws FileNotFoundException, ScriptException {
+    public static Object create(String name, ScriptEngine engine, AppContext ctx, File jsFile) throws FileNotFoundException, ScriptException {
         String content = Utils.readFile(jsFile);
         return engine.eval(transformSource(name, content), ctx);
     }
