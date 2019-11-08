@@ -10,15 +10,9 @@ With Actinium, applications can be created by simply mashing up resources provid
 Maven
 -----
 
-Use `mvn clean install` in the root directory to build the Actinium (Ac) server.
-A standalone JAR will be created in the ./run/ directory.
+Use `mvn clean install` in the root directory to build the Actinium (Ac) server. It requires at least java 1.8 JDK. A standalone JAR will be created in the ./run/ directory.
 
-Rhino is available from the default Maven repositories.
-The Maven repositories for the other dependencies
-(*californium* and *e4x-utils*) are:
-
-* [https://repo.eclipse.org/content/repositories/californium/](https://repo.eclipse.org/content/repositories/californium/)
-* [https://github.com/mkovatsc/maven/raw/master/thirdparty/](https://github.com/mkovatsc/maven/raw/master/thirdparty/)
+The dependencies are available from the default Maven repositories.
 
 Run with `java -jar actinium-*.jar`.
 
