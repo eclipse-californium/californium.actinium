@@ -10,7 +10,10 @@ With Actinium, applications can be created by simply mashing up resources provid
 Maven
 -----
 
-Use `mvn clean install` in the root directory to build the Actinium (Ac) server. It requires at least java 1.8 JDK. A standalone JAR will be created in the ./run/ directory.
+Actinium can only be built using JDK 1.8 because of its dependencies to some JDK internal classes
+(you are more than welcome to help us getting rid of them).
+Use `mvn clean install` in the root directory to build the Actinium (Ac) server.
+A standalone JAR will be created in the ./run/ directory.
 
 The dependencies are available from the default Maven repositories.
 
