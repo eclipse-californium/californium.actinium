@@ -57,6 +57,25 @@
 		</developer>
 	</developers>
 
+	<repositories>
+		<repository>
+			<id>repo.eclipse.org</id>
+			<name>Californium Repository</name>
+			<url>https://repo.eclipse.org/content/repositories/californium/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>eclipse_snapshots</id>
+			<name>Eclipse Snapshots</name>
+			<url>https://repo.eclipse.org/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
 	<properties>
 		<project.build.javaVersion>1.8</project.build.javaVersion>
 		<assembly.mainClass>org.eclipse.californium.actinium.AcServer</assembly.mainClass>
@@ -80,6 +99,10 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>californium-legal</artifactId>
 		</dependency>
 	</dependencies>
 
