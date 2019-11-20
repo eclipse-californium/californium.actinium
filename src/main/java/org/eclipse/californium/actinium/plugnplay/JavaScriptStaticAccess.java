@@ -16,33 +16,25 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium.plugnplay;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JavaScriptStatisAccess defines global functions for JavaScript.
  */
 public class JavaScriptStaticAccess {
 
+	private static final Logger LOG = LoggerFactory.getLogger(JavaScriptStaticAccess.class);
+
 	public static void dump(Object... args) {
-        for (int i=0;i<args.length;i++) {
-            if (i==0)
-            	System.out.print("	app: ");
-            else
-                System.out.print(" ");
-            System.out.print(args[i].toString());
-        }
-        System.out.println();
-    }
-//
-//    public static void addSubResource(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-//    	if (args.length<2)
-//    		throw new IllegalArgumentException("Invalid call to addSubResource. Must have the parent resource as first argument and the child resource as second");
-//
-//    	if ( !(args[0] instanceof Resource) || !(args[1] instanceof Resource))
-//    		throw new IllegalArgumentException("Invalid call to addSubResource. The two arguments must be of type Resource");
-//
-//    	Resource parent = (Resource) Context.jsToJava(args[0],Resource.class);
-//    	Resource child = (Resource) Context.jsToJava(args[1],Resource.class);
-//    	parent.add(child);
-//    }
-
-
+		StringBuilder b = new StringBuilder();
+		for (int i = 0; i < args.length; i++) {
+			if (i == 0)
+				b.append("\tapp: ");
+			else
+				b.append(" ");
+			b.append(args[i].toString());
+		}
+		LOG.debug(b.toString());
+	}
 }

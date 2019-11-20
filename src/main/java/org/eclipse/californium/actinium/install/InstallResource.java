@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Institute for Pervasive Computing, ETH Zurich and others.
+ * Copyright (c) 2014, 2019 Institute for Pervasive Computing, ETH Zurich and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -19,8 +19,8 @@ package org.eclipse.californium.actinium.install;
 import java.io.File;
 
 import org.eclipse.californium.actinium.AppManager;
+import org.eclipse.californium.actinium.LoggerProvidingResource;
 import org.eclipse.californium.actinium.cfg.Config;
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -41,8 +41,8 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
  * of app (JavaScript, binary, etc.) you are installing. InstallResource only
  * creates a new InstalledAppResource with whatever content it receives.
  */
-public class InstallResource extends CoapResource {
-	
+public class InstallResource extends LoggerProvidingResource {
+
 	// The reference to the AppManager is only needet to give it to InstalledAppResource
 	private AppManager manager;
 
@@ -63,7 +63,7 @@ public class InstallResource extends CoapResource {
 			addInstalledAppResource(res);
 		}
 		
-		System.out.println("Installation resource is ready");
+		logger.info("Installation resource is ready");
 	}
 	
 	/**
@@ -107,7 +107,7 @@ public class InstallResource extends CoapResource {
 	 */
 	@Override
 	public void handlePOST(CoapExchange request) {
-		System.out.println("Installer received data");
+		logger.debug("Installer received data");
 		try {
 			// Figure out, whether payload is String or byte[] and install
 			String payload = request.getRequestText();
@@ -125,15 +125,15 @@ public class InstallResource extends CoapResource {
 			request.respond(response);
 		
 		} catch (IllegalArgumentException e) { // given query invalid
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 			request.respond(ResponseCode.BAD_REQUEST, e.getMessage()); // RESP_PRECONDITION_FAILED?
 		
 		} catch (RuntimeException e) { // some error while processing (e.g. IO)
-			e.printStackTrace();
+			logger.error("Error processing request", e);
 			request.respond(ResponseCode.BAD_REQUEST, e.getMessage()); // RESP_PRECONDITION_FAILED?
 			
 		} catch (Exception e) { // should not happen
-			e.printStackTrace();
+			logger.error("Error processing request", e);
 			request.respond(ResponseCode.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
@@ -174,8 +174,8 @@ public class InstallResource extends CoapResource {
 	 * @return the path to the newly created resource
 	 */
 	private String installAppFromString(String payload, String name) {
-		System.out.println("install "+name);
-		
+		logger.debug("installing {}", name);
+
 		if (name==null)
 			throw new IllegalArgumentException("The given app name is null. Please specify a valid name in the uri query");
 		if(!name.matches("^[a-zA-Z0-9-_]*$")){

@@ -19,7 +19,6 @@ package org.eclipse.californium.actinium.plugnplay;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.eclipse.californium.actinium.AppManager;
 import org.eclipse.californium.actinium.cfg.AbstractConfig.ConfigChangeSet;
@@ -27,6 +26,8 @@ import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AbstractApp is the parent class for all sorts of apps and a CoAP resource. So
@@ -45,7 +46,7 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 
 	// Logging /////////////////////////////////////////////////////////////////////
 		
-	protected static final Logger LOG = Logger.getLogger(AbstractApp.class.getName());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private final AppManager manager;
 	// properties of this app
@@ -158,9 +159,9 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	@Override
 	public synchronized void start() {
 		if (started) {
-			System.err.println("App "+getName()+" cannot be started more then once at a time");
+			logger.error("App {} cannot be started more then once at a time", getName());
 		} else {
-			System.out.println("App "+getName()+" starts in new thread");
+			logger.info("App {} starts in new thread", getName());
 			stopTimestamp = 0;
 			startTimestamp = System.currentTimeMillis();
 			started = true;
@@ -182,9 +183,9 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	@Override
 	public synchronized void shutdown() {
 		if (!started) {
-			System.err.println("App "+getName()+" is already shutdown");
+			logger.error("App {} is already shutdown", getName());
 		} else {
-			System.out.println("App "+getName()+" shutdown");
+			logger.info("App {} shutdown", getName());
 			started = false;
 			requestReceiver.stop();
 			removeSubresources();
@@ -203,7 +204,7 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	 */
 	@Override
 	public synchronized void restart() {
-		System.out.println("App "+getName()+" restart");
+		logger.info("App {} restart", getName());
 
 		requestReceiver.stop();
 		removeSubresources();
@@ -259,7 +260,7 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	 */
 	protected void printOutput(String output) {
 		if (isOutputAllowed())
-			System.out.println(output);
+			logger.info(output);
 	}
 	
 	/**
@@ -268,7 +269,7 @@ public abstract class AbstractApp extends CoapResource implements PlugAndPlayabl
 	 */
 	protected void printErrorOutput(String output) {
 		if (isErrorOutputAllowed())
-			System.err.println(output);
+			logger.error(output);
 	}
 	
 	/**

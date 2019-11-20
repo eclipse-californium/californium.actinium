@@ -27,6 +27,8 @@ import org.eclipse.californium.actinium.cfg.AppType;
 import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.plugnplay.AbstractApp;
 import org.eclipse.californium.actinium.plugnplay.JavaScriptApp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -70,7 +72,9 @@ import org.eclipse.californium.actinium.plugnplay.JavaScriptApp;
  * (to send a notification when an app instance is created or removed).
  */
 public class AppManager {
-	
+
+	private static final Logger LOG = LoggerFactory.getLogger(AppManager.class);
+
 	// the config of the app server
 	private Config config;
 	
@@ -127,7 +131,7 @@ public class AppManager {
 	 * @return the an array of all apps (instances) stored to the disk
 	 */
 	public List<AbstractApp> loadAllApps() {
-		System.out.println("Load apps from disk");
+		LOG.debug("Load apps from disk");
 
 		String path = config.getProperty(Config.APP_CONFIG_PATH);
 		File dir = new File(path);
@@ -141,9 +145,9 @@ public class AppManager {
 					AbstractApp app = createApp(appcfg);
 					list.add(app);
 
-					System.out.println("	loaded "+cfg.getName()+" for app "+app.getName());
+					LOG.debug("\tloaded {} for app {}", cfg.getName(), app.getName());
 				} catch (IOException e) {
-					System.err.println("AppManagar can't read app config from file "+cfg+": "+e.getMessage());
+					LOG.error("AppManagar can't read app config from file {}: {}", cfg, e.getMessage());
 				}
 			}
 		}

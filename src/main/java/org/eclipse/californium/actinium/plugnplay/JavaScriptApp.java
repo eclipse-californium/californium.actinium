@@ -136,16 +136,15 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			String path = appcfg.getProperty(AppConfig.DIR_PATH) + appcfg.getProperty(AppConfig.APP) + "." + AppType.getAppSuffix(appcfg.getProperty(AppConfig.TYPE));
 			String code = Utils.readFile(path);
 
-		    // execute code
-		    execute(code);
+			// execute code
+			execute(code);
 
-		    // Start receiving requests for this app
-		    super.receiveMessages();
+			// Start receiving requests for this app
+			super.receiveMessages();
 
 		} catch (Exception e) {
-        	System.err.println("Exception while executing '" + getName() + "'");
-        	e.printStackTrace();
-        }
+			logger.error("Exception while executing [{}]", getName(), e);
+		}
 	}
 
 	/**
@@ -188,14 +187,16 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			
 		} catch (RuntimeException|ScriptException e) {
 			Throwable cause = e.getCause();
-			if (cause!=null && cause instanceof InterruptedException) {
+			if (cause != null && cause instanceof InterruptedException) {
 				// this was a controlled shutdown, e.g. with app.stop()
-				System.out.println("JavaScript app "+getName()+" has been interrupted");
+				logger.debug("JavaScript app [{}] has been interrupted", getName());
+			} else if (e instanceof ScriptException) {
+					logger.error("JavaScript error in [{}#{}]",
+							((ScriptException) e).getFileName(),
+							((ScriptException) e).getLineNumber(),
+							e);
 			} else {
-				e.printStackTrace();
-				if (e instanceof ScriptException) {
-					System.err.println("JavaScript error in [" + ((ScriptException) e).getFileName() + "#" + ((ScriptException) e).getLineNumber() + "]: " + e.getMessage());
-				}
+				logger.error("error executing JavaScript code", e);
 			}
 		}
 	}
@@ -261,7 +262,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 			if (onunload!=null) {
 				onunload.apply(null);
 			} else {
-				System.out.println("No cleanup function in script "+getName()+" defined");
+				logger.debug("No cleanup function in script {} defined", getName());
 			}
 			jsaccess.timer.cancel();
 		}

@@ -28,7 +28,6 @@ import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.AppConfigsResource;
 import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.plugnplay.AbstractApp;
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 /**
@@ -48,7 +47,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
  * On a GET request, AppResource returns a list of all running apps. POST, PUT
  * and DELETE requests are not allowed.
  */
-public class AppResource extends CoapResource {
+public class AppResource extends LoggerProvidingResource {
 
 	private AppManager manager;
 	
@@ -90,7 +89,7 @@ public class AppResource extends CoapResource {
 
 		manager.setAppResource(this);
 		
-		System.out.println("Application resource is ready");
+		logger.info("Application resource is ready");
 	}
 	
 	public void startApps() {

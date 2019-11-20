@@ -17,7 +17,8 @@
 package org.eclipse.californium.actinium.jscoap;
 
 import jdk.nashorn.api.scripting.NashornException;
-import org.eclipse.californium.core.CoapResource;
+
+import org.eclipse.californium.actinium.LoggerProvidingResource;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
@@ -25,7 +26,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
  * It is not possible to add further methods or fields to this class within
  * JavaScript (Rhino). If this is necessary, use AbstractJavaScriptResource.
  */
-public class JavaScriptResource extends CoapResource implements JavaScriptCoapConstants {
+public class JavaScriptResource extends LoggerProvidingResource implements JavaScriptCoapConstants {
 	// Cannot extend ScriptableObject, because has to extend CoapResource
 	// Cannot (reasonably) implement Scriptable, because we then have to implement all 16 methods like ScriptableObject
 
@@ -90,7 +91,7 @@ public class JavaScriptResource extends CoapResource implements JavaScriptCoapCo
 			callback.call(new JavaScriptCoapExchange(exchange), exchange.advanced().getRequest());
 		} catch (NashornException e){
 			exchange.respond(CoAP.ResponseCode.INTERNAL_SERVER_ERROR, e.getMessage());
-			System.err.println("JavaScript error in ["+e.getFileName()+"#"+e.getLineNumber()+"]: "+e.getMessage());
+			logger.error("JavaScript error in [{}#{}]: {}", e.getFileName(), e.getLineNumber(), e.getMessage());
 			throw e;
 		}
 	}

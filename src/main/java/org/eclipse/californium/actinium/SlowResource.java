@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Institute for Pervasive Computing, ETH Zurich and others.
+ * Copyright (c) 2014, 2019 Institute for Pervasive Computing, ETH Zurich and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -16,12 +16,11 @@
  ******************************************************************************/
 package org.eclipse.californium.actinium;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
 
-public class SlowResource extends CoapResource {
+public class SlowResource extends LoggerProvidingResource {
 
 	private int counter = 0;
 	
@@ -33,13 +32,13 @@ public class SlowResource extends CoapResource {
 	public void handlePOST(CoapExchange request) {
 		
 		try {
-			System.out.println("Bearbeite request "+request.advanced().getRequest().getMID());
+			logger.debug("processing request {}", request.advanced().getRequest().getMID());
 			Thread.sleep(5000);
-			
-			request.respond(ResponseCode.CONTENT, "counter = "+counter);
+
+			request.respond(ResponseCode.CONTENT, "counter = " + counter);
 			counter++;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("error processing request", e);
 		}
 	}
 }

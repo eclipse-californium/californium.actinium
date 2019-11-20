@@ -32,6 +32,8 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AbstractConfig is a Properties which also has tha capabilities of a CoAP
@@ -61,6 +63,8 @@ import org.eclipse.californium.core.server.resources.Resource;
 public abstract class AbstractConfig extends Properties {
 
 	private static final long serialVersionUID = 1533763543185322735L;
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	// Resource for this config must be created with an identifier
 	private CoapResource cfgres = null;
@@ -133,11 +137,11 @@ public abstract class AbstractConfig extends Properties {
 			try {
 				return Integer.parseInt(value);
 			} catch (NumberFormatException e) {
-				System.err.println("Invalid integer property: "+key+"="+value);
+				logger.error("Invalid integer property: {}={}", key, value);
 			}
 			
 		} else {
-			System.err.println("Undefined integer property: "+key);
+			logger.error("Undefined integer property: {}", key);
 		}
 		return 0;
 	}
@@ -148,17 +152,17 @@ public abstract class AbstractConfig extends Properties {
 			try {
 				return Boolean.parseBoolean(value);
 			} catch (NumberFormatException e) {
-				System.err.println("Invalid boolean property: "+key+"="+value);
+				logger.error("Invalid boolean property: {}={}", key, value);
 			}
 			
 		} else {
-			System.err.println("Undefined boolean property: "+key);
+			logger.error("Undefined boolean property: {}", key);
 		}
 		return false;
 	}
 	
 	public void store() {
-		System.out.println("Store config to file "+configPath);
+		logger.debug("writing configuration to file: {}", configPath);
 		storeProperties(configPath);
 	}
 	
@@ -170,7 +174,7 @@ public abstract class AbstractConfig extends Properties {
 		if (!file.canWrite())
 			throw new IOException("The config file "+configPath+" is not writable/deletable");
 		
-		System.out.println("Delete config file "+configPath);
+		logger.debug("deleting configuration file: {}", configPath);
 		boolean success = file.delete();
 		
 		if (!success)
@@ -189,13 +193,11 @@ public abstract class AbstractConfig extends Properties {
 				stream.close();
 			}
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			System.err.println("Property file "+path+" not found. Try to restore");
+			logger.error("Property file [{}] not found. Trying to restore...", path, e);
 			storeProperties(path);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.println("Unable to load properties from "+path);
+			logger.error("Unable to load properties from {}", path, e);
 		}
 	}
 	
@@ -206,8 +208,7 @@ public abstract class AbstractConfig extends Properties {
 			fos.close();
 			
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.err.println("Unable to store properties at "+path);
+			logger.error("Unable to store properties at {}", path, e);
 		}
 	}
 	
@@ -233,11 +234,15 @@ public abstract class AbstractConfig extends Properties {
 		try {
 			StringReader reader = new StringReader(request.getRequestText());
 			p.load(reader);
-			
-			System.out.println("update config:");
-			for (String key:p.stringPropertyNames()) 
-				System.out.println("	"+key+" = >"+p.get(key)+"< "+isModifiable(key));
-			
+
+			if (logger.isDebugEnabled()) {
+				StringBuilder b = new StringBuilder("updating config:").append(System.lineSeparator());
+				for (String key : p.stringPropertyNames()) {
+					b.append("\t").append(key).append(" = >").append(p.get(key)).append("< ").append(isModifiable(key)).append(System.lineSeparator());
+				}
+				logger.debug(b.toString());
+			}
+
 			for (String key:this.stringPropertyNames()) {
 				if (isModifiable(key))
 					remove(key);
@@ -256,9 +261,8 @@ public abstract class AbstractConfig extends Properties {
 			request.respond(ResponseCode.CHANGED, "successfully changed keys: "+changes);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.println("Configuration was not able to be parsed");
-			request.respond(ResponseCode.BAD_REQUEST, "Configuration was not able to be parsed");
+			logger.error("Could not parse configuration", e);
+			request.respond(ResponseCode.BAD_REQUEST, "Could not parse configuration");
 		}
 	}
 
@@ -267,10 +271,15 @@ public abstract class AbstractConfig extends Properties {
 		try {
 			StringReader reader = new StringReader(request.getRequestText());
 			p.load(reader);
-			
-			System.out.println("update config:");
-			for (String key:p.stringPropertyNames()) 
-				System.out.println("	"+key+" = >"+p.get(key)+"< "+(isModifiable(key)?"modifiable":"unmodifiable"));
+
+			if (logger.isDebugEnabled()) {
+				StringBuilder b = new StringBuilder("update config:").append(System.lineSeparator());
+				for (String key:p.stringPropertyNames()) {
+					b.append("\t").append(key).append(" = >").append(p.get(key)).append("< ").append(isModifiable(key)? "modifiable" : "unmodifiable")
+					.append(System.lineSeparator());
+				}
+				logger.debug(b.toString());
+			}
 
 			ConfigChangeSet changes = new ConfigChangeSet();
 			for (String key:p.stringPropertyNames()) {
@@ -285,9 +294,8 @@ public abstract class AbstractConfig extends Properties {
 			request.respond(ResponseCode.CHANGED, "successfully changed keys: "+changes);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.println("Configuration was not able to be parsed");
-			request.respond(ResponseCode.BAD_REQUEST, "Configuration was not able to be parsed");
+			logger.error("Could not parse configuration", e);
+			request.respond(ResponseCode.BAD_REQUEST, "Could not parse configuration");
 		}
 	}
 	

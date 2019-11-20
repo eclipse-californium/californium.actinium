@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Institute for Pervasive Computing, ETH Zurich and others.
+ * Copyright (c) 2014, 2019 Institute for Pervasive Computing, ETH Zurich and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -18,9 +18,9 @@
 package org.eclipse.californium.actinium.libs;
 
 import org.eclipse.californium.actinium.AppManager;
+import org.eclipse.californium.actinium.LoggerProvidingResource;
 import org.eclipse.californium.actinium.Utils;
 import org.eclipse.californium.actinium.cfg.Config;
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -32,7 +32,8 @@ import java.io.IOException;
 /**
  * Created by ynh on 22/10/15.
  */
-public class LibResource extends CoapResource {
+public class LibResource extends LoggerProvidingResource {
+
 	private final AppManager manager;
 	private final String name;
 
@@ -94,7 +95,7 @@ public class LibResource extends CoapResource {
 		if (!file.canWrite())
 			throw new IOException("The file " + apppath + " of app " + name + " is not writable/deletable");
 
-		System.out.println("Delete app " + apppath);
+		logger.debug("Deleting app {}", apppath);
 		boolean success = file.delete();
 
 		if (!success)

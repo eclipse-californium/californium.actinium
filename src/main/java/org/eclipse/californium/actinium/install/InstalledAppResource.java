@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Institute for Pervasive Computing, ETH Zurich and others.
+ * Copyright (c) 2014, 2019 Institute for Pervasive Computing, ETH Zurich and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -17,10 +17,10 @@
 package org.eclipse.californium.actinium.install;
 
 import org.eclipse.californium.actinium.AppManager;
+import org.eclipse.californium.actinium.LoggerProvidingResource;
 import org.eclipse.californium.actinium.Utils;
 import org.eclipse.californium.actinium.cfg.AppConfig;
 import org.eclipse.californium.actinium.cfg.Config;
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -41,7 +41,7 @@ import java.util.Properties;
  * a PUT request, InstalledAppResource updates the app's content. On a DELETE
  * request, the app's file, all its instances and this resource are removed.
  */
-public class InstalledAppResource extends CoapResource {
+public class InstalledAppResource extends LoggerProvidingResource {
 
 	// the name of this app
 	private String name;
@@ -160,16 +160,15 @@ public class InstalledAppResource extends CoapResource {
 			request.respond(response);
 
 		} catch (IllegalArgumentException e) { // given query invalid
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 			request.respond(ResponseCode.BAD_REQUEST, e.getMessage()); // RESP_PRECONDITION_FAILED?
 
 		} catch (RuntimeException e) { // some error while processing (e.g. IO)
-			e.printStackTrace();
-			System.err.println(e.getMessage());
+			logger.error("error processing request", e);
 			request.respond(ResponseCode.BAD_REQUEST, e.getMessage()); // RESP_PRECONDITION_FAILED?
 
 		} catch (Exception e) { // should not happen
-			e.printStackTrace();
+			logger.error("error processing request", e);
 			request.respond(ResponseCode.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
@@ -208,12 +207,16 @@ public class InstalledAppResource extends CoapResource {
 			StringReader reader = new StringReader(payload);
 			p.load(reader);
 
-			System.out.println("New app config:");
-			for (Object key : p.keySet())
-				System.out.println("	" + key + " = >" + p.get(key) + "<");
+			if (logger.isDebugEnabled()) {
+				StringBuilder b = new StringBuilder("New app config:").append(System.lineSeparator());
+				for (Object key : p.keySet()) {
+					b.append("\t").append(key).append(" = >").append(p.get(key)).append("<").append(System.lineSeparator());
+				}
+				logger.debug(b.toString());
+			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.debug("error parsing configuration", e);
 			throw new RuntimeException("Configuration was not able to be parsed", e);
 		}
 
@@ -263,7 +266,7 @@ public class InstalledAppResource extends CoapResource {
 		if (!file.canWrite())
 			throw new IOException("The file " + apppath + " of app " + name + " is not writable/deletable");
 
-		System.out.println("Delete app " + apppath);
+		logger.debug("Deleting app {}", apppath);
 		boolean success = file.delete();
 
 		if (!success)

@@ -25,6 +25,8 @@ import org.eclipse.californium.actinium.libs.LibsResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfigDefaultHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 
 /**
@@ -40,6 +42,8 @@ import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
  * to this app, whose receiver thread then will handle the request.
  */
 public class AcServer extends CoapServer {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AcServer.class);
 
 	private static NetworkConfigDefaultHandler DEFAULTS = new NetworkConfigDefaultHandler() {
 
@@ -110,11 +114,11 @@ public class AcServer extends CoapServer {
 			AcServer server = new AcServer(config);
 			server.start();
 
-			System.out.println("Actinium (Ac) App-server listening on port "
-					+ server.getEndpoints().get(0).getAddress().getPort());
+			LOG.info("Actinium (Ac) App-server listening on port {}",
+					server.getEndpoints().get(0).getAddress().getPort());
 
 		} catch (SocketException e) {
-			e.printStackTrace();
+			LOG.error("error starting Actinium App-server", e);
 		}
 	}
 }
