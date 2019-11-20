@@ -17,7 +17,6 @@
 package org.eclipse.californium.actinium.plugnplay;
 
 import jdk.internal.dynalink.beans.StaticClass;
-import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.api.scripting.ScriptUtils;
@@ -38,13 +37,11 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -76,18 +73,6 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	
 	// The handler, that makes JavaScript execute requests on "app.root"
 	private JSRequestHandler requestHandler;
-	
-	// Java Packages, that are imported automatically for Rhino
-	private static String[] defaultpackages = {
-		"java.lang",
-		"java.util",
-		"java.io",
-		"java.net",
-		"java.text",
-		"org.eclipse.californium.core.coap", // Response
-		"org.eclipse.californium.actinium.jscoap", // CoapRequest
-		"org.eclipse.californium.actinium.jscoap.jserror" // CoAPRequest RequestErrorException
-	};
 
 	private volatile AppContext context;
 	private ScriptEngine engine;
@@ -168,39 +153,19 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	 * @param code the JavaScript code
 	 */
 	public void execute(String code) {
-		
+
 		if (code==null || code.isEmpty()) return;
-		
+
 		dependencies.clear();
 		moduleCache.clear();
 		classloader = new DynamicClassloader(Thread.currentThread().getContextClassLoader());
 		engine = new NashornScriptEngineFactory().getScriptEngine(classloader);
-//		engine = (ScriptEngine) new ScriptEngineManager(classloader).getEngineByName("JavaScript");
-        try {
-        	// initialize JavaScrip environmetn for the app: scope (variables)
-
-        	AppContext context = new AppContext();
-        	this.context = context;
+		try {
+			// initialize JavaScrip environment for the app: scope (variables)
+			AppContext context = new AppContext();
+			this.context = context;
 			context.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
 			Bindings engineScope = context.getBindings(ScriptContext.ENGINE_SCOPE);
-//    		scope.setPrototype(s);
-//
-//    		// add two global functions dump and addSubResource
-//            String[] names = { "dump", "addSubResource"};
-//            scope.defineFunctionProperties(names, JavaScriptStaticAccess.class,
-//                                           ScriptableObject.DONTENUM);
-//
-//            try {
-//            	// Add AJAX' XMLHttpRequest to JavaScript
-//            	ScriptableObject.defineClass(scope,	XMLHttpRequest.class);
-//            	ScriptableObject.defineClass(scope,	JavaScriptCoapExchange.class);
-//			} catch (IllegalAccessException e) {
-//				e.printStackTrace();
-//			} catch (InstantiationException e) {
-//				e.printStackTrace();
-//			} catch (InvocationTargetException e) {
-//				e.printStackTrace();
-//			}
 
 			// Add object "app" to JavaScript
 			JavaScriptAccess jsaccess = new JavaScriptAccess();
@@ -221,7 +186,7 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 				jsaccess.timer.cancel();
 			}
 			
-        } catch (RuntimeException|ScriptException e) {
+		} catch (RuntimeException|ScriptException e) {
 			Throwable cause = e.getCause();
 			if (cause!=null && cause instanceof InterruptedException) {
 				// this was a controlled shutdown, e.g. with app.stop()
@@ -570,11 +535,9 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 	private class JavaScriptTimeoutTask extends TimerTask {
 		
 		private Function<Object, Void> function; // the function
-		private Object[] args; // the arguments
 		
 		public JavaScriptTimeoutTask(Function<Object, Void> function, Object[] args) {
 			this.function = function;
-			this.args = args;
 		}
 
 		/**
@@ -596,20 +559,6 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 		private class FunctionExecuter implements Runnable {
 			public void run() {
 				function.apply(null);
-				/*try {
-					// call function
-					Context cx = Context.enter();
-					Scriptable scope = function.getParentScope();
-					// there is no this-object for this function, not even jsaccess, so it's null
-					function.call(cx, scope, null, args);
-				} catch (WrappedException e) {
-					LOG.warning(String.format("App %s had JS exception: %s", getName(), e.getMessage()));
-				} catch (Exception e) {
-					LOG.severe(String.format("App %s crashed: %s", getName(), e.getMessage()));
-					e.printStackTrace();
-				} finally {
-					Context.exit();
-				}*/
 			}
 		}
 	}
