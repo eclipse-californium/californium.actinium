@@ -61,7 +61,7 @@
 		<repository>
 			<id>repo.eclipse.org</id>
 			<name>Californium Repository</name>
-			<url>https://repo.eclipse.org/content/repositories/californium/</url>
+			<url>https://repo.eclipse.org/content/repositories/californium-releases/</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
