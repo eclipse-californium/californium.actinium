@@ -84,6 +84,8 @@
 			deploy this module's artifacts to Maven Central's staging repo
 		 -->
 		<skipStaging>true</skipStaging>
+		<animal.sniffer.skip>true</animal.sniffer.skip>
+		<revapi.skip>true</revapi.skip>
 	</properties>
 
 	<dependencies>
