@@ -19,6 +19,10 @@ The dependencies are available from the default Maven repositories.
 
 Run with `java -jar actinium-*.jar`.
 
+If newer JDKs are used to run maven, `-DuseToolchain` can be used to switch back to the required JDK 1.8
+
+`mvn clean install -DuseToolchain`
+
 Eclipse
 -------
 
