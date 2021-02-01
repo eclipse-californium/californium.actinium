@@ -21,9 +21,11 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.elements.util.DaemonThreadFactory;
+import org.eclipse.californium.elements.util.ExecutorsUtil;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -36,6 +38,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 public class Sender {
+    private static final ThreadGroup JSCOAP_THREAD_GROUP = new ThreadGroup("jscoap"); //$NON-NLS-1$
+    private static final ScheduledExecutorService SCHEDULER;
+
+    static {
+        JSCOAP_THREAD_GROUP.setDaemon(false);
+        SCHEDULER = ExecutorsUtil.newScheduledThreadPool(4, new DaemonThreadFactory("jstimer#", JSCOAP_THREAD_GROUP));
+    }
 
     public static final int READY = 0;
     public static final int SENT = 1;
@@ -43,8 +52,8 @@ public class Sender {
     public static final int ABORTED = 3;
     public static final int DONE = 4;
     public static final int ERROR = 5;
+
     private final AtomicInteger state = new AtomicInteger(READY);
-    private final Timer timer = new Timer();
     private final CoapRequest coapRequest;
     private final CoapRequestEvent onready; // onreadystatechange
     private final CoapRequestEvent ontimeout;
@@ -90,11 +99,12 @@ public class Sender {
             }
             if (async) {
                 if (timeout > 0) {
-                    timer.schedule(new TimerTask() {
+                    SCHEDULER.schedule(new Runnable() {
+                        @Override
                         public void run() {
                             request.setTimedOut(true);
                         }
-                    }, timeout);
+                    }, timeout, TimeUnit.MILLISECONDS);
                 }
             } else {
                 try {

@@ -43,7 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 public class BaseServerTest {
 	public static final String TEST_APP_FOLDER = "appserver_tmp";
-	public static final int TIMEOUT = 200;
+	public static final int TIMEOUT = 500;
 	protected String baseURL;
 	private AcServer server;
 	private File appFolder;

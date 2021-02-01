@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class RequestTest extends BaseServerTest {
 	@ClassRule
-	public static ThreadsRule cleanup = new ThreadsRule();
+	public static ThreadsRule cleanup = new ThreadsRule("jstimer#\\d+");
 
 	@Rule
 	public TestNameLoggerRule names = new TestNameLoggerRule();
@@ -117,7 +117,6 @@ public class RequestTest extends BaseServerTest {
 		assertEquals("TIMEOUT", result.getPayloadString());
 
 	}
-
 
 	@Test
 	public void testAbort() throws InterruptedException, FileNotFoundException {
