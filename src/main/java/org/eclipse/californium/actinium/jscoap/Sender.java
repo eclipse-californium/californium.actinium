@@ -43,7 +43,7 @@ public class Sender {
 
     static {
         JSCOAP_THREAD_GROUP.setDaemon(false);
-        SCHEDULER = ExecutorsUtil.newScheduledThreadPool(4, new DaemonThreadFactory("jstimer#", JSCOAP_THREAD_GROUP));
+        SCHEDULER = ExecutorsUtil.newScheduledThreadPool(2, new DaemonThreadFactory("jstimer#", JSCOAP_THREAD_GROUP));
     }
 
     public static final int READY = 0;
