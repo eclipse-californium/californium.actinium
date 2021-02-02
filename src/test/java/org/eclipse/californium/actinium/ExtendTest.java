@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class ExtendTest extends BaseServerTest {
 	@ClassRule
-	public static ThreadsRule cleanup = new ThreadsRule();
+	public static ThreadsRule cleanup = new ThreadsRule(THREADS_RULE_FILTER);
 
 
     private final String script;

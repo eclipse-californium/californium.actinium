@@ -27,7 +27,7 @@ import java.util.Collection;
 @RunWith(Parameterized.class)
 public class AppNameTest extends BaseServerTest {
 	@ClassRule
-	public static ThreadsRule cleanup = new ThreadsRule();
+	public static ThreadsRule cleanup = new ThreadsRule(THREADS_RULE_FILTER);
 
 	private final String appName;
 

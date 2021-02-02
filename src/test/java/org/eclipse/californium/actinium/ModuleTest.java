@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 
 public class ModuleTest extends BaseServerTest {
 	@ClassRule
-	public static ThreadsRule cleanup = new ThreadsRule();
+	public static ThreadsRule cleanup = new ThreadsRule(THREADS_RULE_FILTER);
 
 	@Test
 	public void testModule() throws InterruptedException, FileNotFoundException {

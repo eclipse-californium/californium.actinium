@@ -42,6 +42,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class BaseServerTest {
+	public static final String THREADS_RULE_FILTER = "jstimer#\\d+";
 	public static final String TEST_APP_FOLDER = "appserver_tmp";
 	public static final int TIMEOUT = 500;
 	protected String baseURL;

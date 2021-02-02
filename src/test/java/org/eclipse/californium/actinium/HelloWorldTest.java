@@ -29,7 +29,7 @@ import org.junit.Test;
 
 public class HelloWorldTest extends BaseServerTest {
 	@ClassRule
-	public static ThreadsRule cleanup = new ThreadsRule();
+	public static ThreadsRule cleanup = new ThreadsRule(THREADS_RULE_FILTER);
 
 	@Rule
 	public TestNameLoggerRule names = new TestNameLoggerRule();

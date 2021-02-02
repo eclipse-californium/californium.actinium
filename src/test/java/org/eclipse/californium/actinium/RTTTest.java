@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 
 public class RTTTest extends BaseServerTest {
 	@ClassRule
-	public static ThreadsRule cleanup = new ThreadsRule();
+	public static ThreadsRule cleanup = new ThreadsRule(THREADS_RULE_FILTER);
 
 	@Test
 	public void testRTT() throws InterruptedException, FileNotFoundException {

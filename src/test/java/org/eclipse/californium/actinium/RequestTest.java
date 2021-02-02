@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class RequestTest extends BaseServerTest {
 	@ClassRule
-	public static ThreadsRule cleanup = new ThreadsRule("jstimer#\\d+");
+	public static ThreadsRule cleanup = new ThreadsRule(THREADS_RULE_FILTER);
 
 	@Rule
 	public TestNameLoggerRule names = new TestNameLoggerRule();
