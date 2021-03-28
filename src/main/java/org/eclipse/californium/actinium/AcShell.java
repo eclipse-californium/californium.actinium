@@ -89,16 +89,22 @@ public class AcShell extends CoapServer {
 				String arg = args[i]; // currenct arg
 				if (arg.startsWith("-")) { // arg is an option
 					if (arg.equals("-port")) {
+						if (i + 1 == args.length) {
+							throw new IllegalArgumentException("Missing argument port number");
+						}
 						try {
 							port = Integer.parseInt(args[i+1]);
 						} catch (NumberFormatException e) {
 							throw new IllegalArgumentException("Invalid port number "+args[i+1], e);
 						}
-						i = i+1; // skip next arg, which is the port number
+						++i; // skip next arg, which is the port number
 					
 					} else if (arg.equals("-name")) {
+						if (i + 1 == args.length) {
+							throw new IllegalArgumentException("Missing argument for name");
+						}
 						name = args[i+1];
-						i = i+1; // skip next arg, which is the name
+						++i; // skip next arg, which is the name
 					} else {
 						System.err.println("Error: unrecognized or incomplete command line.");
 						printInfo();

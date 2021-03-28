@@ -108,7 +108,6 @@ function Property(resid, dflt) {
  * with the specified values from the other subresources
  */
 function Send() {
-	var THIS = this;
 	this.res = new JavaScriptResource("send");
 	this.res.onpost = function(request) {
 		dosend(request);

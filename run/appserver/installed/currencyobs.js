@@ -65,7 +65,7 @@ app.root.onget = function(request) {
 		buffer.append(values[i]+"\n");
 	}
 	request.respond(2.05, buffer.toString());
-}
+};
 
 app.root.onpost = function(request) {
 	var payload = request.requestText;
@@ -78,7 +78,7 @@ app.root.onpost = function(request) {
 	} else {		
 		request.respond("Bad Request");
 	}
-}
+};
 
 // remove Observer
 function onunload() {

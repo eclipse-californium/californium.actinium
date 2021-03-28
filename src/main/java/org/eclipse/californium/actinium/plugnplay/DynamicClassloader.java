@@ -27,18 +27,12 @@ import java.util.*;
  */
 public class DynamicClassloader extends ClassLoader {
 
-    private Map<String, Class<?>> classesMap = new HashMap<String, Class<?>>();
     private Set<String> addedJarFiles = new HashSet<>();
     private ArrayList<ClassLoader> classLoaders;
 
     public DynamicClassloader(ClassLoader parent) {
         super(parent);
         classLoaders = new ArrayList<>();
-    }
-
-    // Adding dynamically created classes
-    public void defineClass(String name, Class<?> clazz) {
-        classesMap.put(name, clazz);
     }
 
     @Override

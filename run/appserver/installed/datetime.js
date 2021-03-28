@@ -136,7 +136,7 @@ function DateTime(ts,id) {
 
 DateTime.prototype.getDescription = function() {
 	return "I return the date and time";
-}
+};
 
 var hour = 60*60*1000;
 var utc = app.getTime() - hour;

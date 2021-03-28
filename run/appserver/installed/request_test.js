@@ -30,7 +30,7 @@ app.root.onpost = function(request) {
     var value = request.requestText.split(' ');
     if (value.length != 3 && value.length != 4) {
         request.respond(128);
-        return
+        return;
     }
     uri = value[1];
     method = value[0];

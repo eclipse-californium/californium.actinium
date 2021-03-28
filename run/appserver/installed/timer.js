@@ -30,7 +30,7 @@ var paths = new Array(); // all names of timers
 
 // create a new timer
 function Timer(millis, name) {
-	periode = millis;
+	var periode = millis;
 	var mythis = this;
 	this.timerres = new JavaScriptResource(name);
 	this.timerres.onget = function(request) {
@@ -48,7 +48,7 @@ function Timer(millis, name) {
 	 * Start new timer in a new thread.
 	 */
 	this.go = function() {
-		thread = Thread(function() {
+		var thread = Thread(function() {
 			while(true) {
 				for (var i=0;i<periode/1000;i++) {
 					java.lang.Thread.sleep(1000);

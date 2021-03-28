@@ -48,7 +48,6 @@ var n_newton = 1000000;
 app.root.onget = function(request) {
 	request.accept();
 	
-	var what = request.requestText;
 	var text = '';
 	
 	app.dump('Fibonacci');
@@ -113,7 +112,7 @@ function run(what) {
 	var arg;
 	var m = measurements;
 	
-	parts = what.split(" ");
+	var parts = what.split(" ");
 	if (parts.length>0 && parts[0]=="fib") {
 		func = fibonacci;
 		arg = n_fib;
@@ -223,11 +222,11 @@ function qsort(array, begin, end) {
 
 function partition(array, begin, end, pivot) {
 	var piv=array[pivot];
-	temp = array[pivot];
+	var temp = array[pivot];
 	array[pivot] = array[end-1];
 	array[end-1] = temp;
 	var store=begin;
-	var ix, temp;
+	var ix;
 	for(ix=begin; ix<end-1; ++ix) {
 		if(array[ix]<=piv) {
 			temp = array[store];

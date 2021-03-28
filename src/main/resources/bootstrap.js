@@ -64,7 +64,7 @@ var extend = function() {
         fn = arguments[2];
         fn['getClassName'] = function(){
             return clname;
-        }
+        };
     }
     var local_fn = _copy({}, fn);
     var parent_jsobj = function(data, contexts, container) {

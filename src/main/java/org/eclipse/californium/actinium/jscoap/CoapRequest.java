@@ -17,6 +17,7 @@
 package org.eclipse.californium.actinium.jscoap;
 
 import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.californium.core.coap.*;
 
 import java.net.URI;
@@ -219,12 +220,12 @@ public class CoapRequest implements JavaScriptCoapConstants {
 	}
 	
 	/**
-	 * Adds the specified option.
+	 * Adds the specified option with empty value.
 	 * @param nr the option nr
 	 */
 	public void addOption(int nr) {
 		List<Option> list = findOptionList(nr);
-		list.add(new Option(nr));
+		list.add(new Option(nr, Bytes.EMPTY));
 	}
 	
 	/**

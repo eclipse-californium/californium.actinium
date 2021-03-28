@@ -316,7 +316,9 @@ public class JavaScriptApp extends AbstractApp implements JavaScriptCoapConstant
 					} else {
 						File propertiesFile = new File(libPath + "/config.cfg");
 						Properties properties = new Properties();
-						properties.load(new FileInputStream(propertiesFile));
+						try (FileInputStream in = new FileInputStream(propertiesFile)) {
+							properties.load(in);
+						}
 						element = NativeJavaModuleObject.create(engine, context, classloader, propertiesFile, properties);
 					}
 					moduleCache.put(name, element);
