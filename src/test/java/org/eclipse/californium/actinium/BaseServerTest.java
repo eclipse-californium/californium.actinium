@@ -20,10 +20,11 @@ import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.EndpointManager;
-import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.elements.config.Configuration;
 import org.junit.After;
 import org.junit.Before;
 
@@ -108,12 +109,12 @@ public class BaseServerTest {
 	}
 
 	protected void startServer() throws SocketException {
-		NetworkConfig networkConfig = AcServer.initNetworkConfig();
+		Configuration networkConfig = AcServer.initConfiguration();
 		Config config = new Config(TEST_APP_FOLDER + "/config.cfg");
 		server = new AcServer(config, networkConfig);
 		CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
 		builder.setInetSocketAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(),
-				networkConfig.getInt(NetworkConfig.Keys.COAP_PORT)));
+				networkConfig.get(CoapConfig.COAP_PORT)));
 		server.addEndpoint(builder.build());
 		server.start();
 		Endpoint endpoint = server.getEndpoints().get(0);

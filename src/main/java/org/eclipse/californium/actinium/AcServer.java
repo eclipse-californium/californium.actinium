@@ -23,11 +23,11 @@ import org.eclipse.californium.actinium.cfg.Config;
 import org.eclipse.californium.actinium.install.InstallResource;
 import org.eclipse.californium.actinium.libs.LibsResource;
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfigDefaultHandler;
+import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.Configuration.DefinitionsProvider;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 
 /**
  * Actinium (Ac) App-server for Californium
@@ -45,13 +45,13 @@ public class AcServer extends CoapServer {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AcServer.class);
 
-	private static NetworkConfigDefaultHandler DEFAULTS = new NetworkConfigDefaultHandler() {
+	private static DefinitionsProvider DEFAULTS = new DefinitionsProvider() {
 
 		@Override
-		public void applyDefaults(NetworkConfig config) {
+		public void applyDefinitions(Configuration config) {
 			final int CORES = Runtime.getRuntime().availableProcessors();
 			// javascripts are too frequently blocking!
-			config.setInt(Keys.PROTOCOL_STAGE_THREAD_COUNT, Math.max(8, CORES));
+			config.set(CoapConfig.PROTOCOL_STAGE_THREAD_COUNT, Math.max(8, CORES));
 		}
 	};
 
@@ -71,7 +71,7 @@ public class AcServer extends CoapServer {
 		this(config, null, null);
 	}
 
-	public AcServer(Config config, NetworkConfig networkConfig, int... ports) throws SocketException {
+	public AcServer(Config config, Configuration networkConfig, int... ports) throws SocketException {
 		super(networkConfig, ports);
 
 		this.manager = new AppManager(config);
@@ -98,8 +98,9 @@ public class AcServer extends CoapServer {
 		super.destroy();
 	}
 
-	public static NetworkConfig initNetworkConfig() {
-		return NetworkConfig.createWithFile(new File(NetworkConfig.DEFAULT_FILE_NAME), NetworkConfig.DEFAULT_HEADER, DEFAULTS);
+	public static Configuration initConfiguration() {
+		CoapConfig.register();
+		return Configuration.createWithFile(new File(Configuration.DEFAULT_FILE_NAME), Configuration.DEFAULT_HEADER, DEFAULTS);
 	}
 
 	/**
@@ -109,7 +110,7 @@ public class AcServer extends CoapServer {
 	 */
 	public static void main(String[] args) {
 		try {
-			initNetworkConfig();
+			initConfiguration();
 			Config config = new Config();
 			AcServer server = new AcServer(config);
 			server.start();
