@@ -25,6 +25,7 @@ import org.eclipse.californium.actinium.libs.LibsResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.DefinitionsProvider;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +101,7 @@ public class AcServer extends CoapServer {
 
 	public static Configuration initConfiguration() {
 		CoapConfig.register();
+		UdpConfig.register();
 		return Configuration.createWithFile(new File(Configuration.DEFAULT_FILE_NAME), Configuration.DEFAULT_HEADER, DEFAULTS);
 	}
 
