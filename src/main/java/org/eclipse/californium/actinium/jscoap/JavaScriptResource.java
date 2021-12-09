@@ -36,7 +36,7 @@ public class JavaScriptResource extends LoggerProvidingResource implements JavaS
 	public CoapCallback ondelete = null;
 	
 	public JavaScriptResource() {
-		super(null);
+		super("js-request");
 	}
 
 	public JavaScriptResource(String resourceIdentifier) {
