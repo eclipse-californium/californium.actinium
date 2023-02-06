@@ -69,7 +69,7 @@
 		<repository>
 			<id>eclipse_snapshots</id>
 			<name>Eclipse Snapshots</name>
-			<url>https://repo.eclipse.org/content/repositories/snapshots/</url>
+			<url>https://repo.eclipse.org/content/repositories/californium-snapshots/</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
