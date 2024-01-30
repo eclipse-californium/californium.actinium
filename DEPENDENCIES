@@ -1,4 +1,4 @@
-maven/mavencentral/org.eclipse.californium/californium-core/3.8.0-SNAPSHOT, , approved, science.californium
-maven/mavencentral/org.eclipse.californium/element-connector/3.8.0-SNAPSHOT, , approved, science.californium
+maven/mavencentral/org.eclipse.californium/californium-core/3.11.0-20240130.075337-34, , approved, science.californium
+maven/mavencentral/org.eclipse.californium/element-connector/3.11.0-20240130.075337-34, , approved, science.californium
 maven/mavencentral/org.javassist/javassist/3.22.0-GA, MPL-1.1 OR LGPL-2.1-or-later OR Apache-2.0, approved, CQ14616
 maven/mavencentral/org.slf4j/slf4j-api/1.7.36, MIT, approved, CQ13368
