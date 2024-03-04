@@ -16,15 +16,15 @@
 
 	<name>Actinium (Ac)</name>
 	<description>Actinium (Ac) App-server for Californium</description>
-	<url>https://www.eclipse.org/californium/</url>
+	<url>https://eclipse.dev/californium/</url>
 	<scm>
-		<developerConnection>scm:git:ssh://git@github.com/eclipse/californium.actinium.git</developerConnection>
-		<url>https://github.com/eclipse/californium.actinium</url>
+		<developerConnection>scm:git:ssh://git@github.com/eclipse-californium/californium.actinium.git</developerConnection>
+		<url>https://github.com/eclipse-californium/californium.actinium</url>
 		<tag>HEAD</tag>
 	</scm>
 	<issueManagement>
 			<system>GitHub</system>
-			<url>https://github.com/eclipse/californium.actinium/issues</url>
+			<url>https://github.com/eclipse-californium/californium.actinium/issues</url>
 	</issueManagement>
 	<developers>
 		<developer>
@@ -78,6 +78,7 @@
 
 	<properties>
 		<project.build.javaVersion>1.8</project.build.javaVersion>
+		<maven.compiler.release></maven.compiler.release>
 		<assembly.mainClass>org.eclipse.californium.actinium.AcServer</assembly.mainClass>
 		<!-- 
 			this property prevents the Nexus Staging Maven Plugin to
