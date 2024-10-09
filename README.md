@@ -1,3 +1,7 @@
+# !!! DISCONTINUED !!!
+
+This subproject is not longer maintained.
+
 Actinium (Ac) App-server 2.0 for Californium
 ============================================
 
